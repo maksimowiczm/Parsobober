@@ -6,4 +6,12 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\Parsobober.Lexer\Parsobober.Lexer.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="sly" Version="2.9.8" />
+    </ItemGroup>
+
 </Project>
