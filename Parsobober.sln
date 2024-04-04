@@ -1,7 +1,5 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Lexer", "Parsobober.Lexer\Parsobober.Lexer.csproj", "{525BDC0E-5D3F-485C-9E10-616FB76DD8D4}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Simple", "Simple", "{B8F6F9B0-6D22-4F81-88AE-B5C4ECD1EE3D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Simple.Lexer", "Simple\Parsobober.Simple.Lexer\Parsobober.Simple.Lexer.csproj", "{F0DC2CE5-518B-46E6-8D67-331D9573EC45}"
@@ -18,10 +16,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{525BDC0E-5D3F-485C-9E10-616FB76DD8D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{525BDC0E-5D3F-485C-9E10-616FB76DD8D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{525BDC0E-5D3F-485C-9E10-616FB76DD8D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{525BDC0E-5D3F-485C-9E10-616FB76DD8D4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F0DC2CE5-518B-46E6-8D67-331D9573EC45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F0DC2CE5-518B-46E6-8D67-331D9573EC45}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F0DC2CE5-518B-46E6-8D67-331D9573EC45}.Release|Any CPU.ActiveCfg = Release|Any CPU
