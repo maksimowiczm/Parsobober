@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Simple\Parsobober.Simple.Parser\Parsobober.Simple.Parser.csproj"/>
+      <ProjectReference Include="..\SpaFronted\Parsobober.Simple.Parser\Parsobober.Simple.Parser.csproj" />
     </ItemGroup>
 
 </Project>
