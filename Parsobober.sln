@@ -8,11 +8,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "QueryProcessor", "QueryProc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Shared", "src\Parsobober.Shared\Parsobober.Shared.csproj", "{DC4D45C5-EECB-4C21-878D-8DBDB031A84D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.CLI", "src\Parsobober.CLI\Parsobober.CLI.csproj", "{57C00A5A-A6E0-408D-BB7F-52305C1B8137}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Cli", "src\Parsobober.Cli\Parsobober.Cli.csproj", "{57C00A5A-A6E0-408D-BB7F-52305C1B8137}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Simple.Lexer", "src\SpaFronted\Parsobober.Simple.Lexer\Parsobober.Simple.Lexer.csproj", "{D57C2D07-EA23-413A-85DF-B6E1786DF56B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Simple.Parser", "src\SpaFronted\Parsobober.Simple.Parser\Parsobober.Simple.Parser.csproj", "{28D828E9-C169-47E5-BF57-E4B7E1AF2C57}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Pkb.Ast", "src\Pkb\Parsobober.Pkb.Ast\Parsobober.Pkb.Ast.csproj", "{D6216C15-CDC1-4876-BDB9-2B88C9DD35DB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Pkb.Relations", "src\Pkb\Parsobober.Pkb.Relations\Parsobober.Pkb.Relations.csproj", "{EC202DD0-56DB-4C9F-9248-F8E73CD909A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Pql.Parser", "src\QueryProcessor\Parsobober.Pql.Parser\Parsobober.Pql.Parser.csproj", "{C6339CBE-9406-4FC4-B354-2501B0A827C2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Pql.Query", "src\QueryProcessor\Parsobober.Pql.Query\Parsobober.Pql.Query.csproj", "{A8299C81-B6FE-4993-BE72-8F347D23281A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.DesignExtractor", "src\SpaFronted\Parsobober.DesignExtractor\Parsobober.DesignExtractor.csproj", "{63494377-1C53-4866-9328-9F1439762909}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,9 +46,34 @@ Global
 		{28D828E9-C169-47E5-BF57-E4B7E1AF2C57}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28D828E9-C169-47E5-BF57-E4B7E1AF2C57}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{28D828E9-C169-47E5-BF57-E4B7E1AF2C57}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6216C15-CDC1-4876-BDB9-2B88C9DD35DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6216C15-CDC1-4876-BDB9-2B88C9DD35DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6216C15-CDC1-4876-BDB9-2B88C9DD35DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6216C15-CDC1-4876-BDB9-2B88C9DD35DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC202DD0-56DB-4C9F-9248-F8E73CD909A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC202DD0-56DB-4C9F-9248-F8E73CD909A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC202DD0-56DB-4C9F-9248-F8E73CD909A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC202DD0-56DB-4C9F-9248-F8E73CD909A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6339CBE-9406-4FC4-B354-2501B0A827C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6339CBE-9406-4FC4-B354-2501B0A827C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6339CBE-9406-4FC4-B354-2501B0A827C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6339CBE-9406-4FC4-B354-2501B0A827C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8299C81-B6FE-4993-BE72-8F347D23281A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8299C81-B6FE-4993-BE72-8F347D23281A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8299C81-B6FE-4993-BE72-8F347D23281A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8299C81-B6FE-4993-BE72-8F347D23281A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63494377-1C53-4866-9328-9F1439762909}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63494377-1C53-4866-9328-9F1439762909}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63494377-1C53-4866-9328-9F1439762909}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63494377-1C53-4866-9328-9F1439762909}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D57C2D07-EA23-413A-85DF-B6E1786DF56B} = {440A8BEF-344E-43C9-9078-E25317708B4A}
 		{28D828E9-C169-47E5-BF57-E4B7E1AF2C57} = {440A8BEF-344E-43C9-9078-E25317708B4A}
+		{EC202DD0-56DB-4C9F-9248-F8E73CD909A3} = {8C1915BB-90DA-4367-9621-0A5CB3AC0F15}
+		{D6216C15-CDC1-4876-BDB9-2B88C9DD35DB} = {8C1915BB-90DA-4367-9621-0A5CB3AC0F15}
+		{C6339CBE-9406-4FC4-B354-2501B0A827C2} = {04EA456D-F461-411D-B114-B3DC2F95A0EF}
+		{A8299C81-B6FE-4993-BE72-8F347D23281A} = {04EA456D-F461-411D-B114-B3DC2F95A0EF}
+		{63494377-1C53-4866-9328-9F1439762909} = {440A8BEF-344E-43C9-9078-E25317708B4A}
 	EndGlobalSection
 EndGlobal
