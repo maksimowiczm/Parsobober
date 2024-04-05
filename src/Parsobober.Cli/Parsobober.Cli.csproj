@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Parsobober.CLI</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\QueryProcessor\Parsobober.Pql.Parser\Parsobober.Pql.Parser.csproj" />
+      <ProjectReference Include="..\SpaFronted\Parsobober.DesignExtractor\Parsobober.DesignExtractor.csproj" />
+      <ProjectReference Include="..\SpaFronted\Parsobober.Simple.Parser\Parsobober.Simple.Parser.csproj" />
+    </ItemGroup>
+
+</Project>
