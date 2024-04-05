@@ -1,103 +1,43 @@
 using Parsobober.Pql.Query;
 using sly.lexer;
 using sly.parser.generator;
+using sly.parser.parser;
 
 namespace Parsobober.Pql.Parser;
 
-internal class PqlGrammar
+internal class PqlGrammar(IQueryBuilder queryBuilder)
 {
-    /// <summary>
-    /// Defines a production rule for the "Parent" expression in the PQL grammar.
-    /// </summary>
-    /// <param name="parent">The "Parent" token.</param>
-    /// <param name="leftParenthesis">The "(" token.</param>
-    /// <param name="reference1">The first "Reference" token.</param>
-    /// <param name="coma">The "," token.</param>
-    /// <param name="reference2">The second "Reference" token.</param>
-    /// <param name="rightParenthesis">The ")" token.</param>
-    /// <returns>A new instance of the Parent query.</returns>
-    [Production("expression : Parent LeftParenthesis Reference Coma Reference RightParenthesis")]
-    public IQuery ParentExpression(
-        Token<PqlToken> parent,
-        Token<PqlToken> leftParenthesis,
-        Token<PqlToken> reference1,
-        Token<PqlToken> coma,
-        Token<PqlToken> reference2,
-        Token<PqlToken> rightParenthesis
-    )
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <summary>
-    /// Defines a production rule for the "Modifies" expression in the PQL grammar.
-    /// </summary>
-    /// <param name="modifies">The "Modifies" token.</param>
-    /// <param name="leftParenthesis">The "(" token.</param>
-    /// <param name="reference1">The first "Reference" token.</param>
-    /// <param name="coma">The "," token.</param>
-    /// <param name="reference2">The second "Reference" token.</param>
-    /// <param name="rightParenthesis">The ")" token.</param>
-    /// <returns>A new instance of the Modifies query.</returns>
-    [Production("expression : Modifies LeftParenthesis Reference Coma Reference RightParenthesis")]
-    public IQuery ModifiesExpression(
-        Token<PqlToken> modifies,
-        Token<PqlToken> leftParenthesis,
-        Token<PqlToken> reference1,
-        Token<PqlToken> coma,
-        Token<PqlToken> reference2,
-        Token<PqlToken> rightParenthesis
-    )
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <summary>
-    /// Defines a production rule for the "With" clause in the PQL grammar.
-    /// </summary>
-    /// <param name="with">The "With" token.</param>
-    /// <param name="attribute">The "Attribute" token.</param>
-    /// <param name="equal">The "Equal" token.</param>
-    /// <param name="reference">The "Reference" token.</param>
-    /// <returns>A new instance of the With query.</returns>
-    [Production("with-clause : With Attribute Equal Ref")]
-    public IQuery WithClause(
-        Token<PqlToken> with,
-        Token<PqlToken> attribute,
-        Token<PqlToken> equal,
-        Token<PqlToken> reference
-    )
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <summary>
-    /// Defines a production rule for the "SuchThat" clause in the PQL grammar.
-    /// </summary>
-    /// <param name="suchThat">The "SuchThat" token.</param>
-    /// <param name="expression">The "expression" query.</param>
-    /// <returns>The passed in expression query.</returns>
-    [Production("such-that-clause : SuchThat expression")]
-    public IQuery SuchThatClause(Token<PqlToken> suchThat, IQuery expression) => expression;
-
-    /// <summary>
-    /// Defines a production rule for the "Select" clause in the PQL grammar.
-    /// </summary>
-    /// <param name="declaration">The list of "Declaration" tokens.</param>
-    /// <param name="select">The "Select" token.</param>
-    /// <param name="reference">The "Reference" token.</param>
-    /// <param name="suchThatClause">The list of "SuchThat" queries.</param>
-    /// <param name="withClause">The list of "With" queries.</param>
-    /// <returns>A new instance of the QueryWrapper query.</returns>
-    [Production("select-clause : Declaration* Select Reference such-that-clause* with-clause*")]
-    public IQuery SelectClause(
+    [Production("select-clause : Declaration* Select[d] Reference such-that-clause? with-clause?")]
+    public IQueryBuilder SelectClause(
         List<Token<PqlToken>> declaration,
-        Token<PqlToken> select,
-        Token<PqlToken> reference,
-        List<IQuery> suchThatClause,
-        List<IQuery> withClause
+        Token<PqlToken> synonym,
+        ValueOption<IQueryBuilder> _1, // discard
+        ValueOption<IQueryBuilder> _2 // discard
     )
     {
-        throw new NotImplementedException();
+        queryBuilder.AddSelect(synonym.Value);
+        declaration.ForEach(d => queryBuilder.AddDeclaration(d.Value));
+        return queryBuilder;
     }
+
+    [Production("such-that-clause : SuchThat[d] relation")]
+    public IQueryBuilder SuchThatClause(IQueryBuilder relation) => relation;
+
+    [Production("with-clause : With[d] Attribute Equal[d] Ref")]
+    public IQueryBuilder WithClause(Token<PqlToken> attribute, Token<PqlToken> reference) =>
+        queryBuilder.With(attribute.Value, reference.Value);
+
+    [Production("relation : Parent[d] LeftParenthesis[d] Reference Coma[d] Reference RightParenthesis[d]")]
+    public IQueryBuilder ParentExpression(Token<PqlToken> parent, Token<PqlToken> child) =>
+        queryBuilder.AddParent(parent.Value, child.Value);
+
+    [Production("relation : ParentTransitive[d] LeftParenthesis[d] Reference Coma[d] Reference RightParenthesis[d]")]
+    public IQueryBuilder ParentTransitiveExpression(Token<PqlToken> parent, Token<PqlToken> child) =>
+        queryBuilder.AddParentTransitive(parent.Value, child.Value);
+
+    [Production("relation : Modifies[d] LeftParenthesis[d] Reference Coma[d] Reference RightParenthesis[d]")]
+    public IQueryBuilder ModifiesExpression(Token<PqlToken> reference1, Token<PqlToken> reference2) =>
+        queryBuilder.AddModifies(reference1.Value, reference2.Value);
+
+    // todo rest of the relations
 }

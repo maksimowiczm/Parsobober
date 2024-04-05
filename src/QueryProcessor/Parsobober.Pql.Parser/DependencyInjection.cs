@@ -6,7 +6,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddPqlParser(this IServiceCollection services)
     {
-        services.AddSingleton<PqlParser>(); // singleton?
+        services.AddTransient<PqlParser>();
 
         return services;
     }

@@ -6,9 +6,9 @@ namespace Parsobober.Pql.Parser;
 /// <summary>
 /// The PqlParser class is responsible for parsing PQL queries.
 /// </summary>
-public class PqlParser
+public class PqlParser(IQueryBuilder queryBuilder)
 {
-    private readonly sly.parser.Parser<PqlToken, IQuery> _parser = BuildParser();
+    private readonly sly.parser.Parser<PqlToken, IQueryBuilder> _parser = BuildParser(queryBuilder);
 
     /// <summary>
     /// Parses a PQL query from a string.
@@ -21,14 +21,14 @@ public class PqlParser
         var queryResult = _parser.Parse(input);
         var query = queryResult.Result;
 
-        return query;
+        return query.Build();
     }
 
-    private static sly.parser.Parser<PqlToken, IQuery> BuildParser()
+    private static sly.parser.Parser<PqlToken, IQueryBuilder> BuildParser(IQueryBuilder queryBuilder)
     {
-        var grammar = new PqlGrammar();
+        var grammar = new PqlGrammar(queryBuilder);
 
-        var builder = new ParserBuilder<PqlToken, IQuery>();
+        var builder = new ParserBuilder<PqlToken, IQueryBuilder>();
         var parserResult = builder.BuildParser(grammar, ParserType.EBNF_LL_RECURSIVE_DESCENT, "select-clause");
 
         return parserResult.Result;
