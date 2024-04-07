@@ -6,17 +6,15 @@ namespace Parsobober.Simple.Parser;
 
 public class SimpleParser(ILogger<SimpleParser> logger, SlyLexerAdapter lexer)
 {
-    private readonly SlyLexerAdapter _lexer = lexer;
     private List<LexicalToken>? _tokens;
     private IAst _ast = new Ast();
     private int _currentTokenId = 0;
-    private int _currentLineNumber = 1;
-    private LexicalToken _currentToken = new LexicalToken("END OF PROGRAM", SimpleToken.WhiteSpace);
+    private LexicalToken _currentToken = new("END-OF-PROGRAM", SimpleToken.WhiteSpace, 0);
 
     public IAst Parse(string program)
     {
         logger.LogInformation("Starting parsing");
-        _tokens = new List<LexicalToken>(_lexer.Tokenize(program));
+        _tokens = lexer.Tokenize(program).ToList();
         Procedure();
         _tokens = null;
         logger.LogInformation("Parsing completed successfully");
@@ -24,30 +22,38 @@ public class SimpleParser(ILogger<SimpleParser> logger, SlyLexerAdapter lexer)
     }
     private LexicalToken GetToken()
     {
-        if (_tokens == null || _tokens.Count <= _currentTokenId)
+        if (_tokens is null || _tokens.Count <= _currentTokenId)
         {
-            return new LexicalToken("END-OF-PROGRAM", SimpleToken.WhiteSpace);
+            return new("END-OF-PROGRAM", SimpleToken.WhiteSpace, 0);
         }
 
-        _currentToken = _tokens[_currentTokenId++];
-        return _currentToken;
+        var token = _tokens[_currentTokenId++];
+        return token;
     }
 
-    private void Match(LexicalToken token)
+    private void Match(string value, SimpleToken type)
     {
-        if ((_currentToken == token) ||
-            (token.Value == "" && _currentToken.Type == token.Type))
+        if (_currentToken.Type == type && _currentToken.Value == value)
         {
             _currentToken = GetToken();
             return;
         }
-        throw new ParseException(_currentToken, token);
+        throw new ParseException(_currentToken, value, type);
+    }
+    private void Match(SimpleToken type)
+    {
+        if (_currentToken.Type == type)
+        {
+            _currentToken = GetToken();
+            return;
+        }
+        throw new ParseException(_currentToken, type);
     }
 
-    private TreeNode CreateTNode(EntityType type, String attr = null)
+    private TreeNode CreateTNode(EntityType type, int lineNumber, string? attr = null)
     {
-        TreeNode node = _ast.CreateTNode(_currentLineNumber++, type);
-        if (attr != null)
+        TreeNode node = _ast.CreateTNode(lineNumber, type);
+        if (attr is not null)
         {
             _ast.SetAttr(node, attr);
         }
@@ -67,15 +73,16 @@ public class SimpleParser(ILogger<SimpleParser> logger, SlyLexerAdapter lexer)
 
     private void Procedure()
     {
-        GetToken();
-        Match(new LexicalToken("procedure", SimpleToken.Keyword));
+        _currentToken = GetToken();
+        Match("procedure", SimpleToken.Keyword);
         var procedureName = _currentToken.Value;
-        Match(new LexicalToken("", SimpleToken.Name));
-        Match(new LexicalToken("{", SimpleToken.Separator));
+        var procedureLine = _currentToken.LineNumber;
+        Match(SimpleToken.Name);
+        Match("{", SimpleToken.Separator);
         TreeNode stmtNode = StmtLst();
-        Match(new LexicalToken("}", SimpleToken.Separator));
-        
-        var procedureNode = CreateTNode(EntityType.Procedure, procedureName);
+        Match("}", SimpleToken.Separator);
+
+        var procedureNode = CreateTNode(EntityType.Procedure, procedureLine, procedureName);
         _ast.SetRoot(procedureNode);
         AddNthChild(procedureNode, stmtNode, 1);
     }
@@ -104,15 +111,17 @@ public class SimpleParser(ILogger<SimpleParser> logger, SlyLexerAdapter lexer)
 
     private TreeNode While()
     {
-        Match(new LexicalToken("while", SimpleToken.Keyword));
+        var whileLine = _currentToken.LineNumber;
+        Match("while", SimpleToken.Keyword);
         var controlVarName = _currentToken.Value;
-        Match(new LexicalToken("", SimpleToken.Name));
-        Match(new LexicalToken("{", SimpleToken.Separator));
+        var varLine = _currentToken.LineNumber;
+        Match(SimpleToken.Name);
+        Match("{", SimpleToken.Separator);
         TreeNode stmtNode = StmtLst();
-        Match(new LexicalToken("}", SimpleToken.Separator));
+        Match("}", SimpleToken.Separator);
 
-        var whileNode = CreateTNode(EntityType.While);
-        var variableNode = CreateTNode(EntityType.Variable, controlVarName);
+        var whileNode = CreateTNode(EntityType.While, whileLine);
+        var variableNode = CreateTNode(EntityType.Variable, varLine, controlVarName);
         AddNthChild(whileNode, variableNode, 1);
         AddNthChild(whileNode, stmtNode, 2);
         return whileNode;
@@ -120,31 +129,34 @@ public class SimpleParser(ILogger<SimpleParser> logger, SlyLexerAdapter lexer)
 
     private TreeNode Assign()
     {
+        var varLine = _currentToken.LineNumber;
         var leftVarName = _currentToken.Value;
-        Match(new LexicalToken("", SimpleToken.Name));
-        Match(new LexicalToken("=", SimpleToken.Operator));
+        Match(SimpleToken.Name);
+        Match("=", SimpleToken.Operator);
         TreeNode exprNode = Expr();
-        Match(new LexicalToken(";", SimpleToken.Separator));
+        Match(";", SimpleToken.Separator);
 
-        var assignNode = CreateTNode(EntityType.Assign);
-        var varNode = CreateTNode(EntityType.Variable, leftVarName);
-        AddNthChild(assignNode, varNode , 1);
-        AddNthChild(assignNode, exprNode , 2);
+        var assignNode = CreateTNode(EntityType.Assign, varLine);
+        var varNode = CreateTNode(EntityType.Variable, varLine, leftVarName);
+        AddNthChild(assignNode, varNode, 1);
+        AddNthChild(assignNode, exprNode, 2);
         return assignNode;
     }
 
     private TreeNode Expr()
     {
+        var varLine = _currentToken.LineNumber;
         var varName = _currentToken.Value;
-        Match(new LexicalToken("", SimpleToken.Name));
-        var varNode = CreateTNode(EntityType.Variable, varName);
+        Match(SimpleToken.Name);
+        var varNode = CreateTNode(EntityType.Variable, varLine, varName);
         if (_currentToken.Value == ";")
         {
             return varNode;
         }
-        Match(new LexicalToken("+", SimpleToken.Operator));
+        Match("+", SimpleToken.Operator);
         TreeNode exprNode = Expr();
-        var mainExprNode = CreateTNode(EntityType.Expr, "+");
+
+        var mainExprNode = CreateTNode(EntityType.Expr, varLine, "+");
         AddNthChild(mainExprNode, varNode, 1);
         AddNthChild(mainExprNode, exprNode, 2);
         return mainExprNode;
