@@ -4,5 +4,5 @@ namespace Parsobober.Simple.Parser;
 
 public interface ISimpleParser
 {
-    IAst Parse(string program);
+    IAst Parse();
 }

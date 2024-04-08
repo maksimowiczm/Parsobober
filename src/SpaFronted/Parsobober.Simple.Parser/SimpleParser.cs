@@ -4,38 +4,34 @@ using Parsobober.Simple.Lexer;
 
 namespace Parsobober.Simple.Parser;
 
-internal class SimpleParser(ILogger<SimpleParser> logger, SlyLexerAdapter lexer) : ISimpleParser
+internal class SimpleParser(IEnumerator<LexicalToken> tokens, ILogger<SimpleParser> logger) : ISimpleParser
 {
-    private List<LexicalToken>? _tokens;
     private IAst _ast = new Ast();
-    private int _currentTokenId = 0;
-    private LexicalToken _currentToken = new("END-OF-PROGRAM", SimpleToken.WhiteSpace, 0);
+    private LexicalToken _currentToken = tokens.Current;
 
-    public IAst Parse(string program)
+    public IAst Parse()
     {
         logger.LogInformation("Starting parsing");
-        _tokens = lexer.Tokenize(program).ToList();
-        Procedure();
-        _tokens = null;
+        GetToken();
+        TreeNode procedureNode = Procedure();
         logger.LogInformation("Parsing completed successfully");
         return _ast;
     }
-    private LexicalToken GetToken()
+    private void GetToken()
     {
-        if (_tokens is null || _tokens.Count <= _currentTokenId)
-        {
-            return new("END-OF-PROGRAM", SimpleToken.WhiteSpace, 0);
-        }
+        if (!tokens.MoveNext()){
+            _currentToken = new LexicalToken("EOF", SimpleToken.WhiteSpace, 0);
+            return;
+        };
 
-        var token = _tokens[_currentTokenId++];
-        return token;
+        _currentToken = tokens.Current;
     }
 
     private void Match(string value, SimpleToken type)
     {
         if (_currentToken.Type == type && _currentToken.Value == value)
         {
-            _currentToken = GetToken();
+            GetToken();
             return;
         }
         throw new ParseException(_currentToken, value, type);
@@ -44,7 +40,7 @@ internal class SimpleParser(ILogger<SimpleParser> logger, SlyLexerAdapter lexer)
     {
         if (_currentToken.Type == type)
         {
-            _currentToken = GetToken();
+            GetToken();
             return;
         }
         throw new ParseException(_currentToken, type);
@@ -71,20 +67,19 @@ internal class SimpleParser(ILogger<SimpleParser> logger, SlyLexerAdapter lexer)
 
     }
 
-    private void Procedure()
+    private TreeNode Procedure()
     {
-        _currentToken = GetToken();
         Match("procedure", SimpleToken.Keyword);
         var procedureName = _currentToken.Value;
         var procedureLine = _currentToken.LineNumber;
         Match(SimpleToken.Name);
+        var procedureNode = CreateTNode(EntityType.Procedure, procedureLine, procedureName);
+
         Match("{", SimpleToken.Separator);
         TreeNode stmtNode = StmtLst();
         Match("}", SimpleToken.Separator);
-
-        var procedureNode = CreateTNode(EntityType.Procedure, procedureLine, procedureName);
-        _ast.SetRoot(procedureNode);
         AddNthChild(procedureNode, stmtNode, 1);
+        return procedureNode;
     }
 
     private TreeNode StmtLst()
