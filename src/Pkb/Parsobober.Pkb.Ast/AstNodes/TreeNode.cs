@@ -11,6 +11,12 @@ public class TreeNode(int lineNumber, EntityType type)
 
     public int LineNumber => _lineNumber;
 
+    override
+        public string ToString()
+    {
+        return type.ToString() + ':' + _attribute;
+    }
+
     public string? Attribute
     {
         get => _attribute;
