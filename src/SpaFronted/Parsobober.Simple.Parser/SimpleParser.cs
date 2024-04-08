@@ -145,20 +145,36 @@ public class SimpleParser(ILogger<SimpleParser> logger, SlyLexerAdapter lexer)
 
     private TreeNode Expr()
     {
-        var varLine = _currentToken.LineNumber;
-        var varName = _currentToken.Value;
-        Match(SimpleToken.Name);
-        var varNode = CreateTNode(EntityType.Variable, varLine, varName);
+        TreeNode factorNode = Factor();
         if (_currentToken.Value == ";")
         {
-            return varNode;
+            return factorNode;
         }
+        var exprLine = _currentToken.LineNumber;
         Match("+", SimpleToken.Operator);
         TreeNode exprNode = Expr();
 
-        var mainExprNode = CreateTNode(EntityType.Expr, varLine, "+");
-        AddNthChild(mainExprNode, varNode, 1);
+        var mainExprNode = CreateTNode(EntityType.Expr, exprLine, "+");
+        AddNthChild(mainExprNode, factorNode, 1);
         AddNthChild(mainExprNode, exprNode, 2);
         return mainExprNode;
+    }
+
+    private TreeNode Factor()
+    {
+        var factorLine = _currentToken.LineNumber;
+        var factorValue = _currentToken.Value;
+        EntityType factorType;
+        if (_currentToken.Type == SimpleToken.Integer)
+        {
+            Match(SimpleToken.Integer);
+            factorType = EntityType.Constant;
+        }
+        else
+        {
+            Match(SimpleToken.Name);
+            factorType = EntityType.Variable;
+        }
+        return CreateTNode(factorType, factorLine, factorValue);
     }
 }
