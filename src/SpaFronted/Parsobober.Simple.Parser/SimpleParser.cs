@@ -4,7 +4,7 @@ using Parsobober.Simple.Lexer;
 
 namespace Parsobober.Simple.Parser;
 
-public class SimpleParser(ILogger<SimpleParser> logger, SlyLexerAdapter lexer)
+internal class SimpleParser(ILogger<SimpleParser> logger, SlyLexerAdapter lexer) : ISimpleParser
 {
     private List<LexicalToken>? _tokens;
     private IAst _ast = new Ast();
