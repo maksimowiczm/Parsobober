@@ -2,12 +2,17 @@ namespace Parsobober.Pkb.Ast.AstNodes;
 
 public enum EntityType
 {
+    Program,
     Procedure,
-    StmtLst,
+    StatementsList,
+    Statement,
     Assign,
+    Call,
     While,
-    Expr,
-    Factor,
+    If,
+    Plus,
+    Minus,
+    Times,
     Variable,
-    Constant,
+    Constant
 }

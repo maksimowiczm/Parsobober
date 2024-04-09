@@ -2,27 +2,17 @@ namespace Parsobober.Pkb.Ast.AstNodes;
 
 public class Ast : IAst
 {
-    private TreeNode? _root;
-
-    private TreeNode? Root
+    public Ast()
     {
-        get => _root;
-        set => _root = value ?? throw new ArgumentNullException(nameof(value));
+        Root = new TreeNode(0, EntityType.Program);
     }
+
+    public TreeNode Root { get; }
 
     public TreeNode CreateTNode(int lineNumber, EntityType type)
     {
         TreeNode newNode = new TreeNode(lineNumber, type);
-
-        if (_root == null)
-            SetRoot(newNode);
-
         return newNode;
-    }
-
-    public void SetRoot(TreeNode node)
-    {
-        Root = node;
     }
 
     public void SetAttr(TreeNode node, string attr)
@@ -43,13 +33,8 @@ public class Ast : IAst
         return parent.Children.Count;
     }
 
-    public TreeNode? GetRoot()
-    {
-        return Root;
-    }
-
     public TreeNode GetChildN(TreeNode node, int n)
     {
-        return node.GetChild(n);
+        return node.Children[n];
     }
 }

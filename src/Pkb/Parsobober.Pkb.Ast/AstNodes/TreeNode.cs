@@ -1,56 +1,24 @@
 namespace Parsobober.Pkb.Ast.AstNodes;
+using System.Collections.Generic;
 
-public class TreeNode(int lineNumber, EntityType type)
+public class TreeNode
 {
-    private readonly int _lineNumber = lineNumber;
-    private string? _attribute;
-    private TreeNode? _leftSibling;
-    private TreeNode? _rightSibling;
-    private TreeNode? _parent;
-    private readonly IList<TreeNode> _children = new List<TreeNode>();
+    public int LineNumber { get; }
+    public EntityType Type { get;}
+    public string? Attribute { get; set; }
+    public TreeNode? LeftSibling { get; set; }
+    public TreeNode? RightSibling { get; set; }
+    public TreeNode? Parent { get; set; }
+    public IList<TreeNode> Children { get; } = new List<TreeNode>();
 
-    public int LineNumber => _lineNumber;
-
-    override
-        public string ToString()
+    public TreeNode(int lineNumber, EntityType type)
     {
-        return type.ToString() + ':' + _attribute;
+        LineNumber = lineNumber;
+        Type = type;
     }
 
-    public string? Attribute
+    public override string ToString()
     {
-        get => _attribute;
-        set => _attribute = value;
-    }
-
-    public TreeNode? LeftSibling
-    {
-        get => _leftSibling;
-        set => _leftSibling = value ?? throw new ArgumentNullException(nameof(value));
-    }
-
-    public TreeNode? RightSibling
-    {
-        get => _rightSibling;
-        set => _rightSibling = value ?? throw new ArgumentNullException(nameof(value));
-    }
-
-    public TreeNode? Parent
-    {
-        get => _parent;
-        set => _parent = value ?? throw new ArgumentNullException(nameof(value));
-    }
-
-    public EntityType Type
-    {
-        get => type;
-        set => type = value;
-    }
-
-    public IList<TreeNode> Children => _children;
-
-    public TreeNode GetChild(int idx)
-    {
-        return _children[idx];
+        return Type.ToString() + ':' + Attribute;
     }
 }
