@@ -1,17 +1,15 @@
+using Parsobober.Pkb.Ast.Abstractions;
+
 namespace Parsobober.Pkb.Ast;
 
 public class Ast : IAst
 {
-    public Ast()
-    {
-        Root = new TreeNode(0, EntityType.Program);
-    }
-
-    public TreeNode Root { get; }
+    public TreeNode Root { get; } = new(0, EntityType.Program);
 
     public TreeNode CreateTreeNode(int lineNumber, EntityType type)
     {
-        TreeNode newNode = new TreeNode(lineNumber, type);
+        var newNode = new TreeNode(lineNumber, type);
+
         return newNode;
     }
 
@@ -20,7 +18,7 @@ public class Ast : IAst
         node.Attribute = attr;
     }
 
-    public void SetSibling(TreeNode left, TreeNode right)
+    public void SetSiblings(TreeNode left, TreeNode right)
     {
         left.RightSibling = right;
         right.LeftSibling = left;
@@ -29,12 +27,8 @@ public class Ast : IAst
     public int SetParenthood(TreeNode parent, TreeNode child)
     {
         child.Parent = parent;
-        parent.Children.Add(child);
-        return parent.Children.Count;
-    }
+        parent.AddChild(child);
 
-    public TreeNode GetChildN(TreeNode node, int n)
-    {
-        return node.Children[n];
+        return parent.Children.Count;
     }
 }

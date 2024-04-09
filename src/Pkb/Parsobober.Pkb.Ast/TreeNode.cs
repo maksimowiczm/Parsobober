@@ -1,19 +1,19 @@
 namespace Parsobober.Pkb.Ast;
 
-public class TreeNode
+public class TreeNode(int lineNumber, EntityType type)
 {
-    public int LineNumber { get; }
-    public EntityType Type { get; }
-    public string? Attribute { get; set; }
-    public TreeNode? LeftSibling { get; set; }
-    public TreeNode? RightSibling { get; set; }
-    public TreeNode? Parent { get; set; }
-    public List<TreeNode> Children { get; } = [];
+    public int LineNumber { get; } = lineNumber;
+    public EntityType Type { get; } = type;
+    public string? Attribute { get; internal set; }
+    public TreeNode? LeftSibling { get; internal set; }
+    public TreeNode? RightSibling { get; internal set; }
+    public TreeNode? Parent { get; internal set; }
+    private readonly List<TreeNode> _children = [];
+    public IReadOnlyList<TreeNode> Children => _children.AsReadOnly();
 
-    public TreeNode(int lineNumber, EntityType type)
+    internal void AddChild(TreeNode child)
     {
-        LineNumber = lineNumber;
-        Type = type;
+        _children.Add(child);
     }
 
     public override string ToString()
