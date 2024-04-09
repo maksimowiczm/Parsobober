@@ -1,4 +1,4 @@
-using Parsobober.Pkb.Ast.AstNodes;
+using Parsobober.Pkb.Ast.Abstractions;
 
 namespace Parsobober.Simple.Parser;
 

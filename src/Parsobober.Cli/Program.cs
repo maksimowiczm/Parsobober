@@ -6,7 +6,7 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services
     .AddSimpleLexer()
-    .AddSimpleParser();
+    .AddSimpleParserBuilder();
 
 var host = builder.Build();
 

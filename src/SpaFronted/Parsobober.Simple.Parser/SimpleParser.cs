@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
-using Parsobober.Pkb.Ast.AstNodes;
+using Parsobober.Pkb.Ast;
+using Parsobober.Pkb.Ast.Abstractions;
 using Parsobober.Simple.Lexer;
 
 namespace Parsobober.Simple.Parser;
@@ -14,12 +15,15 @@ internal class SimpleParser(IEnumerator<LexicalToken> tokens, ILogger<SimplePars
         logger.LogInformation("Starting parsing");
         GetToken();
         TreeNode procedureNode = Procedure();
+        _ast.SetParenthood(_ast.Root, procedureNode);
         logger.LogInformation("Parsing completed successfully");
         return _ast;
     }
+
     private void GetToken()
     {
-        if (!tokens.MoveNext()){
+        if (!tokens.MoveNext())
+        {
             _currentToken = new LexicalToken("EOF", SimpleToken.WhiteSpace, 0);
             return;
         };
@@ -48,10 +52,10 @@ internal class SimpleParser(IEnumerator<LexicalToken> tokens, ILogger<SimplePars
 
     private TreeNode CreateTNode(EntityType type, int lineNumber, string? attr = null)
     {
-        TreeNode node = _ast.CreateTNode(lineNumber, type);
+        TreeNode node = _ast.CreateTreeNode(lineNumber, type);
         if (attr is not null)
         {
-            _ast.SetAttr(node, attr);
+            _ast.SetAttribute(node, attr);
         }
 
         return node;
@@ -91,7 +95,7 @@ internal class SimpleParser(IEnumerator<LexicalToken> tokens, ILogger<SimplePars
         }
 
         TreeNode nextNode = StmtLst();
-        _ast.SetSibling(node, nextNode);
+        _ast.SetSiblings(node, nextNode);
         return node;
     }
 
@@ -149,7 +153,7 @@ internal class SimpleParser(IEnumerator<LexicalToken> tokens, ILogger<SimplePars
         Match("+", SimpleToken.Operator);
         TreeNode exprNode = Expr();
 
-        var mainExprNode = CreateTNode(EntityType.Expr, exprLine, "+");
+        var mainExprNode = CreateTNode(EntityType.Plus, exprLine, "+");
         AddNthChild(mainExprNode, factorNode, 1);
         AddNthChild(mainExprNode, exprNode, 2);
         return mainExprNode;
