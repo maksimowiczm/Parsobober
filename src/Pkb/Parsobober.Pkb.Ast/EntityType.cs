@@ -1,4 +1,4 @@
-namespace Parsobober.Pkb.Ast.AstNodes;
+namespace Parsobober.Pkb.Ast;
 
 public enum EntityType
 {

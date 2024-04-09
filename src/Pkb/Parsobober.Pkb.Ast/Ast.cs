@@ -1,4 +1,4 @@
-namespace Parsobober.Pkb.Ast.AstNodes;
+namespace Parsobober.Pkb.Ast;
 
 public class Ast : IAst
 {
@@ -9,13 +9,13 @@ public class Ast : IAst
 
     public TreeNode Root { get; }
 
-    public TreeNode CreateTNode(int lineNumber, EntityType type)
+    public TreeNode CreateTreeNode(int lineNumber, EntityType type)
     {
         TreeNode newNode = new TreeNode(lineNumber, type);
         return newNode;
     }
 
-    public void SetAttr(TreeNode node, string attr)
+    public void SetAttribute(TreeNode node, string attr)
     {
         node.Attribute = attr;
     }

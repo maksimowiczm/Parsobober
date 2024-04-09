@@ -1,15 +1,14 @@
-namespace Parsobober.Pkb.Ast.AstNodes;
-using System.Collections.Generic;
+namespace Parsobober.Pkb.Ast;
 
 public class TreeNode
 {
     public int LineNumber { get; }
-    public EntityType Type { get;}
+    public EntityType Type { get; }
     public string? Attribute { get; set; }
     public TreeNode? LeftSibling { get; set; }
     public TreeNode? RightSibling { get; set; }
     public TreeNode? Parent { get; set; }
-    public IList<TreeNode> Children { get; } = new List<TreeNode>();
+    public List<TreeNode> Children { get; } = [];
 
     public TreeNode(int lineNumber, EntityType type)
     {
