@@ -4,9 +4,9 @@ namespace Parsobober.Simple.Parser;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddSimpleParser(this IServiceCollection services)
+    public static IServiceCollection AddSimpleParserBuilder(this IServiceCollection services)
     {
-        services.AddSingleton<SimpleParser>(); // singleton?
+        services.AddSingleton<IParserBuilder, SimpleParserBuilder>(); // singleton?
 
         return services;
     }
