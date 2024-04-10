@@ -5,9 +5,12 @@ using Parsobober.Simple.Lexer;
 
 namespace Parsobober.Simple.Parser;
 
-internal class SimpleParser(IEnumerator<LexicalToken> tokens, ILogger<SimpleParser> logger) : ISimpleParser
+internal class SimpleParser(
+    IEnumerator<LexicalToken> tokens,
+    IAst ast,
+    ILogger<SimpleParser> logger
+) : ISimpleParser
 {
-    private IAst _ast = new Ast();
     private LexicalToken _currentToken = tokens.Current;
 
     public IAst Parse()
@@ -15,9 +18,9 @@ internal class SimpleParser(IEnumerator<LexicalToken> tokens, ILogger<SimplePars
         logger.LogInformation("Starting parsing");
         GetToken();
         TreeNode procedureNode = Procedure();
-        _ast.SetParenthood(_ast.Root, procedureNode);
+        ast.SetParenthood(ast.Root, procedureNode);
         logger.LogInformation("Parsing completed successfully");
-        return _ast;
+        return ast;
     }
 
     private void GetToken()
@@ -26,36 +29,35 @@ internal class SimpleParser(IEnumerator<LexicalToken> tokens, ILogger<SimplePars
         {
             _currentToken = new LexicalToken("EOF", SimpleToken.WhiteSpace, 0);
             return;
-        };
+        }
 
         _currentToken = tokens.Current;
     }
 
     private void Match(string value, SimpleToken type)
     {
-        if (_currentToken.Type == type && _currentToken.Value == value)
+        if (_currentToken.Type != type || _currentToken.Value != value)
         {
-            GetToken();
-            return;
+            throw new ParseException(_currentToken, type);
         }
-        throw new ParseException(_currentToken, value, type);
-    }
-    private void Match(SimpleToken type)
-    {
-        if (_currentToken.Type == type)
-        {
-            GetToken();
-            return;
-        }
-        throw new ParseException(_currentToken, type);
+        GetToken();
     }
 
-    private TreeNode CreateTNode(EntityType type, int lineNumber, string? attr = null)
+    private void Match(SimpleToken type)
     {
-        TreeNode node = _ast.CreateTreeNode(lineNumber, type);
+        if (_currentToken.Type != type)
+        {
+            throw new ParseException(_currentToken, type);
+        }
+        GetToken();
+    }
+
+    private TreeNode CreateTreeNode(EntityType type, int lineNumber, string? attr = null)
+    {
+        TreeNode node = ast.CreateTreeNode(lineNumber, type);
         if (attr is not null)
         {
-            _ast.SetAttribute(node, attr);
+            ast.SetAttribute(node, attr);
         }
 
         return node;
@@ -63,12 +65,11 @@ internal class SimpleParser(IEnumerator<LexicalToken> tokens, ILogger<SimplePars
 
     private void AddNthChild(TreeNode parent, TreeNode child, int n)
     {
-        int number = _ast.SetParenthood(parent, child);
+        int number = ast.SetParenthood(parent, child);
         if (number != n)
         {
             throw new Exception("Parser internal error - bad child position");
         }
-
     }
 
     private TreeNode Procedure()
@@ -77,7 +78,7 @@ internal class SimpleParser(IEnumerator<LexicalToken> tokens, ILogger<SimplePars
         var procedureName = _currentToken.Value;
         var procedureLine = _currentToken.LineNumber;
         Match(SimpleToken.Name);
-        var procedureNode = CreateTNode(EntityType.Procedure, procedureLine, procedureName);
+        var procedureNode = CreateTreeNode(EntityType.Procedure, procedureLine, procedureName);
 
         Match("{", SimpleToken.Separator);
         TreeNode stmtNode = StmtLst();
@@ -95,7 +96,7 @@ internal class SimpleParser(IEnumerator<LexicalToken> tokens, ILogger<SimplePars
         }
 
         TreeNode nextNode = StmtLst();
-        _ast.SetSiblings(node, nextNode);
+        ast.SetSiblings(node, nextNode);
         return node;
     }
 
@@ -119,8 +120,8 @@ internal class SimpleParser(IEnumerator<LexicalToken> tokens, ILogger<SimplePars
         TreeNode stmtNode = StmtLst();
         Match("}", SimpleToken.Separator);
 
-        var whileNode = CreateTNode(EntityType.While, whileLine);
-        var variableNode = CreateTNode(EntityType.Variable, varLine, controlVarName);
+        var whileNode = CreateTreeNode(EntityType.While, whileLine);
+        var variableNode = CreateTreeNode(EntityType.Variable, varLine, controlVarName);
         AddNthChild(whileNode, variableNode, 1);
         AddNthChild(whileNode, stmtNode, 2);
         return whileNode;
@@ -135,8 +136,8 @@ internal class SimpleParser(IEnumerator<LexicalToken> tokens, ILogger<SimplePars
         TreeNode exprNode = Expr();
         Match(";", SimpleToken.Separator);
 
-        var assignNode = CreateTNode(EntityType.Assign, varLine);
-        var varNode = CreateTNode(EntityType.Variable, varLine, leftVarName);
+        var assignNode = CreateTreeNode(EntityType.Assign, varLine);
+        var varNode = CreateTreeNode(EntityType.Variable, varLine, leftVarName);
         AddNthChild(assignNode, varNode, 1);
         AddNthChild(assignNode, exprNode, 2);
         return assignNode;
@@ -153,7 +154,7 @@ internal class SimpleParser(IEnumerator<LexicalToken> tokens, ILogger<SimplePars
         Match("+", SimpleToken.Operator);
         TreeNode exprNode = Expr();
 
-        var mainExprNode = CreateTNode(EntityType.Plus, exprLine, "+");
+        var mainExprNode = CreateTreeNode(EntityType.Plus, exprLine, "+");
         AddNthChild(mainExprNode, factorNode, 1);
         AddNthChild(mainExprNode, exprNode, 2);
         return mainExprNode;
@@ -174,6 +175,6 @@ internal class SimpleParser(IEnumerator<LexicalToken> tokens, ILogger<SimplePars
             Match(SimpleToken.Name);
             factorType = EntityType.Variable;
         }
-        return CreateTNode(factorType, factorLine, factorValue);
+        return CreateTreeNode(factorType, factorLine, factorValue);
     }
 }
