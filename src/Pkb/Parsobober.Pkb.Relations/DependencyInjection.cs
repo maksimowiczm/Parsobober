@@ -13,6 +13,7 @@ public static class DependencyInjection
         services.AddSingleton<IProgramContextAccessor, ProgramContext>();
 
         services.AddSingleton<IFollowsCreator, FollowsRelation>();
+        services.AddSingleton<IParentCreator, ParentRelation>();
 
         return services;
     }
