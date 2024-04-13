@@ -14,6 +14,7 @@ public static class DependencyInjection
 
         services.AddSingleton<IFollowsCreator, FollowsRelation>();
         services.AddSingleton<IParentCreator, ParentRelation>();
+        services.AddSingleton<IModifiesCreator, ModifiesRelation>();
 
         return services;
     }
