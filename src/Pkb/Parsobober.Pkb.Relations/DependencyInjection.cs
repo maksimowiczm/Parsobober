@@ -12,6 +12,8 @@ public static class DependencyInjection
         services.AddSingleton<IProgramContextCreator, ProgramContext>();
         services.AddSingleton<IProgramContextAccessor, ProgramContext>();
 
+        services.AddSingleton<IFollowsCreator, FollowsRelation>();
+
         return services;
     }
 }
