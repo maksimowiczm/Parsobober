@@ -4,6 +4,7 @@ namespace Parsobober.Pkb.Relations.Abstractions;
 
 public interface IPkbCreators
 {
+    IProgramContextCreator ProgramContext { get; }
     IFollowsCreator Follows { get; }
     IModifiesCreator Modifies { get; }
     IParentCreator Parent { get; }
