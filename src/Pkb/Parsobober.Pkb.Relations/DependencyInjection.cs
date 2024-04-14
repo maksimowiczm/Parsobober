@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Parsobober.Pkb.Relations.Abstractions;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Abstractions.Creators;
 using Parsobober.Pkb.Relations.Implementations;
@@ -16,6 +17,8 @@ public static class DependencyInjection
         services.AddSingleton<IParentCreator, ParentRelation>();
         services.AddSingleton<IModifiesCreator, ModifiesRelation>();
         services.AddSingleton<IUsesCreator, UsesRelation>();
+
+        services.AddSingleton<IPkbCreators, PkbContext>();
 
         return services;
     }
