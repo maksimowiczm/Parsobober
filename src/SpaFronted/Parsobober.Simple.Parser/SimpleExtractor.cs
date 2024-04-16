@@ -1,4 +1,5 @@
 ﻿using Parsobober.Pkb.Ast;
+using Parsobober.Pkb.Ast.Abstractions;
 using Parsobober.Simple.Parser.Abstractions;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,11 @@ namespace Parsobober.Simple.Parser
         virtual public TreeNode Factor()
         {
             return wrappee.Factor();
+        }
+
+        public IAst Parse()
+        {
+            return wrappee.Parse();
         }
 
         virtual public TreeNode Procedure()

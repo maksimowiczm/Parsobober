@@ -3,7 +3,7 @@ using Parsobober.Pkb.Ast.Abstractions;
 
 namespace Parsobober.Simple.Parser.Abstractions
 {
-    internal interface ISimpleExtractor
+    internal interface ISimpleExtractor : ISimpleParser
     {
         TreeNode Assign();
         TreeNode Expr();
