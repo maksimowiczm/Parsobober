@@ -9,7 +9,7 @@ internal class SimpleParser(
     IEnumerator<LexicalToken> tokens,
     IAst ast,
     ILogger<SimpleParser> logger
-) : ISimpleParser
+) : ISimpleParser, ISimpleExtractor
 {
     private LexicalToken _currentToken = tokens.Current;
 
@@ -72,7 +72,7 @@ internal class SimpleParser(
         }
     }
 
-    private TreeNode Procedure()
+    public TreeNode Procedure()
     {
         Match("procedure", SimpleToken.Keyword);
         var procedureName = _currentToken.Value;
@@ -87,7 +87,7 @@ internal class SimpleParser(
         return procedureNode;
     }
 
-    private TreeNode StmtLst()
+    public TreeNode StmtLst()
     {
         TreeNode node = Stmt();
         if (_currentToken.Value == "}")
@@ -100,7 +100,7 @@ internal class SimpleParser(
         return node;
     }
 
-    private TreeNode Stmt()
+    public TreeNode Stmt()
     {
         if (_currentToken.Value == "while")
         {
@@ -109,7 +109,7 @@ internal class SimpleParser(
         return Assign();
     }
 
-    private TreeNode While()
+    public TreeNode While()
     {
         var whileLine = _currentToken.LineNumber;
         Match("while", SimpleToken.Keyword);
@@ -127,7 +127,7 @@ internal class SimpleParser(
         return whileNode;
     }
 
-    private TreeNode Assign()
+    public TreeNode Assign()
     {
         var varLine = _currentToken.LineNumber;
         var leftVarName = _currentToken.Value;
@@ -143,7 +143,7 @@ internal class SimpleParser(
         return assignNode;
     }
 
-    private TreeNode Expr()
+    public TreeNode Expr()
     {
         TreeNode factorNode = Factor();
         if (_currentToken.Value == ";")
@@ -160,7 +160,7 @@ internal class SimpleParser(
         return mainExprNode;
     }
 
-    private TreeNode Factor()
+    public TreeNode Factor()
     {
         var factorLine = _currentToken.LineNumber;
         var factorValue = _currentToken.Value;
