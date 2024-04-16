@@ -19,14 +19,24 @@ public class UsesRelation(
     public void SetUses(TreeNode user, TreeNode variable)
     {
         // Check types
-        if (user.Type.IsStatement() == false || variable.Type != EntityType.Variable)
+        if (!user.Type.IsStatement())
         {
             logger.LogError(
-                "Statement uses relation can only be established between statement and variable node. ({user} => {variable})",
-                user, variable);
+                "Statement uses relation can only be established between statement and variable node. ({user} must be statement)",
+                user);
 
             throw new ArgumentException(
-                $"At least one of provided nodes type: {user.Type}, {variable.Type} is different than any of required: {EntityType.Statement} types or {EntityType.Variable}.");
+                $"User node type {user.Type} is different than any of required: {EntityType.Statement} types.");
+        }
+
+        if (!variable.Type.IsVariable())
+        {
+            logger.LogError(
+                "Statement uses relation can only be established between statement and variable node. ({variable} must be variable)",
+                variable);
+
+            throw new ArgumentException(
+                $"Variable node type {variable.Type} is different than required: {EntityType.Variable}.");
         }
 
         // Check required attribute

@@ -25,14 +25,24 @@ public class ModifiesRelation(
     public void SetModifies(TreeNode modifier, TreeNode variable)
     {
         // Check types
-        if (modifier.Type.IsStatement() == false || variable.Type != EntityType.Variable)
+        if (!modifier.Type.IsStatement())
         {
             logger.LogError(
-                "Statement modifies relation can only be established between statement and variable node. ({modifier} => {variable})",
-                modifier, variable);
+                "Statement modifies relation can only be established between statement and variable node. ({modifier} must be statement)",
+                modifier);
 
             throw new ArgumentException(
-                $"At least one of provided nodes type: {modifier.Type}, {variable.Type} is different than any of required: {EntityType.Statement} types or {EntityType.Variable}.");
+                $"Modifier node type {modifier.Type} is different than any of required: {EntityType.Statement} types.");
+        }
+
+        if (!variable.Type.IsVariable())
+        {
+            logger.LogError(
+                "Statement modifies relation can only be established between statement and variable node. ({variable} must be variable)",
+                variable);
+
+            throw new ArgumentException(
+                $"Variable node type {variable.Type} is different than required: {EntityType.Variable}.");
         }
 
         // Check required attribute

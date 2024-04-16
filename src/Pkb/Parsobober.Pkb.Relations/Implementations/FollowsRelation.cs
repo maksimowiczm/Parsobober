@@ -1,4 +1,3 @@
-using System.Xml;
 using Microsoft.Extensions.Logging;
 using Parsobober.Pkb.Ast;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
@@ -19,7 +18,7 @@ public class FollowsRelation(
 
     public void SetFollows(TreeNode node, TreeNode parent)
     {
-        if (node.Type.IsStatement() == false || parent.Type.IsStatement() == false)
+        if (!node.Type.IsStatement() || !parent.Type.IsStatement())
         {
             logger.LogError(
                 "Follows relation can only be established between two statement nodes. ({parent} => {child})",

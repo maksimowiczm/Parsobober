@@ -41,4 +41,6 @@ public static class EntityTypeExtensions
             _ => false,
         };
     }
+
+    public static bool IsVariable(this EntityType entityType) => entityType == EntityType.Variable;
 }
