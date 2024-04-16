@@ -14,17 +14,17 @@ public interface IFollowsAccessor
     /// Returns the procedure that follows the given procedure transitive => Follows*(provided, returned)
     /// </summary>
     IEnumerable<TreeNode> GetFollowsTransitive(Statement statement);
-    
+
     /// <summary>
     /// Returns the procedure that precedes the given procedure => Follows(returned, provided)
     /// </summary>
     TreeNode GetFollowedBy(Statement statement);
-    
+
     /// <summary>
     /// Returns the procedure that precedes the given procedure => Follows*(returned, returned)
     /// </summary>
     IEnumerable<TreeNode> GetFollowedByTransitive(Statement statement);
-    
+
     bool IsFollowed(Statement preceding, Statement following);
 
     bool IsFollowedTransitive(Statement preceding, Statement following);
