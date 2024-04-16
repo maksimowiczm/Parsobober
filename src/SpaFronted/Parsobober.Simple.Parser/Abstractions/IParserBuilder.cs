@@ -1,4 +1,4 @@
-﻿namespace Parsobober.Simple.Parser;
+﻿namespace Parsobober.Simple.Parser.Abstractions;
 
 public interface IParserBuilder
 {

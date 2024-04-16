@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Parsobober.Pkb.Ast.Abstractions;
 using Parsobober.Simple.Lexer;
+using Parsobober.Simple.Parser.Abstractions;
 
 namespace Parsobober.Simple.Parser;
 
