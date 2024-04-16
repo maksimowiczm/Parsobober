@@ -39,5 +39,15 @@ internal class PqlGrammar(IQueryBuilder queryBuilder)
     public IQueryBuilder ModifiesExpression(Token<PqlToken> reference1, Token<PqlToken> reference2) =>
         queryBuilder.AddModifies(reference1.Value, reference2.Value);
 
-    // todo rest of the relations
+    [Production("relation : Follows[d] LeftParenthesis[d] Reference Coma[d] Reference RightParenthesis[d]")]
+    public IQueryBuilder FollowsExpression(Token<PqlToken> reference1, Token<PqlToken> reference2) =>
+         queryBuilder.AddFollows(reference1.Value, reference2.Value);
+
+    [Production("relation : FollowsTransitive[d] LeftParenthesis[d] Reference Coma[d] Reference RightParenthesis[d]")]
+    public IQueryBuilder FollowsTransitiveExpression(Token<PqlToken> reference1, Token<PqlToken> reference2) =>
+         queryBuilder.AddFollowsTransitive(reference1.Value, reference2.Value);
+
+    [Production("relation : Uses[d] LeftParenthesis[d] Reference Coma[d] Reference RightParenthesis[d]")]
+    public IQueryBuilder UsesExpression(Token<PqlToken> reference1, Token<PqlToken> reference2) =>
+         queryBuilder.AddUses(reference1.Value, reference2.Value);
 }

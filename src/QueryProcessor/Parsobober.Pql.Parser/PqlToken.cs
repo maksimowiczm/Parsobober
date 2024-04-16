@@ -51,14 +51,22 @@ internal enum PqlToken
 
     [Lexeme(@"Parent\*")]
     ParentTransitive,
-    
+
     [Lexeme("Parent")]
     Parent,
 
     [Lexeme("Modifies")]
     Modifies,
 
-    // todo rest of the relations
+    [Lexeme(@"Follows\*")]
+    FollowsTransitive,
+
+    [Lexeme("Follows")]
+    Follows,
+
+    [Lexeme("Uses")]
+    Uses,
+
 
     #endregion
 
