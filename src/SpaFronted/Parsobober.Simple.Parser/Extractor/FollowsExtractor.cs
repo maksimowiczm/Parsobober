@@ -2,20 +2,25 @@
 using Parsobober.Pkb.Relations.Abstractions.Creators;
 using Parsobober.Simple.Parser.Abstractions;
 
-namespace Parsobober.Simple.Parser
+namespace Parsobober.Simple.Parser.Extractor
 {
-    internal class FollowsExtractor(ISimpleExtractor wrappee, IFollowsCreator creator) : SimpleExtractor(wrappee)
+    internal class FollowsExtractor : SimpleExtractor
     {
-        override
-        public TreeNode While()
+        private readonly IFollowsCreator creator;
+
+        public FollowsExtractor(ISimpleExtractor wrappee, IFollowsCreator creator) : base(wrappee)
+        {
+            this.creator = creator;
+        }
+
+        public override TreeNode While()
         {
             var result = wrappee.While();
             ContainerStmt(result, result.Children[1]);
             return result;
         }
 
-        override
-        public TreeNode Procedure()
+        public override TreeNode Procedure()
         {
             var result = wrappee.Procedure();
             ContainerStmt(result, result.Children[0]);

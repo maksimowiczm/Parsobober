@@ -1,5 +1,4 @@
 ﻿using Parsobober.Pkb.Ast;
-using Parsobober.Pkb.Ast.Abstractions;
 
 namespace Parsobober.Simple.Parser.Abstractions
 {

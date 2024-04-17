@@ -1,16 +1,18 @@
 ﻿using Parsobober.Pkb.Ast;
 using Parsobober.Pkb.Ast.Abstractions;
 using Parsobober.Simple.Parser.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Parsobober.Simple.Parser
+namespace Parsobober.Simple.Parser.Extractor
 {
-    internal abstract class SimpleExtractor(ISimpleExtractor wrappee) : ISimpleExtractor
+    internal abstract class SimpleExtractor : ISimpleExtractor
     {
+        protected readonly ISimpleExtractor wrappee;
+
+        public SimpleExtractor(ISimpleExtractor wrappee)
+        {
+            this.wrappee = wrappee;
+        }
+
         virtual public TreeNode Assign()
         {
             return wrappee.Assign();

@@ -6,8 +6,8 @@ using Parsobober.Simple.Parser.Abstractions;
 namespace Parsobober.Simple.Parser;
 
 internal class SimpleParserBuilder(
-    ILogger<SimpleParserBuilder> logger, 
-    IAst ast, 
+    ILogger<SimpleParserBuilder> logger,
+    IAst ast,
     ILogger<SimpleParser> parserLogger,
     SlyLexerAdapter lexer
 ) : IParserBuilder
