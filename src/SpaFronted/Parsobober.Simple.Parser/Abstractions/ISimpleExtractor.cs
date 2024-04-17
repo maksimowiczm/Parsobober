@@ -11,5 +11,6 @@ namespace Parsobober.Simple.Parser.Abstractions
         TreeNode Stmt();
         TreeNode StmtLst();
         TreeNode While();
+        TreeNode Variable();
     }
 }

@@ -113,16 +113,14 @@ internal class SimpleParser(
     public TreeNode While()
     {
         var whileLine = _currentToken.LineNumber;
+
         Match("while", SimpleToken.Keyword);
-        var controlVarName = _currentToken.Value;
-        var varLine = _currentToken.LineNumber;
-        Match(SimpleToken.Name);
+        var variableNode = Variable();
         Match("{", SimpleToken.Separator);
         TreeNode stmtNode = StmtLst();
         Match("}", SimpleToken.Separator);
 
         var whileNode = CreateTreeNode(EntityType.While, whileLine);
-        var variableNode = CreateTreeNode(EntityType.Variable, varLine, controlVarName);
         AddNthChild(whileNode, variableNode, 1);
         AddNthChild(whileNode, stmtNode, 2);
         return whileNode;
@@ -130,15 +128,14 @@ internal class SimpleParser(
 
     public TreeNode Assign()
     {
-        var varLine = _currentToken.LineNumber;
-        var leftVarName = _currentToken.Value;
-        Match(SimpleToken.Name);
+        var line = _currentToken.LineNumber;
+
+        var varNode = Variable();
         Match("=", SimpleToken.Operator);
         TreeNode exprNode = Expr();
         Match(";", SimpleToken.Separator);
 
-        var assignNode = CreateTreeNode(EntityType.Assign, varLine);
-        var varNode = CreateTreeNode(EntityType.Variable, varLine, leftVarName);
+        var assignNode = CreateTreeNode(EntityType.Assign, line);
         AddNthChild(assignNode, varNode, 1);
         AddNthChild(assignNode, exprNode, 2);
         return assignNode;
@@ -163,19 +160,26 @@ internal class SimpleParser(
 
     public TreeNode Factor()
     {
-        var factorLine = _currentToken.LineNumber;
-        var factorValue = _currentToken.Value;
-        EntityType factorType;
         if (_currentToken.Type == SimpleToken.Integer)
         {
+            var factorLine = _currentToken.LineNumber;
+            var factorValue = _currentToken.Value;
+
             Match(SimpleToken.Integer);
-            factorType = EntityType.Constant;
+            return CreateTreeNode(EntityType.Constant, factorLine, factorValue);
         }
         else
         {
-            Match(SimpleToken.Name);
-            factorType = EntityType.Variable;
+            return Variable();
         }
-        return CreateTreeNode(factorType, factorLine, factorValue);
+    }
+
+    public TreeNode Variable()
+    {
+        var name = _currentToken.Value;
+        var line = _currentToken.LineNumber;
+        Match(SimpleToken.Name);
+
+        return CreateTreeNode(EntityType.Variable, line, name);
     }
 }

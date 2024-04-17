@@ -52,5 +52,10 @@ namespace Parsobober.Simple.Parser.Extractor
         {
             return wrappee.While();
         }
+
+        virtual public TreeNode Variable()
+        {
+            return wrappee.Variable();
+        }
     }
 }
