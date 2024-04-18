@@ -9,7 +9,8 @@ namespace Parsobober.Simple.Parser;
 internal class SimpleParser(
     IEnumerator<LexicalToken> tokens,
     IAst ast,
-    ILogger<SimpleParser> logger
+    ILogger<SimpleParser> logger,
+    IReadOnlyList<ISimpleExtractor> extractors
 ) : ISimpleParser
 {
     private LexicalToken _currentToken = tokens.Current;
@@ -73,6 +74,15 @@ internal class SimpleParser(
         }
     }
 
+    private void NotifyAll(Action<ISimpleExtractor> method)
+    {
+        foreach (var ex in extractors)
+        {
+            method(ex);
+        }
+    }
+
+
     private TreeNode Procedure()
     {
         Match("procedure", SimpleToken.Keyword);
@@ -85,8 +95,7 @@ internal class SimpleParser(
         TreeNode stmtNode = StmtLst();
         Match("}", SimpleToken.Separator);
         AddNthChild(procedureNode, stmtNode, 1);
-
-        //extractor.Procedure(procedureNode)
+        NotifyAll(x => x.Procedure(procedureNode));
         return procedureNode;
     }
 
@@ -182,6 +191,8 @@ internal class SimpleParser(
         var line = _currentToken.LineNumber;
         Match(SimpleToken.Name);
 
-        return CreateTreeNode(EntityType.Variable, line, name);
+        var variableNode = CreateTreeNode(EntityType.Variable, line, name);
+        NotifyAll(x => x.Variable(variableNode));
+        return variableNode;
     }
 }

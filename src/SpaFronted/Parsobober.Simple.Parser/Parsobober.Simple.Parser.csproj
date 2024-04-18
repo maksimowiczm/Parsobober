@@ -8,7 +8,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\Pkb\Parsobober.Pkb.Ast\Parsobober.Pkb.Ast.csproj" />
-      <ProjectReference Include="..\..\Pkb\Parsobober.Pkb.Relations\Parsobober.Pkb.Relations.csproj" />
       <ProjectReference Include="..\Parsobober.Simple.Lexer\Parsobober.Simple.Lexer.csproj" />
     </ItemGroup>
 
