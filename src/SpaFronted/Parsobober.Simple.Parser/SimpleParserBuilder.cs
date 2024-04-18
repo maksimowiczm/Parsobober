@@ -3,7 +3,6 @@ using Parsobober.Pkb.Ast.Abstractions;
 using Parsobober.Pkb.Relations.Abstractions;
 using Parsobober.Simple.Lexer;
 using Parsobober.Simple.Parser.Abstractions;
-using Parsobober.Simple.Parser.Extractor;
 
 namespace Parsobober.Simple.Parser;
 
@@ -20,6 +19,6 @@ internal class SimpleParserBuilder(
         logger.LogInformation("Creating simple parser");
         var tokens = lexer.Tokenize(programCode);
         logger.LogInformation("Parsing completed successfully");
-        return new ProgramContextExtractor(new SimpleParser(tokens.GetEnumerator(), ast, parserLogger), creators.ProgramContext);
+        return new SimpleParser(tokens.GetEnumerator(), ast, parserLogger);
     }
 }

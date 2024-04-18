@@ -10,7 +10,7 @@ internal class SimpleParser(
     IEnumerator<LexicalToken> tokens,
     IAst ast,
     ILogger<SimpleParser> logger
-) : ISimpleParser, ISimpleExtractor
+) : ISimpleParser
 {
     private LexicalToken _currentToken = tokens.Current;
 
@@ -73,7 +73,7 @@ internal class SimpleParser(
         }
     }
 
-    public TreeNode Procedure()
+    private TreeNode Procedure()
     {
         Match("procedure", SimpleToken.Keyword);
         var procedureName = _currentToken.Value;
@@ -85,10 +85,12 @@ internal class SimpleParser(
         TreeNode stmtNode = StmtLst();
         Match("}", SimpleToken.Separator);
         AddNthChild(procedureNode, stmtNode, 1);
+
+        //extractor.Procedure(procedureNode)
         return procedureNode;
     }
 
-    public TreeNode StmtLst()
+    private TreeNode StmtLst()
     {
         TreeNode node = Stmt();
         if (_currentToken.Value == "}")
@@ -101,7 +103,7 @@ internal class SimpleParser(
         return node;
     }
 
-    public TreeNode Stmt()
+    private TreeNode Stmt()
     {
         if (_currentToken.Value == "while")
         {
@@ -110,7 +112,7 @@ internal class SimpleParser(
         return Assign();
     }
 
-    public TreeNode While()
+    private TreeNode While()
     {
         var whileLine = _currentToken.LineNumber;
 
@@ -126,7 +128,7 @@ internal class SimpleParser(
         return whileNode;
     }
 
-    public TreeNode Assign()
+    private TreeNode Assign()
     {
         var line = _currentToken.LineNumber;
 
@@ -141,7 +143,7 @@ internal class SimpleParser(
         return assignNode;
     }
 
-    public TreeNode Expr()
+    private TreeNode Expr()
     {
         TreeNode factorNode = Factor();
         if (_currentToken.Value == ";")
@@ -158,7 +160,7 @@ internal class SimpleParser(
         return mainExprNode;
     }
 
-    public TreeNode Factor()
+    private TreeNode Factor()
     {
         if (_currentToken.Type == SimpleToken.Integer)
         {
@@ -174,7 +176,7 @@ internal class SimpleParser(
         }
     }
 
-    public TreeNode Variable()
+    private TreeNode Variable()
     {
         var name = _currentToken.Value;
         var line = _currentToken.LineNumber;
