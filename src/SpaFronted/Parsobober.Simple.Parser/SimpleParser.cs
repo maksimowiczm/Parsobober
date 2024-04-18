@@ -74,15 +74,6 @@ internal class SimpleParser(
         }
     }
 
-    private void NotifyAll(Action<ISimpleExtractor> method)
-    {
-        foreach (var ex in extractors)
-        {
-            method(ex);
-        }
-    }
-
-
     private TreeNode Procedure()
     {
         Match("procedure", SimpleToken.Keyword);
@@ -95,7 +86,8 @@ internal class SimpleParser(
         TreeNode stmtNode = StmtLst();
         Match("}", SimpleToken.Separator);
         AddNthChild(procedureNode, stmtNode, 1);
-        NotifyAll(x => x.Procedure(procedureNode));
+
+        NotifyAll(ex => ex.Procedure(procedureNode));
         return procedureNode;
     }
 
@@ -134,6 +126,8 @@ internal class SimpleParser(
         var whileNode = CreateTreeNode(EntityType.While, whileLine);
         AddNthChild(whileNode, variableNode, 1);
         AddNthChild(whileNode, stmtNode, 2);
+
+        NotifyAll(ex => ex.While(whileNode));
         return whileNode;
     }
 
@@ -149,6 +143,8 @@ internal class SimpleParser(
         var assignNode = CreateTreeNode(EntityType.Assign, line);
         AddNthChild(assignNode, varNode, 1);
         AddNthChild(assignNode, exprNode, 2);
+
+        NotifyAll(ex => ex.Assign(assignNode));
         return assignNode;
     }
 
@@ -166,6 +162,8 @@ internal class SimpleParser(
         var mainExprNode = CreateTreeNode(EntityType.Plus, exprLine, "+");
         AddNthChild(mainExprNode, factorNode, 1);
         AddNthChild(mainExprNode, exprNode, 2);
+
+        NotifyAll(ex => ex.Expr(mainExprNode));
         return mainExprNode;
     }
 
@@ -192,7 +190,15 @@ internal class SimpleParser(
         Match(SimpleToken.Name);
 
         var variableNode = CreateTreeNode(EntityType.Variable, line, name);
-        NotifyAll(x => x.Variable(variableNode));
+        NotifyAll(ex => ex.Variable(variableNode));
         return variableNode;
+    }
+
+    private void NotifyAll(Action<ISimpleExtractor> method)
+    {
+        foreach (var ex in extractors)
+        {
+            method(ex);
+        }
     }
 }

@@ -16,12 +16,20 @@ namespace Parsobober.Simple.Parser.Extractor
         {
             ContainerStmt(result, result.Children[0]);
         }
+
         private void ContainerStmt(TreeNode container, TreeNode? stmtListElem)
         {
-            while (stmtListElem is not null)
+            if (stmtListElem is null)
             {
-                creator.SetFollows(container, stmtListElem);
-                stmtListElem = stmtListElem.RightSibling;
+                return;
+            }
+
+            var nextStmtListElem = stmtListElem.RightSibling;
+            while (nextStmtListElem is not null)
+            {
+                creator.SetFollows(stmtListElem, nextStmtListElem);
+                stmtListElem = nextStmtListElem;
+                nextStmtListElem = stmtListElem.RightSibling;
             }
         }
     }
