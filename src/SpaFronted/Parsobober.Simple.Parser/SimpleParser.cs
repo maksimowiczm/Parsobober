@@ -106,11 +106,18 @@ internal class SimpleParser(
 
     private TreeNode Stmt()
     {
+        TreeNode stmtNode;
         if (_currentToken.Value == "while")
         {
-            return While();
+            stmtNode = While();
         }
-        return Assign();
+        else
+        {
+            stmtNode = Assign();
+        }
+
+        NotifyAll(ex => ex.Stmt(stmtNode));
+        return stmtNode;
     }
 
     private TreeNode While()
