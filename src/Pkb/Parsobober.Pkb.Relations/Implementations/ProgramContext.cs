@@ -69,6 +69,6 @@ public class ProgramContext(ILogger<ProgramContext> logger) : IProgramContextCre
             throw new ArgumentNullException(procedure.Attribute);
         }
 
-        return _variablesDictionary.TryAdd(procedure.Attribute, procedure);
+        return _proceduresDictionary.TryAdd(procedure.Attribute, procedure);
     }
 }
