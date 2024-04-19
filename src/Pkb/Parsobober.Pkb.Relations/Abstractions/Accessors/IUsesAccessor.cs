@@ -1,33 +1,40 @@
-﻿using Parsobober.Pkb.Ast;
-using Parsobober.Pkb.Relations.Dto;
-using static Parsobober.Pkb.Relations.Dto.Refs;
-using static Parsobober.Pkb.Relations.Dto.Statements;
+﻿using Parsobober.Pkb.Relations.Dto;
 
 namespace Parsobober.Pkb.Relations.Abstractions.Accessors;
 
 public interface IUsesAccessor
 {
     /// <summary>
-    /// Returns variables that are used by the given statement => Uses(provided(stmt), returned)
+    /// Returns variables that are used by <typeparamref name="T"/>
+    /// => Uses(provided, returned)
     /// </summary>
-    IEnumerable<TreeNode> GetVariables(Statement statement);
+    /// <typeparam name="T"><see cref="IRequest"/></typeparam>
+    IEnumerable<Variable> GetVariables<T>() where T : IRequest;
 
     /// <summary>
-    /// Returns variables that are used by the given procedure => Uses(provided(proc), returned)
+    /// Returns variables that are used by statement with given <paramref name="lineNumber"/>
+    /// => Uses(provided, returned)
     /// </summary>
-    IEnumerable<TreeNode> GetVariables(Procedure procedure);
+    /// <param name="lineNumber">Line number</param>
+    IEnumerable<Variable> GetVariables(int lineNumber);
 
     /// <summary>
-    /// Returns statements that use given variable => Uses(returned, provided(stmt))
+    /// Returns statements that uses variable
+    /// => Uses(returned, provided)
     /// </summary>
-    IEnumerable<TreeNode> GetStatements(Variable variable);
+    IEnumerable<Statement> GetStatements();
 
     /// <summary>
-    /// Returns procedures that use given variable => Uses(returned, provided(proc))
+    /// Returns statements that uses variable with given variableName
+    /// => Uses(returned, provided)
     /// </summary>
-    IEnumerable<TreeNode> GetProcedures(Variable variable);
+    /// <param name="variableName">Variable name</param>
+    IEnumerable<Statement> GetStatements(string variableName);
 
-    bool IsModified(Variable variable, Statement statement);
-
-    bool IsModified(Variable variable, Procedure procedure);
+    /// <summary>
+    /// Boxed uses request.
+    /// </summary>
+    interface IRequest
+    {
+    }
 }
