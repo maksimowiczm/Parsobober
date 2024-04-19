@@ -36,15 +36,11 @@ internal class UsesExtractor(IUsesCreator creator) : SimpleExtractor
         assignVariables.Clear();
     }
 
-    public override void Expr(TreeNode result)
+    public override void Factor(TreeNode result)
     {
-        var variable = result.Children[0];
-        assignVariables.Add(variable);
-
-        if (result.Children[1].Type == EntityType.Variable)
+        if (result.Type == EntityType.Variable)
         {
-            var secondVariable = result.Children[1];
-            assignVariables.Add(secondVariable);
+            assignVariables.Add(result);
         }
     }
 }

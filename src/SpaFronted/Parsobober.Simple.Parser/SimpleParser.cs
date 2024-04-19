@@ -189,7 +189,9 @@ internal class SimpleParser(
         }
         else
         {
-            return Variable();
+            var variableNode = Variable();
+            NotifyAll(ex => ex.Factor(variableNode));
+            return variableNode;
         }
     }
 

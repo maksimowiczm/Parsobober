@@ -35,6 +35,11 @@ internal abstract class SimpleExtractor : ISimpleExtractor
         return;
     }
 
+    public virtual void Factor(TreeNode node)
+    {
+        return;
+    }
+
     public virtual void StmtLst()
     {
         return;
