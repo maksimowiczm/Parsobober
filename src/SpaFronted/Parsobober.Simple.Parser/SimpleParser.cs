@@ -83,6 +83,7 @@ internal class SimpleParser(
         var procedureNode = CreateTreeNode(EntityType.Procedure, procedureLine, procedureName);
 
         Match("{", SimpleToken.Separator);
+        NotifyAll(ex => ex.StmtLst());
         TreeNode stmtNode = StmtLst();
         Match("}", SimpleToken.Separator);
         AddNthChild(procedureNode, stmtNode, 1);
@@ -126,7 +127,9 @@ internal class SimpleParser(
 
         Match("while", SimpleToken.Keyword);
         var variableNode = Variable();
+
         Match("{", SimpleToken.Separator);
+        NotifyAll(ex => ex.StmtLst());
         TreeNode stmtNode = StmtLst();
         Match("}", SimpleToken.Separator);
 

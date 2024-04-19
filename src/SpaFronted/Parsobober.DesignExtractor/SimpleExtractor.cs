@@ -35,4 +35,8 @@ internal abstract class SimpleExtractor : ISimpleExtractor
         return;
     }
 
+    public virtual void StmtLst()
+    {
+        return;
+    }
 }

@@ -5,22 +5,27 @@ namespace Parsobober.Simple.Parser.Extractor;
 
 internal class ModifiesExtractor(IModifiesCreator creator) : SimpleExtractor
 {
-    private Stack<TreeNode> stack = new();
+    private Stack<List<TreeNode>> containerStack = new();
+
+    public override void StmtLst()
+    {
+        containerStack.Push(new List<TreeNode>());
+    }
 
     public override void While(TreeNode result)
     {
-        var tempStack = new Stack<TreeNode>(stack);
-        while (stack.Count > 0)
+        var varList = containerStack.Pop();
+        foreach (var variable in varList)
         {
-            TreeNode node = stack.Pop();
-            creator.SetModifies(result, node);
+            creator.SetModifies(result, variable);
         }
-        stack = tempStack;
+        containerStack.Peek().AddRange(varList);
     }
 
     public override void Assign(TreeNode result)
     {
-        creator.SetModifies(result, result.Children[0]);
-        stack.Push(result.Children[0]);
+        var leftVariable = result.Children[0];
+        creator.SetModifies(result, leftVariable);
+        containerStack.Peek().Add(leftVariable);
     }
 }
