@@ -8,6 +8,7 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services
     .AddSimpleLexer()
+    .AddDesignExtractor()
     .AddSimpleParserBuilder()
     .AddAst()
     .AddRelations();

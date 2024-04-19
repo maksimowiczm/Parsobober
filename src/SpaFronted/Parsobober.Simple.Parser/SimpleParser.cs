@@ -2,13 +2,15 @@ using Microsoft.Extensions.Logging;
 using Parsobober.Pkb.Ast;
 using Parsobober.Pkb.Ast.Abstractions;
 using Parsobober.Simple.Lexer;
+using Parsobober.Simple.Parser.Abstractions;
 
 namespace Parsobober.Simple.Parser;
 
 internal class SimpleParser(
     IEnumerator<LexicalToken> tokens,
     IAst ast,
-    ILogger<SimpleParser> logger
+    ILogger<SimpleParser> logger,
+    IReadOnlyList<ISimpleExtractor> extractors
 ) : ISimpleParser
 {
     private LexicalToken _currentToken = tokens.Current;
@@ -84,6 +86,8 @@ internal class SimpleParser(
         TreeNode stmtNode = StmtLst();
         Match("}", SimpleToken.Separator);
         AddNthChild(procedureNode, stmtNode, 1);
+
+        NotifyAll(ex => ex.Procedure(procedureNode));
         return procedureNode;
     }
 
@@ -102,44 +106,52 @@ internal class SimpleParser(
 
     private TreeNode Stmt()
     {
+        TreeNode stmtNode;
         if (_currentToken.Value == "while")
         {
-            return While();
+            stmtNode = While();
         }
-        return Assign();
+        else
+        {
+            stmtNode = Assign();
+        }
+
+        NotifyAll(ex => ex.Stmt(stmtNode));
+        return stmtNode;
     }
 
     private TreeNode While()
     {
         var whileLine = _currentToken.LineNumber;
+
         Match("while", SimpleToken.Keyword);
-        var controlVarName = _currentToken.Value;
-        var varLine = _currentToken.LineNumber;
-        Match(SimpleToken.Name);
+        var variableNode = Variable();
         Match("{", SimpleToken.Separator);
         TreeNode stmtNode = StmtLst();
         Match("}", SimpleToken.Separator);
 
         var whileNode = CreateTreeNode(EntityType.While, whileLine);
-        var variableNode = CreateTreeNode(EntityType.Variable, varLine, controlVarName);
         AddNthChild(whileNode, variableNode, 1);
         AddNthChild(whileNode, stmtNode, 2);
+
+        NotifyAll(ex => ex.While(whileNode));
         return whileNode;
     }
 
     private TreeNode Assign()
     {
-        var varLine = _currentToken.LineNumber;
-        var leftVarName = _currentToken.Value;
-        Match(SimpleToken.Name);
+        var line = _currentToken.LineNumber;
+
+        var varNode = Variable();
         Match("=", SimpleToken.Operator);
         TreeNode exprNode = Expr();
         Match(";", SimpleToken.Separator);
 
-        var assignNode = CreateTreeNode(EntityType.Assign, varLine);
-        var varNode = CreateTreeNode(EntityType.Variable, varLine, leftVarName);
+        var assignNode = CreateTreeNode(EntityType.Assign, line);
         AddNthChild(assignNode, varNode, 1);
         AddNthChild(assignNode, exprNode, 2);
+
+        NotifyAll(ex => ex.Assign(assignNode));
         return assignNode;
     }
 
@@ -157,24 +169,43 @@ internal class SimpleParser(
         var mainExprNode = CreateTreeNode(EntityType.Plus, exprLine, "+");
         AddNthChild(mainExprNode, factorNode, 1);
         AddNthChild(mainExprNode, exprNode, 2);
+
+        NotifyAll(ex => ex.Expr(mainExprNode));
         return mainExprNode;
     }
 
     private TreeNode Factor()
     {
-        var factorLine = _currentToken.LineNumber;
-        var factorValue = _currentToken.Value;
-        EntityType factorType;
         if (_currentToken.Type == SimpleToken.Integer)
         {
+            var factorLine = _currentToken.LineNumber;
+            var factorValue = _currentToken.Value;
+
             Match(SimpleToken.Integer);
-            factorType = EntityType.Constant;
+            return CreateTreeNode(EntityType.Constant, factorLine, factorValue);
         }
         else
         {
-            Match(SimpleToken.Name);
-            factorType = EntityType.Variable;
+            return Variable();
         }
-        return CreateTreeNode(factorType, factorLine, factorValue);
+    }
+
+    private TreeNode Variable()
+    {
+        var name = _currentToken.Value;
+        var line = _currentToken.LineNumber;
+        Match(SimpleToken.Name);
+
+        var variableNode = CreateTreeNode(EntityType.Variable, line, name);
+        NotifyAll(ex => ex.Variable(variableNode));
+        return variableNode;
+    }
+
+    private void NotifyAll(Action<ISimpleExtractor> method)
+    {
+        foreach (var ex in extractors)
+        {
+            method(ex);
+        }
     }
 }

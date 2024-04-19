@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Parsobober.Simple.Parser.Abstractions;
 
 namespace Parsobober.Simple.Parser;
 
