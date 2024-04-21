@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Hosting;
+using Parsobober.Pql.Parser;
 using Parsobober.Pkb.Ast;
 using Parsobober.Pkb.Relations;
 using Parsobober.Simple.Lexer;
@@ -11,7 +12,8 @@ builder.Services
     .AddDesignExtractor()
     .AddSimpleParserBuilder()
     .AddAst()
-    .AddRelations();
+    .AddRelations()
+    .AddPqlParser();
 
 var host = builder.Build();
 
