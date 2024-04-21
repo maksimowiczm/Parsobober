@@ -1,14 +1,11 @@
-﻿namespace Parsobober.Pkb.Relations.Dto;
+﻿using Parsobober.Pkb.Relations.Abstractions.Accessors;
 
-public static class Statements
-{
-    public record Statement(int? LineNumber = null);
+namespace Parsobober.Pkb.Relations.Dto;
 
-    public record Assign(int? LineNumber = null) : Statement(LineNumber);
+public abstract record Statement(int LineNumber) : IModifiesAccessor.IRequest, IUsesAccessor.IRequest;
 
-    public record If(int? LineNumber = null) : Statement(LineNumber);
+public record Assign(int LineNumber) : Statement(LineNumber);
 
-    public record While(int? LineNumber = null) : Statement(LineNumber);
+public record If(int LineNumber) : Statement(LineNumber);
 
-    public record Call(int? LineNumber = null, string? ProcName = null) : Statement(LineNumber);
-}
+public record While(int LineNumber) : Statement(LineNumber);

@@ -1,3 +1,3 @@
 ﻿namespace Parsobober.Pkb.Relations.Dto;
 
-public record Procedure(string ProcName);
+public record Variable(string Name);

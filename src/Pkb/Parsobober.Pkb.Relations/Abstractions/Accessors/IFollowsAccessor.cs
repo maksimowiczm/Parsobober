@@ -1,31 +1,58 @@
-﻿using Parsobober.Pkb.Ast;
-using static Parsobober.Pkb.Relations.Dto.Statements;
+﻿using Parsobober.Pkb.Relations.Dto;
 
 namespace Parsobober.Pkb.Relations.Abstractions.Accessors;
 
 public interface IFollowsAccessor
 {
     /// <summary>
-    /// Returns the statement that follows the given statement => Follows(provided, returned)
+    /// Returns the statements that FOLLOW statement with given type <typeparamref name="TStatement"/>
+    /// => Follows(providedType, returned)
     /// </summary>
-    TreeNode GetFollows(Statement statement);
+    /// <typeparam name="TStatement">Statement type <see cref="Statement"/></typeparam>
+    IEnumerable<Statement> GetFollowers<TStatement>() where TStatement : Statement;
 
     /// <summary>
-    /// Returns the procedure that follows the given procedure transitive => Follows*(provided, returned)
+    /// Returns the statement which FOLLOWS statement with given line number
+    /// => Follows(<paramref name="lineNumber"/>, returned)
     /// </summary>
-    IEnumerable<TreeNode> GetFollowsTransitive(Statement statement);
+    Statement GetFollower(int lineNumber);
 
     /// <summary>
-    /// Returns the procedure that precedes the given procedure => Follows(returned, provided)
+    /// Returns the statements that are FOLLOWED BY statement with given type <typeparamref name="TStatement"/>
+    /// => Follows(returned, providedType)
     /// </summary>
-    TreeNode GetFollowedBy(Statement statement);
+    /// <typeparam name="TStatement">Statement type <see cref="Statement"/></typeparam>
+    IEnumerable<Statement> GetFollowed<TStatement>() where TStatement : Statement;
 
     /// <summary>
-    /// Returns the procedure that precedes the given procedure => Follows*(returned, returned)
+    /// Returns the statement which are FOLLOWED BY statement with given line number
+    /// => Follows(returned, <paramref name="lineNumber"/>)
     /// </summary>
-    IEnumerable<TreeNode> GetFollowedByTransitive(Statement statement);
+    Statement GetFollowed(int lineNumber);
 
-    bool IsFollowed(Statement preceding, Statement following);
+    /// <summary>
+    /// Returns the statements that FOLLOW TRANSITIVELY statement with given type <typeparamref name="TStatement"/>
+    /// => Follows*(providedType, returned)
+    /// </summary>
+    /// <typeparam name="TStatement">Statement type <see cref="Statement"/></typeparam>
+    IEnumerable<Statement> GetFollowersTransitive<TStatement>() where TStatement : Statement;
 
-    bool IsFollowedTransitive(Statement preceding, Statement following);
+    /// <summary>
+    /// Returns the statements that FOLLOW TRANSITIVELY statement with given line number
+    /// => Follows*(<paramref name="lineNumber"/>, returned)
+    /// </summary>
+    IEnumerable<Statement> GetFollowersTransitive(int lineNumber);
+
+    /// <summary>
+    /// Returns the statements that are FOLLOWED BY TRANSITIVELY statement with given type <typeparamref name="TStatement"/>
+    /// => Follows*(returned, providedType)
+    /// </summary>
+    /// <typeparam name="TStatement">Statement type <see cref="Statement"/></typeparam>
+    IEnumerable<Statement> GetFollowedTransitive<TStatement>() where TStatement : Statement;
+
+    /// <summary>
+    /// Returns the statements that are FOLLOWED BY TRANSITIVELY statement with given line number
+    /// => Follows*(returned, <paramref name="lineNumber"/>)
+    /// </summary>
+    IEnumerable<Statement> GetFollowedTransitive(int lineNumber);
 }
