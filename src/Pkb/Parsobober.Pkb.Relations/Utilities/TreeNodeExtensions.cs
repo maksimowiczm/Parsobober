@@ -1,5 +1,4 @@
 ﻿using Parsobober.Pkb.Ast;
-using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Dto;
 
 
@@ -18,7 +17,7 @@ public static class TreeNodeExtensions
         };
     }
 
-    public static bool IsType<T>(this TreeNode treeNode) where T : IUsesAccessor.IRequest
+    public static bool IsType<T>(this TreeNode treeNode)
     {
         return true switch
         {

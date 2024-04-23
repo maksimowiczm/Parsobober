@@ -64,8 +64,10 @@ public class FollowsRelation(
 
     public Statement? GetFollowed(int lineNumber)
     {
-        _followsDictionary.TryGetValue(lineNumber, out var statement);
-        return programContext.StatementsDictionary[statement].ToStatement();
+
+        return _followsDictionary.TryGetValue(lineNumber, out var statement) ?
+            programContext.StatementsDictionary[statement].ToStatement() :
+            null;
     }
 
     public IEnumerable<Statement> GetFollowersTransitive<TStatement>() where TStatement : Statement
