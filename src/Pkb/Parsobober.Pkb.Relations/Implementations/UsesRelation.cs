@@ -2,13 +2,15 @@ using Microsoft.Extensions.Logging;
 using Parsobober.Pkb.Ast;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Abstractions.Creators;
+using Parsobober.Pkb.Relations.Dto;
+using Parsobober.Pkb.Relations.Utilities;
 
 namespace Parsobober.Pkb.Relations.Implementations;
 
 public class UsesRelation(
     ILogger<ParentRelation> logger,
     IProgramContextAccessor programContext
-) : IUsesCreator
+) : IUsesCreator, IUsesAccessor
 {
     /// <summary>
     /// Stores uses relation between statement and variables it uses.
@@ -61,5 +63,41 @@ public class UsesRelation(
         }
 
         _usesDictionary.Add(user.LineNumber, [variable.Attribute]);
+    }
+
+    public IEnumerable<Variable> GetVariables<T>() where T : IUsesAccessor.IRequest
+    {
+
+        return _usesDictionary
+            .Where(statement => programContext.StatementsDictionary[statement.Key].IsType<T>())
+            .SelectMany(statement => statement.Value)
+            .Distinct()
+            .Select(variable => programContext.VariablesDictionary[variable].ToVariable());
+    }
+
+    public IEnumerable<Variable> GetVariables(int lineNumber)
+    {
+        if (_usesDictionary.TryGetValue(lineNumber, out var variableList))
+        {
+            return variableList.Select(variableName => new Variable(variableName));
+        }
+        else
+        {
+            return [];
+        }
+    }
+
+    public IEnumerable<Statement> GetStatements()
+    {
+        return _usesDictionary.Select(entry =>
+            programContext.StatementsDictionary[entry.Key].ToStatement()
+        );
+    }
+
+    public IEnumerable<Statement> GetStatements(string variableName)
+    {
+        return _usesDictionary
+            .Where(stmt => stmt.Value.Contains(variableName))
+            .Select(stmt => programContext.StatementsDictionary[stmt.Key].ToStatement());
     }
 }
