@@ -29,7 +29,7 @@ internal class SimpleParser(
     {
         if (!tokens.MoveNext())
         {
-            _currentToken = new LexicalToken("EOF", SimpleToken.WhiteSpace, 0);
+            _currentToken = new LexicalToken("EOF", SimpleToken.WhiteSpace);
             return;
         }
 
