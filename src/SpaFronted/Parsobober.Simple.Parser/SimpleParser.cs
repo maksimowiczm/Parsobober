@@ -14,6 +14,7 @@ internal class SimpleParser(
 ) : ISimpleParser
 {
     private LexicalToken _currentToken = tokens.Current;
+    private int _currentLineNumber = 0;
 
     public IAst Parse()
     {
@@ -23,6 +24,12 @@ internal class SimpleParser(
         ast.SetParenthood(ast.Root, procedureNode);
         logger.LogInformation("Parsing completed successfully");
         return ast;
+    }
+
+    private int getLineNumber()
+    {
+        _currentLineNumber++;
+        return _currentLineNumber;
     }
 
     private void GetToken()
@@ -78,9 +85,8 @@ internal class SimpleParser(
     {
         Match("procedure", SimpleToken.Keyword);
         var procedureName = _currentToken.Value;
-        var procedureLine = _currentToken.LineNumber;
         Match(SimpleToken.Name);
-        var procedureNode = CreateTreeNode(EntityType.Procedure, procedureLine, procedureName);
+        var procedureNode = CreateTreeNode(EntityType.Procedure, _currentLineNumber, procedureName);
 
         Match("{", SimpleToken.Separator);
         NotifyAll(ex => ex.StmtLst());
@@ -123,7 +129,7 @@ internal class SimpleParser(
 
     private TreeNode While()
     {
-        var whileLine = _currentToken.LineNumber;
+        var whileLine = getLineNumber();
 
         Match("while", SimpleToken.Keyword);
         var variableNode = Variable();
@@ -143,7 +149,7 @@ internal class SimpleParser(
 
     private TreeNode Assign()
     {
-        var line = _currentToken.LineNumber;
+        var line = getLineNumber();
 
         var varNode = Variable();
         Match("=", SimpleToken.Operator);
@@ -165,11 +171,10 @@ internal class SimpleParser(
         {
             return factorNode;
         }
-        var exprLine = _currentToken.LineNumber;
         Match("+", SimpleToken.Operator);
         TreeNode exprNode = Expr();
 
-        var mainExprNode = CreateTreeNode(EntityType.Plus, exprLine, "+");
+        var mainExprNode = CreateTreeNode(EntityType.Plus, _currentLineNumber, "+");
         AddNthChild(mainExprNode, factorNode, 1);
         AddNthChild(mainExprNode, exprNode, 2);
 
@@ -181,11 +186,10 @@ internal class SimpleParser(
     {
         if (_currentToken.Type == SimpleToken.Integer)
         {
-            var factorLine = _currentToken.LineNumber;
             var factorValue = _currentToken.Value;
 
             Match(SimpleToken.Integer);
-            return CreateTreeNode(EntityType.Constant, factorLine, factorValue);
+            return CreateTreeNode(EntityType.Constant, _currentLineNumber, factorValue);
         }
         else
         {
@@ -198,10 +202,9 @@ internal class SimpleParser(
     private TreeNode Variable()
     {
         var name = _currentToken.Value;
-        var line = _currentToken.LineNumber;
         Match(SimpleToken.Name);
 
-        var variableNode = CreateTreeNode(EntityType.Variable, line, name);
+        var variableNode = CreateTreeNode(EntityType.Variable, _currentLineNumber, name);
         NotifyAll(ex => ex.Variable(variableNode));
         return variableNode;
     }
