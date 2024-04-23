@@ -19,20 +19,20 @@ internal class SimpleParser(
     public IAst Parse()
     {
         logger.LogInformation("Starting parsing");
-        GetToken();
+        GetNextToken();
         TreeNode procedureNode = Procedure();
         ast.SetParenthood(ast.Root, procedureNode);
         logger.LogInformation("Parsing completed successfully");
         return ast;
     }
 
-    private int getLineNumber()
+    private int GetNextLineNumber()
     {
         _currentLineNumber++;
         return _currentLineNumber;
     }
 
-    private void GetToken()
+    private void GetNextToken()
     {
         if (!tokens.MoveNext())
         {
@@ -49,7 +49,7 @@ internal class SimpleParser(
         {
             throw new ParseException(_currentToken, type);
         }
-        GetToken();
+        GetNextToken();
     }
 
     private TreeNode CreateTreeNode(EntityType type, int lineNumber, string? attr = null)
@@ -120,7 +120,7 @@ internal class SimpleParser(
 
     private TreeNode While()
     {
-        var whileLine = getLineNumber();
+        var whileLine = GetNextLineNumber();
 
         Match(SimpleToken.While);
         var variableNode = Variable();
@@ -140,7 +140,7 @@ internal class SimpleParser(
 
     private TreeNode Assign()
     {
-        var line = getLineNumber();
+        var line = GetNextLineNumber();
 
         var varNode = Variable();
         Match(SimpleToken.Equal);
