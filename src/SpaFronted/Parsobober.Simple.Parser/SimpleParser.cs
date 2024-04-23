@@ -43,15 +43,6 @@ internal class SimpleParser(
         _currentToken = tokens.Current;
     }
 
-    private void Match(string value, SimpleToken type)
-    {
-        if (_currentToken.Type != type || _currentToken.Value != value)
-        {
-            throw new ParseException(_currentToken, type);
-        }
-        GetToken();
-    }
-
     private void Match(SimpleToken type)
     {
         if (_currentToken.Type != type)
@@ -83,15 +74,15 @@ internal class SimpleParser(
 
     private TreeNode Procedure()
     {
-        Match("procedure", SimpleToken.Keyword);
+        Match(SimpleToken.Procedure);
         var procedureName = _currentToken.Value;
         Match(SimpleToken.Name);
         var procedureNode = CreateTreeNode(EntityType.Procedure, _currentLineNumber, procedureName);
 
-        Match("{", SimpleToken.Separator);
+        Match(SimpleToken.LeftCurly);
         NotifyAll(ex => ex.StmtLst());
         TreeNode stmtNode = StmtLst();
-        Match("}", SimpleToken.Separator);
+        Match(SimpleToken.RightCurly);
         AddNthChild(procedureNode, stmtNode, 1);
 
         NotifyAll(ex => ex.Procedure(procedureNode));
@@ -101,7 +92,7 @@ internal class SimpleParser(
     private TreeNode StmtLst()
     {
         TreeNode node = Stmt();
-        if (_currentToken.Value == "}")
+        if (_currentToken.Type == SimpleToken.RightCurly)
         {
             return node;
         }
@@ -114,7 +105,7 @@ internal class SimpleParser(
     private TreeNode Stmt()
     {
         TreeNode stmtNode;
-        if (_currentToken.Value == "while")
+        if (_currentToken.Type == SimpleToken.While)
         {
             stmtNode = While();
         }
@@ -131,13 +122,13 @@ internal class SimpleParser(
     {
         var whileLine = getLineNumber();
 
-        Match("while", SimpleToken.Keyword);
+        Match(SimpleToken.While);
         var variableNode = Variable();
 
-        Match("{", SimpleToken.Separator);
+        Match(SimpleToken.LeftCurly);
         NotifyAll(ex => ex.StmtLst());
         TreeNode stmtNode = StmtLst();
-        Match("}", SimpleToken.Separator);
+        Match(SimpleToken.RightCurly);
 
         var whileNode = CreateTreeNode(EntityType.While, whileLine);
         AddNthChild(whileNode, variableNode, 1);
@@ -152,9 +143,9 @@ internal class SimpleParser(
         var line = getLineNumber();
 
         var varNode = Variable();
-        Match("=", SimpleToken.Operator);
+        Match(SimpleToken.Equal);
         TreeNode exprNode = Expr();
-        Match(";", SimpleToken.Separator);
+        Match(SimpleToken.Semicolon);
 
         var assignNode = CreateTreeNode(EntityType.Assign, line);
         AddNthChild(assignNode, varNode, 1);
@@ -167,11 +158,11 @@ internal class SimpleParser(
     private TreeNode Expr()
     {
         TreeNode factorNode = Factor();
-        if (_currentToken.Value == ";")
+        if (_currentToken.Type == SimpleToken.Semicolon)
         {
             return factorNode;
         }
-        Match("+", SimpleToken.Operator);
+        Match(SimpleToken.Plus);
         TreeNode exprNode = Expr();
 
         var mainExprNode = CreateTreeNode(EntityType.Plus, _currentLineNumber, "+");
