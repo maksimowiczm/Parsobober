@@ -15,7 +15,7 @@ public interface IFollowsAccessor
     /// Returns the statement which FOLLOWS statement with given line number
     /// => Follows(<paramref name="lineNumber"/>, returned)
     /// </summary>
-    Statement GetFollower(int lineNumber);
+    Statement? GetFollower(int lineNumber);
 
     /// <summary>
     /// Returns the statements that are FOLLOWED BY statement with given type <typeparamref name="TStatement"/>
@@ -28,7 +28,7 @@ public interface IFollowsAccessor
     /// Returns the statement which are FOLLOWED BY statement with given line number
     /// => Follows(returned, <paramref name="lineNumber"/>)
     /// </summary>
-    Statement GetFollowed(int lineNumber);
+    Statement? GetFollowed(int lineNumber);
 
     /// <summary>
     /// Returns the statements that FOLLOW TRANSITIVELY statement with given type <typeparamref name="TStatement"/>
