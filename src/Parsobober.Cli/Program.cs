@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Parsobober.CLI;
 using Parsobober.DesignExtractor;
 using Parsobober.Pql.Parser;
@@ -8,13 +9,21 @@ using Parsobober.Pkb.Relations;
 using Parsobober.Simple.Lexer;
 using Parsobober.Simple.Parser;
 
-if (args.Length != 1)
+if (args.Length < 1)
 {
-    Console.WriteLine("Usage: Parsobober.Cli <path-to-code>");
+    Console.WriteLine("Usage: Parsobober.Cli <path-to-code> [--verbose|-v]");
     return 1;
 }
 
+var flags = args.Skip(1);
+var verbose = flags.Contains("--verbose") || args.Contains("-v");
+
 var builder = Host.CreateApplicationBuilder(args);
+
+if (!verbose)
+{
+    builder.Logging.ClearProviders();
+}
 
 builder.Services
     .AddSimpleLexer()
