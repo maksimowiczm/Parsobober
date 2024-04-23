@@ -7,7 +7,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddSimpleParserBuilder(this IServiceCollection services)
     {
-        services.AddSingleton<IParserBuilder, SimpleParserBuilder>(); // singleton?
+        services.AddScoped<IParserBuilder, SimpleParserBuilder>(); // singleton?
 
         return services;
     }

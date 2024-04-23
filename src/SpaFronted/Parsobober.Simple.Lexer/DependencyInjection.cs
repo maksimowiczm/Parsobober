@@ -6,7 +6,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddSimpleLexer(this IServiceCollection services)
     {
-        services.AddSingleton<SlyLexerAdapter>();
+        services.AddScoped<SlyLexerAdapter>();
 
         return services;
     }

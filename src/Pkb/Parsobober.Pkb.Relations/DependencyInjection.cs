@@ -10,15 +10,15 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddRelations(this IServiceCollection services)
     {
-        services.AddSingleton<IProgramContextCreator, ProgramContext>();
-        services.AddSingleton<IProgramContextAccessor, ProgramContext>();
+        services.AddScoped<IProgramContextCreator, ProgramContext>();
+        services.AddScoped<IProgramContextAccessor, ProgramContext>();
 
-        services.AddSingleton<IFollowsCreator, FollowsRelation>();
-        services.AddSingleton<IParentCreator, ParentRelation>();
-        services.AddSingleton<IModifiesCreator, ModifiesRelation>();
-        services.AddSingleton<IUsesCreator, UsesRelation>();
+        services.AddScoped<IFollowsCreator, FollowsRelation>();
+        services.AddScoped<IParentCreator, ParentRelation>();
+        services.AddScoped<IModifiesCreator, ModifiesRelation>();
+        services.AddScoped<IUsesCreator, UsesRelation>();
 
-        services.AddSingleton<IPkbCreators, PkbContext>();
+        services.AddScoped<IPkbCreators, PkbContext>();
 
         return services;
     }

@@ -7,7 +7,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddAst(this IServiceCollection services)
     {
-        services.AddSingleton<IAst, Ast>();
+        services.AddScoped<IAst, Ast>();
 
         return services;
     }
