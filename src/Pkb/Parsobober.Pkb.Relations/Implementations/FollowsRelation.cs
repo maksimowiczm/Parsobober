@@ -46,7 +46,7 @@ public class FollowsRelation(
 
     public Statement? GetFollower(int lineNumber)
     {
-        var followerStmt = _followsDictionary.FirstOrDefault(stmt => stmt.Value == lineNumber);
+        var followerStmt = _followsDictionary.SingleOrDefault(stmt => stmt.Value == lineNumber);
         if (followerStmt.Equals(default(KeyValuePair<int, int>)))
         {
             return null;
@@ -64,10 +64,9 @@ public class FollowsRelation(
 
     public Statement? GetFollowed(int lineNumber)
     {
-
-        return _followsDictionary.TryGetValue(lineNumber, out var statement) ?
-            programContext.StatementsDictionary[statement].ToStatement() :
-            null;
+        return _followsDictionary.TryGetValue(lineNumber, out var statement)
+            ? programContext.StatementsDictionary[statement].ToStatement()
+            : null;
     }
 
     public IEnumerable<Statement> GetFollowersTransitive<TStatement>() where TStatement : Statement

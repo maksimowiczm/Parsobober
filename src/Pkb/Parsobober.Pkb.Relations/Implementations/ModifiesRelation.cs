@@ -70,22 +70,10 @@ public class ModifiesRelation(
     public IEnumerable<Variable> GetVariables<T>() where T : IRequest
     {
         return _modifiesDictionary
-                .Where(statement => programContext.StatementsDictionary[statement.Key].IsType<T>())
-                .SelectMany(statement => statement.Value)
-                .Distinct()
-                .Select(variable => programContext.VariablesDictionary[variable].ToVariable());
-    }
-
-    public IEnumerable<Variable> GetVariables(int lineNumber)
-    {
-        if (_modifiesDictionary.TryGetValue(lineNumber, out var variableList))
-        {
-            return variableList.Select(variableName => new Variable(variableName));
-        }
-        else
-        {
-            return [];
-        }
+            .Where(statement => programContext.StatementsDictionary[statement.Key].IsType<T>())
+            .SelectMany(statement => statement.Value)
+            .Distinct()
+            .Select(variable => programContext.VariablesDictionary[variable].ToVariable());
     }
 
     public IEnumerable<Statement> GetStatements()
@@ -95,10 +83,17 @@ public class ModifiesRelation(
         );
     }
 
+    public IEnumerable<Variable> GetVariables(int lineNumber)
+    {
+        return _modifiesDictionary.TryGetValue(lineNumber, out var variableList)
+            ? variableList.Select(variableName => new Variable(variableName))
+            : Enumerable.Empty<Variable>();
+    }
+
     public IEnumerable<Statement> GetStatements(string variableName)
     {
         return _modifiesDictionary
-           .Where(stmt => stmt.Value.Contains(variableName))
-           .Select(stmt => programContext.StatementsDictionary[stmt.Key].ToStatement());
+            .Where(stmt => stmt.Value.Contains(variableName))
+            .Select(stmt => programContext.StatementsDictionary[stmt.Key].ToStatement());
     }
 }

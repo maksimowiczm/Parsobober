@@ -51,8 +51,8 @@ public class ParentRelation(
     public IEnumerable<Statement> GetChildren<TParentStatement>() where TParentStatement : Statement
     {
         return _childParentDictionary
-           .Where(statement => programContext.StatementsDictionary[statement.Value].IsType<TParentStatement>())
-           .Select(statement => programContext.StatementsDictionary[statement.Key].ToStatement());
+            .Where(statement => programContext.StatementsDictionary[statement.Value].IsType<TParentStatement>())
+            .Select(statement => programContext.StatementsDictionary[statement.Key].ToStatement());
     }
 
     public IEnumerable<Statement> GetChildren(int lineNumber)
@@ -62,18 +62,18 @@ public class ParentRelation(
             .Select(stmt => programContext.StatementsDictionary[stmt.Key].ToStatement());
     }
 
-    public Statement? GetParent(int lineNumber)
-    {
-        return _childParentDictionary.TryGetValue(lineNumber, out var statement) ?
-             programContext.StatementsDictionary[statement].ToStatement() :
-             null;
-    }
-
     public IEnumerable<Statement> GetParents<TChildStatement>() where TChildStatement : Statement
     {
         return _childParentDictionary
             .Where(statement => programContext.StatementsDictionary[statement.Key].IsType<TChildStatement>())
             .Select(statement => programContext.StatementsDictionary[statement.Value].ToStatement());
+    }
+
+    public Statement? GetParent(int lineNumber)
+    {
+        return _childParentDictionary.TryGetValue(lineNumber, out var statement)
+            ? programContext.StatementsDictionary[statement].ToStatement()
+            : null;
     }
 
     public IEnumerable<Statement> GetChildrenTransitive<TParentStatement>() where TParentStatement : Statement

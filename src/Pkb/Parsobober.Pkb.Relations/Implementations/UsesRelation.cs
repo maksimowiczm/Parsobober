@@ -4,6 +4,7 @@ using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Abstractions.Creators;
 using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pkb.Relations.Utilities;
+using static Parsobober.Pkb.Relations.Abstractions.Accessors.IUsesAccessor;
 
 namespace Parsobober.Pkb.Relations.Implementations;
 
@@ -58,16 +59,14 @@ public class UsesRelation(
             }
 
             variableList.Add(variable.Attribute);
-
             return;
         }
 
         _usesDictionary.Add(user.LineNumber, [variable.Attribute]);
     }
 
-    public IEnumerable<Variable> GetVariables<T>() where T : IUsesAccessor.IRequest
+    public IEnumerable<Variable> GetVariables<T>() where T : IRequest
     {
-
         return _usesDictionary
             .Where(statement => programContext.StatementsDictionary[statement.Key].IsType<T>())
             .SelectMany(statement => statement.Value)
@@ -77,14 +76,9 @@ public class UsesRelation(
 
     public IEnumerable<Variable> GetVariables(int lineNumber)
     {
-        if (_usesDictionary.TryGetValue(lineNumber, out var variableList))
-        {
-            return variableList.Select(variableName => new Variable(variableName));
-        }
-        else
-        {
-            return [];
-        }
+        return _usesDictionary.TryGetValue(lineNumber, out var variableList)
+            ? variableList.Select(variableName => programContext.VariablesDictionary[variableName].ToVariable())
+            : Enumerable.Empty<Variable>();
     }
 
     public IEnumerable<Statement> GetStatements()
