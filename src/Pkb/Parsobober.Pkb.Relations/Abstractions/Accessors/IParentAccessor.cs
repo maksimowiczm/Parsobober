@@ -28,7 +28,7 @@ public interface IParentAccessor
     /// Returns the statement that is parent of statement with given line number
     /// => Parent(returned, <paramref name="lineNumber"/>)
     /// </summary>
-    Statement GetParent(int lineNumber);
+    Statement? GetParent(int lineNumber);
 
     /// <summary>
     /// Returns the statements that are transitive children of statement with given type <typeparamref name="TParentStatement"/>

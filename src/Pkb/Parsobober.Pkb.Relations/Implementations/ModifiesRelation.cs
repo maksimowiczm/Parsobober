@@ -2,25 +2,23 @@ using Microsoft.Extensions.Logging;
 using Parsobober.Pkb.Ast;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Abstractions.Creators;
+using Parsobober.Pkb.Relations.Dto;
+using Parsobober.Pkb.Relations.Utilities;
+using static Parsobober.Pkb.Relations.Abstractions.Accessors.IModifiesAccessor;
 
 namespace Parsobober.Pkb.Relations.Implementations;
 
 public class ModifiesRelation(
     ILogger<ParentRelation> logger,
     IProgramContextAccessor programContext
-) : IModifiesCreator
+) : IModifiesCreator, IModifiesAccessor
+
 {
     /// <summary>
-    /// Stores modifies relation between statement(assign) and variable.
+    /// Stores modifies relation between statement and variable list
     /// </summary>
-    /// <remarks>[statement(assign) line number,  variable name].</remarks>
-    private readonly Dictionary<int, string> _statementModifiesDictionary = new();
-
-    /// <summary>
-    /// Stores modifies relation between container statement(while, if) and variable list
-    /// </summary>
-    /// <remarks>[statement(while, if) line number,  list of variable names].</remarks>
-    private readonly Dictionary<int, List<string>> _containerModifiesDictionary = new();
+    /// <remarks>[statement line number,  list of variable names].</remarks>
+    private readonly Dictionary<int, List<string>> _modifiesDictionary = new();
 
     public void SetModifies(TreeNode modifier, TreeNode variable)
     {
@@ -53,20 +51,7 @@ public class ModifiesRelation(
             throw new ArgumentNullException(variable.Attribute);
         }
 
-        // Add to dictionary based on modifier type
-        if (modifier.Type.IsContainerStatement())
-        {
-            SetContainerModifies(modifier, variable);
-        }
-        else
-        {
-            _statementModifiesDictionary.TryAdd(modifier.LineNumber, variable.Attribute);
-        }
-    }
-
-    private void SetContainerModifies(TreeNode modifer, TreeNode variable)
-    {
-        if (_containerModifiesDictionary.TryGetValue(modifer.LineNumber, out var variableList))
+        if (_modifiesDictionary.TryGetValue(modifier.LineNumber, out var variableList))
         {
             if (variableList.Contains(variable.Attribute!))
             {
@@ -78,6 +63,37 @@ public class ModifiesRelation(
             return;
         }
 
-        _containerModifiesDictionary.Add(modifer.LineNumber, [variable.Attribute!]);
+        _modifiesDictionary.Add(modifier.LineNumber, [variable.Attribute!]);
+    }
+
+
+    public IEnumerable<Variable> GetVariables<T>() where T : IRequest
+    {
+        return _modifiesDictionary
+            .Where(statement => programContext.StatementsDictionary[statement.Key].IsType<T>())
+            .SelectMany(statement => statement.Value)
+            .Distinct()
+            .Select(variable => programContext.VariablesDictionary[variable].ToVariable());
+    }
+
+    public IEnumerable<Statement> GetStatements()
+    {
+        return _modifiesDictionary.Select(entry =>
+            programContext.StatementsDictionary[entry.Key].ToStatement()
+        );
+    }
+
+    public IEnumerable<Variable> GetVariables(int lineNumber)
+    {
+        return _modifiesDictionary.TryGetValue(lineNumber, out var variableList)
+            ? variableList.Select(variableName => new Variable(variableName))
+            : Enumerable.Empty<Variable>();
+    }
+
+    public IEnumerable<Statement> GetStatements(string variableName)
+    {
+        return _modifiesDictionary
+            .Where(stmt => stmt.Value.Contains(variableName))
+            .Select(stmt => programContext.StatementsDictionary[stmt.Key].ToStatement());
     }
 }
