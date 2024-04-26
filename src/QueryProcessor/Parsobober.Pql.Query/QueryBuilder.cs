@@ -3,14 +3,14 @@ using Parsobober.Pkb.Relations.Dto;
 
 namespace Parsobober.Pql.Query;
 
-public class QueryBuilder (IPkbAccessor accesor) : IQueryBuilder 
+public class QueryBuilder(IPkbAccessor accesor) : IQueryBuilder
 {
-    
-    List<(string parent, string child)> parentRelations = new ();
+
+    List<(string parent, string child)> parentRelations = new();
     public IQuery Build()
     {
-       
-        List<Func<IPkbAccessor,IEnumerable<Statement>>> actions = new();
+
+        List<Func<IPkbAccessor, IEnumerable<Statement>>> actions = new();
 
         foreach (var item in parentRelations)
         {
@@ -35,12 +35,35 @@ public class QueryBuilder (IPkbAccessor accesor) : IQueryBuilder
                 }
                 else if (_declarations.ContainsKey(item.child))
                 {
-                    // TODO
-                    throw new NotImplementedException();
+                    string arg;
+                    if (item.child == _select)
+                    {
+                        arg = item.parent;
+                    }
+                    else
+                    {
+                        arg = item.child;
+                    }
+                    _declarations.TryGetValue(arg, out var type);
+                    _declarations.TryGetValue(_select, out var resultType);
+
+                    if (type == typeof(Statement))
+                    {
+                        actions.Add(ex => ex.Parent.GetParents<Statement>());
+                    }
+                    else if (type == typeof(While))
+                    {
+                        actions.Add(ex => ex.Parent.GetParents<While>());
+                    }
+                    else if (type == typeof(Assign))
+                    {
+                        actions.Add(ex => ex.Parent.GetParents<Assign>());
+                    }
+
                 }
             }
         }
-        Query query = new Query(_declarations, _select, actions,accesor);
+        Query query = new Query(_declarations, _select, actions, accesor);
         return query;
     }
 
