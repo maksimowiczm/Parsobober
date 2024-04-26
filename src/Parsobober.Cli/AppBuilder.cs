@@ -23,6 +23,7 @@ public class AppBuilder
             .AddSimpleParserBuilder()
             .AddAst()
             .AddRelations()
+            .AddPqlQueries()
             .AddPqlParser();
     }
 
