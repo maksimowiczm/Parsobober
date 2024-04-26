@@ -1,5 +1,6 @@
 ﻿using Parsobober.Pkb.Relations.Abstractions;
 using Parsobober.Pkb.Relations.Dto;
+using System.Text;
 
 namespace Parsobober.Pql.Query
 {
@@ -9,7 +10,7 @@ namespace Parsobober.Pql.Query
         private string _select = string.Empty;
         List<Func<IPkbAccessor, IEnumerable<Statement>>> _actions;
         IPkbAccessor _accesor;
-        public Query(Dictionary<string, Type> declarations, string select, List<Func<IPkbAccessor, IEnumerable<Statement>>> actions,IPkbAccessor accesor) 
+        public Query(Dictionary<string, Type> declarations, string select, List<Func<IPkbAccessor, IEnumerable<Statement>>> actions, IPkbAccessor accesor)
         {
             _declarations = declarations;
             _select = select;
@@ -20,11 +21,18 @@ namespace Parsobober.Pql.Query
         public string Execute()
         {
             List<Statement> result = new();
-            foreach (var action in _actions) 
+            foreach (var action in _actions)
             {
-                result.Concat(action(_accesor));
+                result.AddRange(action(_accesor));
             }
-            return result.ToString();
+            StringBuilder sb = new();
+            foreach (var item in result)
+            {
+                if (item == null)
+                    continue;
+                sb.AppendLine(item.ToString());
+            }
+            return sb.ToString();
         }
     }
 }
