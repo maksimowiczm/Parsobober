@@ -19,8 +19,13 @@ public class PqlParser(IQueryBuilder queryBuilder)
     {
         // Parses the input string into a PQL query.
         var queryResult = _parser.Parse(input);
-        var query = queryResult.Result;
 
+        if (queryResult.IsError)
+        {
+            throw new PqlParserException(queryResult.Errors);
+        }
+
+        var query = queryResult.Result;
         return query.Build();
     }
 
@@ -30,6 +35,11 @@ public class PqlParser(IQueryBuilder queryBuilder)
 
         var builder = new ParserBuilder<PqlToken, IQueryBuilder>();
         var parserResult = builder.BuildParser(grammar, ParserType.EBNF_LL_RECURSIVE_DESCENT, "select-clause");
+
+        if (parserResult.IsError)
+        {
+            throw new PqlParserException(parserResult.Errors);
+        }
 
         return parserResult.Result;
     }

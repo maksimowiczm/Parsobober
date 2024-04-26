@@ -23,7 +23,7 @@ internal class PqlGrammar(IQueryBuilder queryBuilder)
     [Production("such-that-clause : SuchThat[d] relation")]
     public IQueryBuilder SuchThatClause(IQueryBuilder relation) => relation;
 
-    [Production("with-clause : With[d] Attribute Equal[d] Ref")]
+    [Production("with-clause : With[d] Attribute Equal[d] Reference")]
     public IQueryBuilder WithClause(Token<PqlToken> attribute, Token<PqlToken> reference) =>
         queryBuilder.With(attribute.Value, reference.Value);
 

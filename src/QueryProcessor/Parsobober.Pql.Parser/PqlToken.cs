@@ -75,9 +75,6 @@ internal enum PqlToken
     [Lexeme($@"{PqlAuxiliaryTokens.Ident}\.{PqlAuxiliaryTokens.Ident}")]
     Attribute,
 
-    [Lexeme($"\"{PqlAuxiliaryTokens.Ident}\"|{PqlAuxiliaryTokens.Integer}")]
-    Ref,
-
     #region Declarations
 
     [Lexeme($"{PqlAuxiliaryTokens.DesignEntity} {PqlAuxiliaryTokens.Synonym}(, {PqlAuxiliaryTokens.Synonym})*;")]
