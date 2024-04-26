@@ -1,12 +1,47 @@
+using Parsobober.Pkb.Relations.Abstractions;
 using Parsobober.Pkb.Relations.Dto;
 
 namespace Parsobober.Pql.Query;
 
-public class QueryBuilder : IQueryBuilder
+public class QueryBuilder (IPkbAccessor accesor) : IQueryBuilder 
 {
+    
+    List<(string parent, string child)> parentRelations = new ();
     public IQuery Build()
     {
-        throw new NotImplementedException();
+       
+        List<Func<IPkbAccessor,IEnumerable<Statement>>> actions = new();
+
+        foreach (var item in parentRelations)
+        {
+            if (int.TryParse(item.parent, out int parentInt))
+            {
+
+                if (int.TryParse(item.child, out int childInt))
+                {
+                    throw new NotImplementedException();
+                }
+                else if (_declarations.ContainsKey(item.child))
+                {
+                    actions.Add(ex => ex.Parent.GetChildren(parentInt));
+                }
+            }
+            else if (_declarations.ContainsKey(item.parent))
+            {
+
+                if (int.TryParse(item.child, out int childInt))
+                {
+                    actions.Add(ex => [ex.Parent.GetParent(childInt)]);
+                }
+                else if (_declarations.ContainsKey(item.child))
+                {
+                    // TODO
+                    throw new NotImplementedException();
+                }
+            }
+        }
+        Query query = new Query(_declarations, _select, actions,accesor);
+        return query;
     }
 
     public IQueryBuilder AddFollows(string reference1, string reference2)
@@ -21,6 +56,7 @@ public class QueryBuilder : IQueryBuilder
 
     public IQueryBuilder AddParent(string parent, string child)
     {
+        parentRelations.Add((parent, child));
         return this;
     }
 
