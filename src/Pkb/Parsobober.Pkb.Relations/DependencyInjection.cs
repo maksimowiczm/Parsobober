@@ -21,7 +21,7 @@ public static class DependencyInjection
 
         services.AddScoped<PkbContext>();
         services.AddScoped<IPkbCreators>(s => s.GetRequiredService<PkbContext>());
-        services.AddScoped<IPkbAccessor>(s => s.GetRequiredService<PkbContext>());
+        services.AddScoped<IPkbAccessors>(s => s.GetRequiredService<PkbContext>());
 
         services.AddScoped<IFollowsCreator>(s => s.GetRequiredService<FollowsRelation>());
         services.AddScoped<IParentCreator>(s => s.GetRequiredService<ParentRelation>());

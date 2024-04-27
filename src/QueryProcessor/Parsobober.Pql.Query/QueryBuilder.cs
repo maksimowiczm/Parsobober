@@ -3,7 +3,7 @@ using Parsobober.Pkb.Relations.Dto;
 
 namespace Parsobober.Pql.Query;
 
-public class QueryBuilder(IPkbAccessor accesor) : IQueryBuilder
+public class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
 {
 
     List<(string parent, string child)> parentRelations = new();

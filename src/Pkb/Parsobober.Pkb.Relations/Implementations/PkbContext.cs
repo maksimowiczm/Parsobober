@@ -10,16 +10,16 @@ internal class PkbContext(
     ModifiesRelation modifies,
     ParentRelation parent,
     UsesRelation uses
-) : IPkbCreators, IPkbAccessor
+) : IPkbCreators, IPkbAccessors
 {
     IProgramContextCreator IPkbCreators.ProgramContext => programContext;
     IFollowsCreator IPkbCreators.Follows => follows;
     IModifiesCreator IPkbCreators.Modifies => modifies;
     IParentCreator IPkbCreators.Parent => parent;
     IUsesCreator IPkbCreators.Uses => uses;
-    IProgramContextAccessor IPkbAccessor.ProgramContext => programContext;
-    IFollowsAccessor IPkbAccessor.Follows => follows;
-    IParentAccessor IPkbAccessor.Parent => parent;
-    IModifiesAccessor IPkbAccessor.Modifies => modifies;
-    IUsesAccessor IPkbAccessor.Uses => uses;
+    IProgramContextAccessor IPkbAccessors.ProgramContext => programContext;
+    IFollowsAccessor IPkbAccessors.Follows => follows;
+    IParentAccessor IPkbAccessors.Parent => parent;
+    IModifiesAccessor IPkbAccessors.Modifies => modifies;
+    IUsesAccessor IPkbAccessors.Uses => uses;
 }
