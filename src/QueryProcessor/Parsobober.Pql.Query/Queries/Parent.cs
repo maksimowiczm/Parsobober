@@ -1,18 +1,107 @@
 using System.Collections;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Dto;
+using Parsobober.Shared;
 
 namespace Parsobober.Pql.Query.Queries;
 
 internal static class Parent
 {
+    #region Builder
+
+    public class Builder(IParentAccessor accessor)
+    {
+        private readonly List<(string parent, string child)> _parentRelations = [];
+
+        public void Add(string parent, string child)
+        {
+            _parentRelations.Add((parent, child));
+        }
+
+        public IEnumerable<Statement> Build(string select, IReadOnlyDictionary<string, Type> declarations)
+        {
+            // todo aktualnie działa tylko dla jednego parenta i nie bierze pod uwagę atrybutów
+
+            var parent = _parentRelations.First().parent;
+            var child = _parentRelations.First().child;
+
+            var query = new InnerBuilder(accessor, select, declarations).Build(parent, child);
+
+            return query;
+        }
+    }
+
+    private class InnerBuilder(IParentAccessor accessor, string select, IReadOnlyDictionary<string, Type> declarations)
+    {
+        public IEnumerable<Statement> Build(string parentStr, string childStr)
+        {
+            // parsowanie argumentów
+            var nullableParentLine = parentStr.ParseOrNull<int>();
+            var nullableChildLine = childStr.ParseOrNull<int>();
+
+            var nullableParentType = declarations.GetValueOrDefault(parentStr);
+            var nullableChildType = declarations.GetValueOrDefault(childStr);
+
+            // pattern matching argumentów
+            var query = ((nullableParentType, nullableParentLine), (nullableChildType, nullableChildLine)) switch
+            {
+                // Parent(T, T)
+                (({ } parentType, null), ({ } childType, null)) =>
+                    BuildParentWithSelect((parentStr, parentType), (childStr, childType)),
+                // Parent(T, 1)
+                (({ } parentType, null), (null, { } childLine)) =>
+                    Activator.CreateInstance(
+                        typeof(GetParentByLineNumber<>).MakeGenericType(parentType),
+                        accessor,
+                        childLine
+                    ),
+                // Parent(1, T)
+                ((null, { } parentLine), ({ } childType, null)) =>
+                    Activator.CreateInstance(
+                        typeof(GetChildrenByLineNumber<>).MakeGenericType(childType),
+                        accessor,
+                        parentLine
+                    ),
+                // Parent(1, 2) nie wspierane w tej wersji
+                _ => throw new InvalidOperationException("Invalid query")
+            } as IEnumerable<Statement>;
+
+            return query!;
+        }
+
+        private IEnumerable<Statement> BuildParentWithSelect(
+            (string key, Type type) parent,
+            (string key, Type type) child
+        )
+        {
+            // tu nastąpi samowywrotka przy zapytaniach, w których nie ma wartości z selecta
+            // przykład: Select x such that Parent(a, b)
+
+            // sprawdzamy o co pytamy
+            var queryType = (parent.key == select) switch
+            {
+                // pytam o rodziców Parent(to chce, to mam)
+                true => typeof(GetParentsByChildType<,>).MakeGenericType([parent.type, child.type]),
+                // pytam o dzieci Parent(to mam, to chce)
+                false => typeof(GetChildrenByParentType<,>).MakeGenericType([parent.type, child.type])
+            };
+
+            var query = Activator.CreateInstance(queryType, accessor) as IEnumerable<Statement>;
+            return query!;
+        }
+    }
+
+    #endregion
+
+    #region Queries
+
     /// <summary>
     /// Gets parents of given type by child type.
     /// </summary>
     /// <param name="parentAccessor">Parent accessor.</param>
     /// <typeparam name="TParent">Parent type.</typeparam>
     /// <typeparam name="TChild">Child type.</typeparam>
-    public class GetParentsByChildType<TParent, TChild>(IParentAccessor parentAccessor)
+    private class GetParentsByChildType<TParent, TChild>(IParentAccessor parentAccessor)
         : ParentBase<TParent>(
             parentAccessor,
             ex => ex.GetParents<TChild>().OfType<TParent>()
@@ -26,7 +115,7 @@ internal static class Parent
     /// <param name="parentAccessor">Parent accessor.</param>
     /// <param name="line">Line number.</param>
     /// <typeparam name="TParent">Parent type.</typeparam>
-    public class GetParentByLineNumber<TParent>(IParentAccessor parentAccessor, int line)
+    private class GetParentByLineNumber<TParent>(IParentAccessor parentAccessor, int line)
         : ParentBase<TParent>(
             parentAccessor,
             ex =>
@@ -46,7 +135,7 @@ internal static class Parent
     /// <param name="parentAccessor">Parent accessor.</param>
     /// <param name="line">Line number.</param>
     /// <typeparam name="TChild">Child type.</typeparam>
-    public class GetChildrenByLineNumber<TChild>(IParentAccessor parentAccessor, int line)
+    private class GetChildrenByLineNumber<TChild>(IParentAccessor parentAccessor, int line)
         : ParentBase<TChild>(
             parentAccessor,
             ex => ex.GetChildren(line).OfType<TChild>()
@@ -59,7 +148,7 @@ internal static class Parent
     /// <param name="parentAccessor">Parent accessor.</param>
     /// <typeparam name="TParent">Parent type.</typeparam>
     /// <typeparam name="TChild">Child type.</typeparam>
-    public class GetChildrenByParentType<TParent, TChild>(IParentAccessor parentAccessor)
+    private class GetChildrenByParentType<TParent, TChild>(IParentAccessor parentAccessor)
         : ParentBase<TChild>(
             parentAccessor,
             ex => ex.GetChildren<TParent>().OfType<TChild>()
@@ -67,7 +156,7 @@ internal static class Parent
         where TChild : Statement
         where TParent : Statement;
 
-    public abstract class ParentBase<TOut>(
+    private abstract class ParentBase<TOut>(
         IParentAccessor parentAccessor,
         Func<IParentAccessor, IEnumerable<TOut>> query
     ) : IEnumerable<TOut>
@@ -76,4 +165,6 @@ internal static class Parent
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
+
+    #endregion
 }
