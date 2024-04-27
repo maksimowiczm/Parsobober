@@ -1,70 +1,77 @@
 using Parsobober.Pkb.Relations.Abstractions;
 using Parsobober.Pkb.Relations.Dto;
+using Parsobober.Pql.Query.Queries;
+using Parsobober.Shared;
 
 namespace Parsobober.Pql.Query;
 
 public class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
 {
+    private readonly List<(string parent, string child)> _parentRelations = [];
 
-    List<(string parent, string child)> parentRelations = new();
     public IQuery Build()
     {
+        // todo aktualnie działa tylko dla jednego parenta
+        var parent = _parentRelations.First().parent;
+        var child = _parentRelations.First().child;
 
-        List<Func<IPkbAccessor, IEnumerable<Statement>>> actions = new();
+        var query = BuildParent(parent, child);
 
-        foreach (var item in parentRelations)
+        return new Query(query);
+    }
+
+    private IEnumerable<Statement> BuildParent(string parentStr, string childStr)
+    {
+        // parsowanie argumentów
+        var nullableParentLine = parentStr.ParseOrNull<int>();
+        var nullableChildLine = childStr.ParseOrNull<int>();
+
+        var nullableParentType = _declarations.GetValueOrDefault(parentStr);
+        var nullableChildType = _declarations.GetValueOrDefault(childStr);
+
+        // pattern matching argumentów
+        var query = ((nullableParentType, nullableParentLine), (nullableChildType, nullableChildLine)) switch
         {
-            if (int.TryParse(item.parent, out int parentInt))
-            {
+            // Parent(T, T)
+            (({ } parentType, null), ({ } childType, null)) =>
+                BuildParentWithSelect((parentStr, parentType), (childStr, childType)),
+            // Parent(T, 1)
+            (({ } parentType, null), (null, { } childLine)) =>
+                Activator.CreateInstance(
+                    typeof(Parent.GetParentByLineNumber<>).MakeGenericType(parentType),
+                    accessor.Parent,
+                    childLine
+                ),
+            // Parent(1, T)
+            ((null, { } parentLine), ({ } childType, null)) =>
+                Activator.CreateInstance(
+                    typeof(Parent.GetChildrenByLineNumber<>).MakeGenericType(childType),
+                    accessor.Parent,
+                    parentLine
+                ),
+            // Parent(1, 2) nie wspierane w tej wersji
+            _ => throw new InvalidOperationException("Invalid query")
+        } as IEnumerable<Statement>;
 
-                if (int.TryParse(item.child, out int childInt))
-                {
-                    throw new NotImplementedException();
-                }
-                else if (_declarations.ContainsKey(item.child))
-                {
-                    actions.Add(ex => ex.Parent.GetChildren(parentInt));
-                }
-            }
-            else if (_declarations.ContainsKey(item.parent))
-            {
+        return query!;
+    }
 
-                if (int.TryParse(item.child, out int childInt))
-                {
-                    actions.Add(ex => [ex.Parent.GetParent(childInt)]);
-                }
-                else if (_declarations.ContainsKey(item.child))
-                {
-                    string arg;
-                    if (item.child == _select)
-                    {
-                        arg = item.parent;
-                    }
-                    else
-                    {
-                        arg = item.child;
-                    }
-                    _declarations.TryGetValue(arg, out var type);
-                    _declarations.TryGetValue(_select, out var resultType);
+    private IEnumerable<Statement> BuildParentWithSelect((string key, Type type) parent, (string key, Type type) child)
+    {
+        // tu nastąpi samowywrotka przy zapytaniach, w których nie ma wartości z selecta
+        // przykład: Select x such that Parent(a, b)
 
-                    if (type == typeof(Statement))
-                    {
-                        actions.Add(ex => ex.Parent.GetParents<Statement>());
-                    }
-                    else if (type == typeof(While))
-                    {
-                        actions.Add(ex => ex.Parent.GetParents<While>());
-                    }
-                    else if (type == typeof(Assign))
-                    {
-                        actions.Add(ex => ex.Parent.GetParents<Assign>());
-                    }
+        // sprawdzamy o co pytamy
+        var queryType = (parent.key == _select) switch
+        {
+            // pytam o rodziców Parent(to chce, to mam)
+            true => typeof(Parent.GetParentsByChildType<,>).MakeGenericType([parent.type, child.type]),
+            // pytam o dzieci Parent(to mam, to chce)
+            false => typeof(Parent.GetChildrenByParentType<,>).MakeGenericType([parent.type, child.type])
+        };
 
-                }
-            }
-        }
-        Query query = new Query(_declarations, _select, actions, accesor);
-        return query;
+        var query = Activator.CreateInstance(queryType, accessor.Parent) as IEnumerable<Statement>;
+        return query!;
     }
 
     public IQueryBuilder AddFollows(string reference1, string reference2)
@@ -79,7 +86,7 @@ public class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
 
     public IQueryBuilder AddParent(string parent, string child)
     {
-        parentRelations.Add((parent, child));
+        _parentRelations.Add((parent, child));
         return this;
     }
 
