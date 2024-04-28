@@ -102,12 +102,13 @@ internal static class Parent
     /// <typeparam name="TParent">Parent type.</typeparam>
     /// <typeparam name="TChild">Child type.</typeparam>
     private class GetParentsByChildType<TParent, TChild>(IParentAccessor parentAccessor)
-        : ParentBase<TParent>(
-            parentAccessor,
-            ex => ex.GetParents<TChild>().OfType<TParent>()
-        )
+        : ParentBase<TParent>(parentAccessor)
         where TParent : Statement
-        where TChild : Statement;
+        where TChild : Statement
+    {
+        protected override IEnumerable<TParent> Query(IParentAccessor accessor) =>
+            accessor.GetParents<TChild>().OfType<TParent>();
+    }
 
     /// <summary>
     /// Get parent of given type by child line number.
@@ -116,18 +117,19 @@ internal static class Parent
     /// <param name="line">Line number.</param>
     /// <typeparam name="TParent">Parent type.</typeparam>
     private class GetParentByLineNumber<TParent>(IParentAccessor parentAccessor, int line)
-        : ParentBase<TParent>(
-            parentAccessor,
-            ex =>
+        : ParentBase<TParent>(parentAccessor)
+        where TParent : Statement
+    {
+        protected override IEnumerable<TParent> Query(IParentAccessor accessor)
+        {
+            if (accessor.GetParent(line) is not TParent parent)
             {
-                if (ex.GetParent(line) is not TParent parent)
-                {
-                    return Enumerable.Empty<TParent>();
-                }
+                return Enumerable.Empty<TParent>();
+            }
 
-                return Enumerable.Repeat(parent, 1);
-            })
-        where TParent : Statement;
+            return Enumerable.Repeat(parent, 1);
+        }
+    }
 
     /// <summary>
     /// Gets children of given type by parent line number.
@@ -136,11 +138,12 @@ internal static class Parent
     /// <param name="line">Line number.</param>
     /// <typeparam name="TChild">Child type.</typeparam>
     private class GetChildrenByLineNumber<TChild>(IParentAccessor parentAccessor, int line)
-        : ParentBase<TChild>(
-            parentAccessor,
-            ex => ex.GetChildren(line).OfType<TChild>()
-        )
-        where TChild : Statement;
+        : ParentBase<TChild>(parentAccessor)
+        where TChild : Statement
+    {
+        protected override IEnumerable<TChild> Query(IParentAccessor accessor) =>
+            accessor.GetChildren(line).OfType<TChild>();
+    }
 
     /// <summary>
     /// Gets children of given type by parent type.
@@ -149,19 +152,19 @@ internal static class Parent
     /// <typeparam name="TParent">Parent type.</typeparam>
     /// <typeparam name="TChild">Child type.</typeparam>
     private class GetChildrenByParentType<TParent, TChild>(IParentAccessor parentAccessor)
-        : ParentBase<TChild>(
-            parentAccessor,
-            ex => ex.GetChildren<TParent>().OfType<TChild>()
-        )
+        : ParentBase<TChild>(parentAccessor)
         where TChild : Statement
-        where TParent : Statement;
-
-    private abstract class ParentBase<TOut>(
-        IParentAccessor parentAccessor,
-        Func<IParentAccessor, IEnumerable<TOut>> query
-    ) : IEnumerable<TOut>
+        where TParent : Statement
     {
-        public IEnumerator<TOut> GetEnumerator() => query(parentAccessor).GetEnumerator();
+        protected override IEnumerable<TChild> Query(IParentAccessor accessor) =>
+            accessor.GetChildren<TParent>().OfType<TChild>();
+    }
+
+    private abstract class ParentBase<TOut>(IParentAccessor parentAccessor) : IEnumerable<TOut>
+    {
+        protected abstract IEnumerable<TOut> Query(IParentAccessor accessor);
+
+        public IEnumerator<TOut> GetEnumerator() => Query(parentAccessor).GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
