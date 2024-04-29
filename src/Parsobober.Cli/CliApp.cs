@@ -22,10 +22,14 @@ internal class CliApp(IServiceProvider serviceProvider)
             .BuildParser(code)
             .Parse();
 
+        await writer.WriteLineAsync("Ready");
+
         while (true)
         {
             var pqlParser = scope.ServiceProvider.GetRequiredService<PqlParser>();
-            var queryStr = (await reader.ReadLineAsync())!;
+            var line1 = (await reader.ReadLineAsync())!.Trim();
+            var line2 = (await reader.ReadLineAsync())!.Trim();
+            var queryStr = $"{line1} {line2}";
 
             var query = pqlParser.Parse(queryStr);
             var response = query.Execute();
