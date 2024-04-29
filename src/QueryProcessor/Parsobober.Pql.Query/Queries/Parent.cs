@@ -1,4 +1,3 @@
-using System.Collections;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Abstractions;
@@ -47,31 +46,15 @@ internal static class Parent
             var query = (parentArgument, childArgument) switch
             {
                 // Parent(stmt, 1)
-                (IDeclaration.Statement, IArgument.Line child) =>
-                    new GetParentByLineNumber<Statement>(accessor, child.Value),
-
-                // Parent(assign, 1)
-                (IDeclaration.Assign, IArgument.Line child) =>
-                    new GetParentByLineNumber<Assign>(accessor, child.Value),
-
-                // Parent(while, 1)
-                (IDeclaration.While, IArgument.Line child) =>
-                    new GetParentByLineNumber<While>(accessor, child.Value),
+                (IStatementDeclaration declaration, IArgument.Line child) =>
+                    new GetParentByLineNumber(accessor, child.Value).Build(declaration),
 
                 // Parent(1, stmt)
-                (IArgument.Line parent, IDeclaration.Statement) =>
-                    new GetChildrenByLineNumber<Statement>(accessor, parent.Value),
-
-                // Parent(1, assign)
-                (IArgument.Line parent, IDeclaration.Assign) =>
-                    new GetChildrenByLineNumber<Assign>(accessor, parent.Value),
-
-                // Parent(1, while)
-                (IArgument.Line parent, IDeclaration.While) =>
-                    new GetChildrenByLineNumber<While>(accessor, parent.Value),
+                (IArgument.Line parent, IStatementDeclaration child) =>
+                    new GetChildrenByLineNumber(accessor, parent.Value).Build(child),
 
                 // Parent(stmt, stmt)
-                (IDeclaration parent, IDeclaration child) =>
+                (IStatementDeclaration parent, IStatementDeclaration child) =>
                     BuildParentWithSelect((parentStr, parent), (childStr, child)),
 
                 // Parent(1, 2) nie wspierane w tej wersji
@@ -82,27 +65,24 @@ internal static class Parent
         }
 
         private IEnumerable<Statement> BuildParentWithSelect(
-            (string key, IDeclaration type) parent,
-            (string key, IDeclaration type) child
+            (string key, IStatementDeclaration type) parent,
+            (string key, IStatementDeclaration type) child
         )
         {
             // tu nastąpi samowywrotka przy zapytaniach, w których nie ma wartości z selecta
             // przykład: Select x such that Parent(a, b)
 
-            var parentDto = parent.type.ToDtoStatementType();
-            var childDto = child.type.ToDtoStatementType();
-
-            // sprawdzamy o co pytamy
-            var queryType = (parent.key == select) switch
+            if (parent.key == select)
             {
-                // pytam o rodziców Parent(to chce, to mam)
-                true => typeof(GetParentsByChildType<,>).MakeGenericType([parentDto, childDto]),
-                // pytam o dzieci Parent(to mam, to chce)
-                false => typeof(GetChildrenByParentType<,>).MakeGenericType([parentDto, childDto])
-            };
+                return new GetParentsByChildType(accessor).Create(parent.type).Build(child.type);
+            }
 
-            var query = Activator.CreateInstance(queryType, accessor) as IEnumerable<Statement>;
-            return query!;
+            if (child.key == select)
+            {
+                return new GetChildrenByParentType(accessor).Create(child.type).Build(parent.type);
+            }
+
+            throw new InvalidOperationException("Invalid query");
         }
     }
 
@@ -110,19 +90,64 @@ internal static class Parent
 
     #region Queries
 
+    private class GetParentsByChildType(IParentAccessor parentAccessor)
+    {
+        public ParentQuery Create(IStatementDeclaration parentStatementDeclaration) =>
+            parentStatementDeclaration switch
+            {
+                IStatementDeclaration.Statement => new GetParentsByChildType<Statement>(parentAccessor),
+                IStatementDeclaration.Assign => new GetParentsByChildType<Assign>(parentAccessor),
+                IStatementDeclaration.While => new GetParentsByChildType<While>(parentAccessor),
+                _ => throw new ArgumentOutOfRangeException(nameof(parentStatementDeclaration))
+            };
+    }
+
     /// <summary>
     /// Gets parents of given type by child type.
     /// </summary>
     /// <param name="parentAccessor">Parent accessor.</param>
     /// <typeparam name="TParent">Parent type.</typeparam>
-    /// <typeparam name="TChild">Child type.</typeparam>
-    private class GetParentsByChildType<TParent, TChild>(IParentAccessor parentAccessor)
-        : ParentBase<TParent>(parentAccessor)
+    private class GetParentsByChildType<TParent>(IParentAccessor parentAccessor) : ParentQuery
         where TParent : Statement
+    {
+        public override IEnumerable<Statement> Build(IStatementDeclaration childStatementDeclaration) =>
+            childStatementDeclaration switch
+            {
+                IStatementDeclaration.Statement => parentAccessor.GetParents<TParent>(),
+                IStatementDeclaration.Assign => parentAccessor.GetParents<TParent>().OfType<Assign>(),
+                IStatementDeclaration.While => parentAccessor.GetParents<TParent>().OfType<While>(),
+                _ => throw new ArgumentOutOfRangeException(nameof(childStatementDeclaration))
+            };
+    }
+
+    private class GetChildrenByParentType(IParentAccessor parentAccessor)
+    {
+        public ParentQuery Create(IStatementDeclaration declaration) =>
+            declaration switch
+            {
+                IStatementDeclaration.Statement => new GetChildrenByParentType<Statement>(parentAccessor),
+                IStatementDeclaration.Assign => new GetChildrenByParentType<Assign>(parentAccessor),
+                IStatementDeclaration.While => new GetChildrenByParentType<While>(parentAccessor),
+                _ => throw new ArgumentOutOfRangeException(nameof(declaration))
+            };
+    }
+
+    /// <summary>
+    /// Gets children of given type by parent type.
+    /// </summary>
+    /// <param name="parentAccessor">Parent accessor.</param>
+    /// <typeparam name="TChild">Child type.</typeparam>
+    private class GetChildrenByParentType<TChild>(IParentAccessor parentAccessor) : ParentQuery
         where TChild : Statement
     {
-        protected override IEnumerable<TParent> Query(IParentAccessor accessor) =>
-            accessor.GetParents<TChild>().OfType<TParent>();
+        public override IEnumerable<Statement> Build(IStatementDeclaration declaration) =>
+            declaration switch
+            {
+                IStatementDeclaration.Statement => parentAccessor.GetChildren<TChild>(),
+                IStatementDeclaration.Assign => parentAccessor.GetChildren<TChild>().OfType<Assign>(),
+                IStatementDeclaration.While => parentAccessor.GetChildren<TChild>().OfType<While>(),
+                _ => throw new ArgumentOutOfRangeException(nameof(declaration))
+            };
     }
 
     /// <summary>
@@ -130,19 +155,26 @@ internal static class Parent
     /// </summary>
     /// <param name="parentAccessor">Parent accessor.</param>
     /// <param name="line">Line number.</param>
-    /// <typeparam name="TParent">Parent type.</typeparam>
-    private class GetParentByLineNumber<TParent>(IParentAccessor parentAccessor, int line)
-        : ParentBase<TParent>(parentAccessor)
-        where TParent : Statement
+    private class GetParentByLineNumber(IParentAccessor parentAccessor, int line) : ParentQuery
     {
-        protected override IEnumerable<TParent> Query(IParentAccessor accessor)
+        public override IEnumerable<Statement> Build(IStatementDeclaration parent)
         {
-            if (accessor.GetParent(line) is not TParent parent)
+            var parentStatement = parentAccessor.GetParent(line);
+
+            var result = parent switch
             {
-                return Enumerable.Empty<TParent>();
+                IStatementDeclaration.Statement => parentStatement,
+                IStatementDeclaration.Assign => parentStatement as Assign,
+                IStatementDeclaration.While => parentStatement as While,
+                _ => throw new ArgumentOutOfRangeException(nameof(parent))
+            };
+
+            if (result is null)
+            {
+                return Enumerable.Empty<Statement>();
             }
 
-            return Enumerable.Repeat(parent, 1);
+            return Enumerable.Repeat(result, 1);
         }
     }
 
@@ -151,37 +183,29 @@ internal static class Parent
     /// </summary>
     /// <param name="parentAccessor">Parent accessor.</param>
     /// <param name="line">Line number.</param>
-    /// <typeparam name="TChild">Child type.</typeparam>
-    private class GetChildrenByLineNumber<TChild>(IParentAccessor parentAccessor, int line)
-        : ParentBase<TChild>(parentAccessor)
-        where TChild : Statement
+    private class GetChildrenByLineNumber(IParentAccessor parentAccessor, int line) : ParentQuery
     {
-        protected override IEnumerable<TChild> Query(IParentAccessor accessor) =>
-            accessor.GetChildren(line).OfType<TChild>();
+        public override IEnumerable<Statement> Build(IStatementDeclaration child) =>
+            child switch
+            {
+                IStatementDeclaration.Statement => parentAccessor.GetChildren(line),
+                IStatementDeclaration.Assign => parentAccessor.GetChildren(line).OfType<Assign>(),
+                IStatementDeclaration.While => parentAccessor.GetChildren(line).OfType<While>(),
+                _ => throw new ArgumentOutOfRangeException(nameof(child))
+            };
     }
 
     /// <summary>
-    /// Gets children of given type by parent type.
+    /// Represents a parent query.
     /// </summary>
-    /// <param name="parentAccessor">Parent accessor.</param>
-    /// <typeparam name="TParent">Parent type.</typeparam>
-    /// <typeparam name="TChild">Child type.</typeparam>
-    private class GetChildrenByParentType<TParent, TChild>(IParentAccessor parentAccessor)
-        : ParentBase<TChild>(parentAccessor)
-        where TChild : Statement
-        where TParent : Statement
+    private abstract class ParentQuery
     {
-        protected override IEnumerable<TChild> Query(IParentAccessor accessor) =>
-            accessor.GetChildren<TParent>().OfType<TChild>();
-    }
-
-    private abstract class ParentBase<TOut>(IParentAccessor parentAccessor) : IEnumerable<TOut>
-    {
-        protected abstract IEnumerable<TOut> Query(IParentAccessor accessor);
-
-        public IEnumerator<TOut> GetEnumerator() => Query(parentAccessor).GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        /// <summary>
+        /// Builds a query.
+        /// </summary>
+        /// <param name="declaration"> The declaration to build the query for. </param>
+        /// <returns> The query. </returns>
+        public abstract IEnumerable<Statement> Build(IStatementDeclaration declaration);
     }
 
     #endregion

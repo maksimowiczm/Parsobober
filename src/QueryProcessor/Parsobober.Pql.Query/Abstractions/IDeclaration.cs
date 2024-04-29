@@ -13,40 +13,18 @@ public interface IDeclaration : IArgument
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the type cannot be parsed.</exception>
     static IDeclaration Parse(string type)
     {
-        return type switch
+        // todo really ugly, refactor (clueless)
+        List<Func<string, IDeclaration?>> parsers = [IStatementDeclaration.Parse,];
+
+        foreach (var parser in parsers)
         {
-            "stmt" => new Statement(),
-            "while" => new While(),
-            "assign" => new Assign(),
-            _ => throw new ArgumentOutOfRangeException($"Declaration type '{type}' is not supported.")
-        };
+            var parsedDeclaration = parser(type);
+            if (parsedDeclaration is not null)
+            {
+                return parsedDeclaration;
+            }
+        }
+
+        throw new ArgumentOutOfRangeException($"Declaration type '{type}' is not supported.");
     }
-
-
-    [Obsolete("💀")]
-    Type ToDtoStatementType()
-    {
-        return this switch
-        {
-            Statement => typeof(Pkb.Relations.Dto.Statement),
-            While => typeof(Pkb.Relations.Dto.While),
-            Assign => typeof(Pkb.Relations.Dto.Assign),
-            _ => throw new InvalidOperationException()
-        };
-    }
-
-    /// <summary>
-    /// Represents a statement declaration in a PQL query.
-    /// </summary>
-    public readonly record struct Statement : IDeclaration;
-
-    /// <summary>
-    /// Represents a while declaration in a PQL query.
-    /// </summary>
-    public readonly record struct While : IDeclaration;
-
-    /// <summary>
-    /// Represents an assign declaration in a PQL query.
-    /// </summary>
-    public readonly record struct Assign : IDeclaration;
 }
