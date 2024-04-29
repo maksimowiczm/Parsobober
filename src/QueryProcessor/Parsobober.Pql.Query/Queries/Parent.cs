@@ -17,7 +17,7 @@ internal static class Parent
             _parentRelations.Add((parent, child));
         }
 
-        public IEnumerable<Statement> Build(string select, IReadOnlyDictionary<string, Type> declarations)
+        public IEnumerable<Statement> Build(string select, IReadOnlyDictionary<string, IDeclaration> declarations)
         {
             // todo aktualnie działa tylko dla jednego parenta i nie bierze pod uwagę atrybutów
 
@@ -30,25 +30,12 @@ internal static class Parent
         }
     }
 
-    private class InnerBuilder(IParentAccessor accessor, string select, IReadOnlyDictionary<string, Type> declarations)
+    private class InnerBuilder(
+        IParentAccessor accessor,
+        string select,
+        IReadOnlyDictionary<string, IDeclaration> declarations
+    )
     {
-        private interface IArgument
-        {
-            static IArgument Parse(IReadOnlyDictionary<string, Type> declarations, string str)
-            {
-                if (declarations.TryGetValue(str, out var declaration))
-                {
-                    return new Declaration(declaration);
-                }
-
-                return new Line(int.Parse(str));
-            }
-        }
-
-        private record Line(int Value) : IArgument;
-
-        private record Declaration(Type Type) : IArgument;
-
         public IEnumerable<Statement> Build(string parentStr, string childStr)
         {
             // parsowanie argumentów
@@ -58,33 +45,44 @@ internal static class Parent
             // pattern matching argumentów
             var query = (parentArgument, childArgument) switch
             {
-                // Parent(T, T)
-                (Declaration parent, Declaration child) =>
-                    BuildParentWithSelect((parentStr, parent.Type), (childStr, child.Type)),
-                // Parent(T, 1)
-                (Declaration parent, Line child) =>
-                    Activator.CreateInstance(
-                        typeof(GetParentByLineNumber<>).MakeGenericType(parent.Type),
-                        accessor,
-                        child.Value
-                    ),
-                // Parent(1, T)
-                (Line parent, Declaration child) =>
-                    Activator.CreateInstance(
-                        typeof(GetChildrenByLineNumber<>).MakeGenericType(child.Type),
-                        accessor,
-                        parent.Value
-                    ),
+                // Parent(stmt, 1)
+                (IDeclaration.Statement, IArgument.Line child) =>
+                    new GetParentByLineNumber<Statement>(accessor, child.Value),
+
+                // Parent(assign, 1)
+                (IDeclaration.Assign, IArgument.Line child) =>
+                    new GetParentByLineNumber<Assign>(accessor, child.Value),
+
+                // Parent(while, 1)
+                (IDeclaration.While, IArgument.Line child) =>
+                    new GetParentByLineNumber<While>(accessor, child.Value),
+
+                // Parent(1, stmt)
+                (IArgument.Line parent, IDeclaration.Statement) =>
+                    new GetChildrenByLineNumber<Statement>(accessor, parent.Value),
+
+                // Parent(1, assign)
+                (IArgument.Line parent, IDeclaration.Assign) =>
+                    new GetChildrenByLineNumber<Assign>(accessor, parent.Value),
+
+                // Parent(1, while)
+                (IArgument.Line parent, IDeclaration.While) =>
+                    new GetChildrenByLineNumber<While>(accessor, parent.Value),
+
+                // Parent(stmt, stmt)
+                (IDeclaration parent, IDeclaration child) =>
+                    BuildParentWithSelect((parentStr, parent), (childStr, child)),
+
                 // Parent(1, 2) nie wspierane w tej wersji
                 _ => throw new InvalidOperationException("Invalid query")
-            } as IEnumerable<Statement>;
+            };
 
-            return query!;
+            return query;
         }
 
         private IEnumerable<Statement> BuildParentWithSelect(
-            (string key, Type type) parent,
-            (string key, Type type) child
+            (string key, IDeclaration type) parent,
+            (string key, IDeclaration type) child
         )
         {
             // tu nastąpi samowywrotka przy zapytaniach, w których nie ma wartości z selecta
@@ -94,9 +92,13 @@ internal static class Parent
             var queryType = (parent.key == select) switch
             {
                 // pytam o rodziców Parent(to chce, to mam)
-                true => typeof(GetParentsByChildType<,>).MakeGenericType([parent.type, child.type]),
+                true => typeof(GetParentsByChildType<,>).MakeGenericType([
+                    parent.type.ToDtoStatementType(), child.type.ToDtoStatementType()
+                ]),
                 // pytam o dzieci Parent(to mam, to chce)
-                false => typeof(GetChildrenByParentType<,>).MakeGenericType([parent.type, child.type])
+                false => typeof(GetChildrenByParentType<,>).MakeGenericType([
+                    parent.type.ToDtoStatementType(), child.type.ToDtoStatementType()
+                ])
             };
 
             var query = Activator.CreateInstance(queryType, accessor) as IEnumerable<Statement>;

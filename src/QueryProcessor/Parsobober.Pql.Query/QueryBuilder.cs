@@ -1,5 +1,4 @@
 using Parsobober.Pkb.Relations.Abstractions;
-using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Queries;
 
 namespace Parsobober.Pql.Query;
@@ -8,7 +7,7 @@ public class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
 {
     private string _select = string.Empty;
 
-    private readonly Dictionary<string, Type> _declarations = new();
+    private readonly Dictionary<string, IDeclaration> _declarations = new();
 
     private readonly Dictionary<string, List<string>> _attributes = new();
 
@@ -33,17 +32,9 @@ public class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
         var split = declaration.Split();
         var rest = string.Join("", split.Skip(1)).Split(',');
 
-        var declarations = split.First() switch
-        {
-            "stmt" => rest.Select(s => (s.Replace(";", ""), typeof(Statement))),
-            "assign" => rest.Select(s => (s.Replace(";", ""), typeof(Assign))),
-            "while" => rest.Select(s => (s.Replace(";", ""), typeof(While))),
-            "variable" => rest.Select(s => (s.Replace(";", ""), typeof(Variable))),
-            "procedure" => rest.Select(s => (s.Replace(";", ""), typeof(Procedure))),
-            _ => throw new ArgumentOutOfRangeException()
-        };
+        var type = IDeclaration.Parse(split.First());
 
-        foreach (var (key, type) in declarations)
+        foreach (var key in rest.Select(s => s.Replace(";", "")))
         {
             _declarations.Add(key, type);
         }
