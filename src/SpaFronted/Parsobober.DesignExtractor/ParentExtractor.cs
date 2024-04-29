@@ -10,8 +10,9 @@ internal class ParentExtractor(IParentCreator creator) : SimpleExtractor
         ContainerStmt(result, result.Children[1]);
     }
 
-    private void ContainerStmt(TreeNode container, TreeNode? stmtListElem)
+    private void ContainerStmt(TreeNode container, TreeNode stmtList)
     {
+        var stmtListElem = stmtList.Children[0];
         while (stmtListElem is not null)
         {
             creator.SetParent(container, stmtListElem);

@@ -15,8 +15,9 @@ internal class FollowsExtractor(IFollowsCreator creator) : SimpleExtractor
         ContainerStmt(result, result.Children[0]);
     }
 
-    private void ContainerStmt(TreeNode container, TreeNode? stmtListElem)
+    private void ContainerStmt(TreeNode container, TreeNode stmtList)
     {
+        var stmtListElem = stmtList.Children[0];
         if (stmtListElem is null)
         {
             return;

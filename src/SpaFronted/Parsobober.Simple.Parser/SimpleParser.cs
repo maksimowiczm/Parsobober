@@ -80,10 +80,9 @@ internal class SimpleParser(
         var procedureNode = CreateTreeNode(EntityType.Procedure, _currentLineNumber, procedureName);
 
         Match(SimpleToken.LeftCurly);
-        NotifyAll(ex => ex.StmtLst());
-        TreeNode stmtNode = StmtLst();
+        TreeNode stmtListNode = StmtLst();
         Match(SimpleToken.RightCurly);
-        AddNthChild(procedureNode, stmtNode, 1);
+        AddNthChild(procedureNode, stmtListNode, 1);
 
         NotifyAll(ex => ex.Procedure(procedureNode));
         return procedureNode;
@@ -91,13 +90,22 @@ internal class SimpleParser(
 
     private TreeNode StmtLst()
     {
+        NotifyAll(ex => ex.StmtLst());
+        TreeNode node = CreateTreeNode(EntityType.StatementsList, _currentLineNumber);
+        StmtLstElement(node);
+        return node;
+    }
+
+    private TreeNode StmtLstElement(TreeNode list)
+    {
         TreeNode node = Stmt();
+        ast.SetParenthood(list, node);
         if (_currentToken.Type == SimpleToken.RightCurly)
         {
             return node;
         }
 
-        TreeNode nextNode = StmtLst();
+        TreeNode nextNode = StmtLstElement(list);
         ast.SetSiblings(node, nextNode);
         return node;
     }
@@ -126,13 +134,12 @@ internal class SimpleParser(
         var variableNode = Variable();
 
         Match(SimpleToken.LeftCurly);
-        NotifyAll(ex => ex.StmtLst());
-        TreeNode stmtNode = StmtLst();
+        TreeNode stmtListNode = StmtLst();
         Match(SimpleToken.RightCurly);
 
         var whileNode = CreateTreeNode(EntityType.While, whileLine);
         AddNthChild(whileNode, variableNode, 1);
-        AddNthChild(whileNode, stmtNode, 2);
+        AddNthChild(whileNode, stmtListNode, 2);
 
         NotifyAll(ex => ex.While(whileNode));
         return whileNode;
