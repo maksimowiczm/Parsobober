@@ -52,7 +52,8 @@ public class ParentRelation(
     {
         return _childParentDictionary
             .Where(statement => programContext.StatementsDictionary[statement.Value].IsType<TParentStatement>())
-            .Select(statement => programContext.StatementsDictionary[statement.Key].ToStatement());
+            .Select(statement => programContext.StatementsDictionary[statement.Key].ToStatement())
+            .Distinct();
     }
 
     public IEnumerable<Statement> GetChildren(int lineNumber)
@@ -66,7 +67,8 @@ public class ParentRelation(
     {
         return _childParentDictionary
             .Where(statement => programContext.StatementsDictionary[statement.Key].IsType<TChildStatement>())
-            .Select(statement => programContext.StatementsDictionary[statement.Value].ToStatement());
+            .Select(statement => programContext.StatementsDictionary[statement.Value].ToStatement())
+            .Distinct();
     }
 
     public Statement? GetParent(int lineNumber)

@@ -41,7 +41,8 @@ public class FollowsRelation(
     {
         return _followsDictionary
             .Where(statement => programContext.StatementsDictionary[statement.Value].IsType<TStatement>())
-            .Select(statement => programContext.StatementsDictionary[statement.Key].ToStatement());
+            .Select(statement => programContext.StatementsDictionary[statement.Key].ToStatement())
+            .Distinct();
     }
 
     public Statement? GetFollower(int lineNumber)
@@ -59,7 +60,8 @@ public class FollowsRelation(
     {
         return _followsDictionary
             .Where(statement => programContext.StatementsDictionary[statement.Key].IsType<TStatement>())
-            .Select(statement => programContext.StatementsDictionary[statement.Value].ToStatement());
+            .Select(statement => programContext.StatementsDictionary[statement.Value].ToStatement())
+            .Distinct();
     }
 
     public Statement? GetFollowed(int lineNumber)

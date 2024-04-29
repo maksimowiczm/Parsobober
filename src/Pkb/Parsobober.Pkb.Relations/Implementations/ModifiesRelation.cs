@@ -86,7 +86,7 @@ public class ModifiesRelation(
     public IEnumerable<Variable> GetVariables(int lineNumber)
     {
         return _modifiesDictionary.TryGetValue(lineNumber, out var variableList)
-            ? variableList.Select(variableName => new Variable(variableName))
+            ? variableList.Select(variableName => programContext.VariablesDictionary[variableName].ToVariable())
             : Enumerable.Empty<Variable>();
     }
 
