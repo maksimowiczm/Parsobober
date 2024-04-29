@@ -1,7 +1,6 @@
 using System.Collections;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Dto;
-using Parsobober.Shared;
 
 namespace Parsobober.Pql.Query.Queries;
 
@@ -33,34 +32,48 @@ internal static class Parent
 
     private class InnerBuilder(IParentAccessor accessor, string select, IReadOnlyDictionary<string, Type> declarations)
     {
+        private interface IArgument
+        {
+            static IArgument Parse(IReadOnlyDictionary<string, Type> declarations, string str)
+            {
+                if (declarations.TryGetValue(str, out var declaration))
+                {
+                    return new Declaration(declaration);
+                }
+
+                return new Line(int.Parse(str));
+            }
+        }
+
+        private record Line(int Value) : IArgument;
+
+        private record Declaration(Type Type) : IArgument;
+
         public IEnumerable<Statement> Build(string parentStr, string childStr)
         {
             // parsowanie argumentów
-            var nullableParentLine = parentStr.ParseOrNull<int>();
-            var nullableChildLine = childStr.ParseOrNull<int>();
-
-            var nullableParentType = declarations.GetValueOrDefault(parentStr);
-            var nullableChildType = declarations.GetValueOrDefault(childStr);
+            var parentArgument = IArgument.Parse(declarations, parentStr);
+            var childArgument = IArgument.Parse(declarations, childStr);
 
             // pattern matching argumentów
-            var query = ((nullableParentType, nullableParentLine), (nullableChildType, nullableChildLine)) switch
+            var query = (parentArgument, childArgument) switch
             {
                 // Parent(T, T)
-                (({ } parentType, null), ({ } childType, null)) =>
-                    BuildParentWithSelect((parentStr, parentType), (childStr, childType)),
+                (Declaration parent, Declaration child) =>
+                    BuildParentWithSelect((parentStr, parent.Type), (childStr, child.Type)),
                 // Parent(T, 1)
-                (({ } parentType, null), (null, { } childLine)) =>
+                (Declaration parent, Line child) =>
                     Activator.CreateInstance(
-                        typeof(GetParentByLineNumber<>).MakeGenericType(parentType),
+                        typeof(GetParentByLineNumber<>).MakeGenericType(parent.Type),
                         accessor,
-                        childLine
+                        child.Value
                     ),
                 // Parent(1, T)
-                ((null, { } parentLine), ({ } childType, null)) =>
+                (Line parent, Declaration child) =>
                     Activator.CreateInstance(
-                        typeof(GetChildrenByLineNumber<>).MakeGenericType(childType),
+                        typeof(GetChildrenByLineNumber<>).MakeGenericType(child.Type),
                         accessor,
-                        parentLine
+                        parent.Value
                     ),
                 // Parent(1, 2) nie wspierane w tej wersji
                 _ => throw new InvalidOperationException("Invalid query")
