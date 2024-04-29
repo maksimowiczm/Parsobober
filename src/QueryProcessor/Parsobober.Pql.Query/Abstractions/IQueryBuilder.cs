@@ -1,4 +1,4 @@
-namespace Parsobober.Pql.Query;
+namespace Parsobober.Pql.Query.Abstractions;
 
 /// <summary>
 /// The IQueryBuilder interface defines the methods that a query builder should implement.

@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Parsobober.Pql.Query.Abstractions;
 
 namespace Parsobober.Pql.Query
 {
@@ -10,7 +11,7 @@ namespace Parsobober.Pql.Query
 
             foreach (var item in query)
             {
-                stringBuilder.Append(item);
+                stringBuilder.AppendLine(item.ToString());
             }
 
             return stringBuilder.ToString();

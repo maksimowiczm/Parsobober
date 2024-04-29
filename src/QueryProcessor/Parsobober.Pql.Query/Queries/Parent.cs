@@ -1,6 +1,7 @@
 using System.Collections;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Dto;
+using Parsobober.Pql.Query.Abstractions;
 
 namespace Parsobober.Pql.Query.Queries;
 
@@ -88,17 +89,16 @@ internal static class Parent
             // tu nastąpi samowywrotka przy zapytaniach, w których nie ma wartości z selecta
             // przykład: Select x such that Parent(a, b)
 
+            var parentDto = parent.type.ToDtoStatementType();
+            var childDto = child.type.ToDtoStatementType();
+
             // sprawdzamy o co pytamy
             var queryType = (parent.key == select) switch
             {
                 // pytam o rodziców Parent(to chce, to mam)
-                true => typeof(GetParentsByChildType<,>).MakeGenericType([
-                    parent.type.ToDtoStatementType(), child.type.ToDtoStatementType()
-                ]),
+                true => typeof(GetParentsByChildType<,>).MakeGenericType([parentDto, childDto]),
                 // pytam o dzieci Parent(to mam, to chce)
-                false => typeof(GetChildrenByParentType<,>).MakeGenericType([
-                    parent.type.ToDtoStatementType(), child.type.ToDtoStatementType()
-                ])
+                false => typeof(GetChildrenByParentType<,>).MakeGenericType([parentDto, childDto])
             };
 
             var query = Activator.CreateInstance(queryType, accessor) as IEnumerable<Statement>;

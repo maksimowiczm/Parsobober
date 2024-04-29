@@ -1,4 +1,5 @@
 using Parsobober.Pkb.Relations.Abstractions;
+using Parsobober.Pql.Query.Abstractions;
 using Parsobober.Pql.Query.Queries;
 
 namespace Parsobober.Pql.Query;
@@ -7,6 +8,7 @@ public class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
 {
     private string _select = string.Empty;
 
+    // trzymanie deklaracji jako konkretne typy IDeclaration
     private readonly Dictionary<string, IDeclaration> _declarations = new();
 
     private readonly Dictionary<string, List<string>> _attributes = new();

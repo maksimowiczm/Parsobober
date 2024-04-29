@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Parsobober.Pql.Query.Abstractions;
 
 namespace Parsobober.Pql.Query;
 

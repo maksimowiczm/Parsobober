@@ -1,4 +1,4 @@
-namespace Parsobober.Pql.Query;
+namespace Parsobober.Pql.Query.Abstractions;
 
 /// <summary>
 /// The IQuery interface defines the contract for a query that can be executed.
