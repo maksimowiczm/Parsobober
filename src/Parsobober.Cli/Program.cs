@@ -1,14 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Parsobober.CLI;
-using Parsobober.DesignExtractor;
-using Parsobober.Pql.Parser;
-using Parsobober.Pkb.Ast;
-using Parsobober.Pkb.Relations;
-using Parsobober.Simple.Lexer;
-using Parsobober.Simple.Parser;
 
+// Parse command line arguments
 if (args.Length < 1)
 {
     Console.WriteLine("Usage: Parsobober.Cli <path-to-code> [--verbose|-v]");
@@ -17,25 +9,23 @@ if (args.Length < 1)
 
 var flags = args.Skip(1);
 var verbose = flags.Contains("--verbose") || args.Contains("-v");
+var code = File.ReadAllText(args[0]);
 
-var builder = Host.CreateApplicationBuilder(args);
-
+// Create the application
+var builder = new AppBuilder();
 if (!verbose)
 {
-    builder.Logging.ClearProviders();
+    builder.RemoveLogging();
 }
 
-builder.Services
-    .AddSimpleLexer()
-    .AddDesignExtractor()
-    .AddSimpleParserBuilder()
-    .AddAst()
-    .AddRelations()
-    .AddPqlParser()
-    .AddSingleton<CliApp>();
+// Run the application
+using var app = builder.Build(code);
 
-var host = builder.Build();
+Console.WriteLine("Ready");
 
-var app = host.Services.GetRequiredService<CliApp>();
-await app.RunAsync(args[0], Console.In, Console.Out);
-return 0;
+while (true)
+{
+    var query = $"{Console.ReadLine()} {Console.ReadLine()}";
+    var response = app.Query(query);
+    Console.WriteLine(response);
+}
