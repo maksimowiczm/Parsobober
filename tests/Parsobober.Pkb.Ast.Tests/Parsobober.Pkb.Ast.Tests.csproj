@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
@@ -10,8 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\QueryProcessor\Parsobober.Pql.Parser\Parsobober.Pql.Parser.csproj"/>
-        <ProjectReference Include="..\..\src\QueryProcessor\Parsobober.Pql.Query\Parsobober.Pql.Query.csproj"/>
+        <ProjectReference Include="..\..\src\SpaFronted\Parsobober.Simple.Parser\Parsobober.Simple.Parser.csproj"/>
     </ItemGroup>
 
 </Project>
