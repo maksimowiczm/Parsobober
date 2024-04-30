@@ -17,6 +17,8 @@ public class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
 
     private readonly ParentTransitive.Builder _parentTransitiveBuilder = new(accessor.Parent);
 
+    private readonly Follows.Builder _followsBuilder = new(accessor.Follows);
+
     private readonly FollowsTransitive.Builder _followsTransitiveBuilder = new(accessor.Follows);
 
     private readonly Modifies.Builder _modifiesBuilder = new(accessor.Modifies);
@@ -31,8 +33,8 @@ public class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
         {
             _parentBuilder.Build(_select, _declarations),
             _parentTransitiveBuilder.Build(_select, _declarations),
-            // todo dodać follows builder
             _followsTransitiveBuilder.Build(_select, _declarations),
+            _followsBuilder.Build(_select, _declarations),
             _modifiesBuilder.Build(_select, _declarations),
             _usesBuilder.Build(_select, _declarations)
         };
@@ -82,6 +84,7 @@ public class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
 
     public IQueryBuilder AddFollows(string reference1, string reference2)
     {
+        _followsBuilder.Add(reference1, reference2);
         return this;
     }
 
