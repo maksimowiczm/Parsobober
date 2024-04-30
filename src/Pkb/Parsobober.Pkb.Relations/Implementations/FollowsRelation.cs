@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Parsobober.Pkb.Ast;
+using Parsobober.Pkb.Ast.AstTraverser;
+using Parsobober.Pkb.Ast.AstTraverser.Strategies;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Abstractions.Creators;
 using Parsobober.Pkb.Relations.Dto;
@@ -78,7 +80,17 @@ public class FollowsRelation(
 
     public IEnumerable<Statement> GetFollowersTransitive(int lineNumber)
     {
-        throw new NotImplementedException();
+        if (!programContext.StatementsDictionary.TryGetValue(lineNumber, out var statementNode))
+        {
+            return Enumerable.Empty<Statement>();
+        }
+
+        var traversedAst =
+            AstTraverser.Traverse(statementNode, new RightSiblingStrategy());
+
+        return traversedAst
+            .Where(visited => visited.node.Type.IsStatement())
+            .Select(visited => visited.node.ToStatement());
     }
 
     public IEnumerable<Statement> GetFollowedTransitive<TStatement>() where TStatement : Statement
@@ -88,6 +100,16 @@ public class FollowsRelation(
 
     public IEnumerable<Statement> GetFollowedTransitive(int lineNumber)
     {
-        throw new NotImplementedException();
+        if (!programContext.StatementsDictionary.TryGetValue(lineNumber, out var statementNode))
+        {
+            return Enumerable.Empty<Statement>();
+        }
+
+        var traversedAst =
+            AstTraverser.Traverse(statementNode, new LeftSiblingStrategy());
+
+        return traversedAst
+            .Where(visited => visited.node.Type.IsStatement())
+            .Select(visited => visited.node.ToStatement());
     }
 }
