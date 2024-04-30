@@ -40,17 +40,17 @@ public class ParentTests() : Sprint1BaseTestClass(Code1)
     [InlineData("stmt s;", "5", "s", "None")]
     [InlineData("stmt s;", "6", "s", "None")]
     // while
-    [InlineData("while w;", "1", "w", "2,3,4,6")]
+    [InlineData("while w;", "1", "w", "4")]
     [InlineData("while w;", "2", "w", "None")]
     [InlineData("while w;", "3", "w", "None")]
-    [InlineData("while w;", "4", "w", "5")]
+    [InlineData("while w;", "4", "w", "None")]
     [InlineData("while w;", "5", "w", "None")]
     [InlineData("while w;", "6", "w", "None")]
     // assign
-    [InlineData("assign a;", "1", "a", "None")]
+    [InlineData("assign a;", "1", "a", "2,3,6")]
     [InlineData("assign a;", "2", "a", "None")]
     [InlineData("assign a;", "3", "a", "None")]
-    [InlineData("assign a;", "4", "a", "None")]
+    [InlineData("assign a;", "4", "a", "5")]
     [InlineData("assign a;", "5", "a", "None")]
     [InlineData("assign a;", "6", "a", "None")]
     public void Parent_Line_Statement(string declaration, string line, string select, string expected)

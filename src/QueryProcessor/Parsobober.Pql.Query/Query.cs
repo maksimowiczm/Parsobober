@@ -3,16 +3,18 @@ using Parsobober.Pql.Query.Abstractions;
 
 namespace Parsobober.Pql.Query
 {
-    internal class Query(IEnumerable<object> query) : IQuery
+    internal class Query(IEnumerable<IComparable> query) : IQuery
     {
         public string Execute()
         {
+            if (!query.Any())
+            {
+                return "None";
+            }
+
             var stringBuilder = new StringBuilder();
 
-            foreach (var item in query)
-            {
-                stringBuilder.AppendLine(item.ToString());
-            }
+            stringBuilder.AppendJoin(',', query.OrderBy(s => s));
 
             return stringBuilder.ToString();
         }
