@@ -7,4 +7,5 @@ riderModule.iml
 *.user
 .mono
 /.vs
+launchSettings.json
 *.simple

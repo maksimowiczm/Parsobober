@@ -2,7 +2,7 @@
 
 namespace Parsobober.Pkb.Relations.Abstractions;
 
-public interface IPkbAccessor
+public interface IPkbAccessors
 {
     IProgramContextAccessor ProgramContext { get; }
     IFollowsAccessor Follows { get; }

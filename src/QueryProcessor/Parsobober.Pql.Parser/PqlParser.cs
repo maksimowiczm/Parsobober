@@ -1,4 +1,4 @@
-using Parsobober.Pql.Query;
+using Parsobober.Pql.Query.Abstractions;
 using sly.parser.generator;
 
 namespace Parsobober.Pql.Parser;

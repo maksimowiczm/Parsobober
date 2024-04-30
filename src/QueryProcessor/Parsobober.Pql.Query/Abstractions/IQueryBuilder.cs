@@ -1,4 +1,4 @@
-namespace Parsobober.Pql.Query;
+namespace Parsobober.Pql.Query.Abstractions;
 
 /// <summary>
 /// The IQueryBuilder interface defines the methods that a query builder should implement.
@@ -11,6 +11,27 @@ public interface IQueryBuilder
     /// </summary>
     /// <returns>The built PQL query.</returns>
     IQuery Build();
+
+    /// <summary>
+    /// Adds a Select clause to the PQL query.
+    /// </summary>
+    /// <param name="synonym">The synonym in the Select clause.</param>
+    IQueryBuilder AddSelect(string synonym);
+
+    /// <summary>
+    /// Adds a declaration to the PQL query.
+    /// </summary>
+    /// <param name="declaration">The declaration to add.</param>
+    IQueryBuilder AddDeclaration(string declaration);
+
+    /// <summary>
+    /// Adds a With clause to the PQL query.
+    /// </summary>
+    /// <param name="attribute">The attribute in the With clause.</param>
+    /// <param name="reference">The reference in the With clause.</param>
+    IQueryBuilder With(string attribute, string reference);
+
+    #region Relation methods
 
     /// <summary>
     /// Adds a Follows relationship to the PQL query.
@@ -54,22 +75,5 @@ public interface IQueryBuilder
     /// <param name="reference2">The second reference in the Uses relationship.</param>
     IQueryBuilder AddUses(string reference1, string reference2);
 
-    /// <summary>
-    /// Adds a With clause to the PQL query.
-    /// </summary>
-    /// <param name="attribute">The attribute in the With clause.</param>
-    /// <param name="reference">The reference in the With clause.</param>
-    IQueryBuilder With(string attribute, string reference);
-
-    /// <summary>
-    /// Adds a declaration to the PQL query.
-    /// </summary>
-    /// <param name="declaration">The declaration to add.</param>
-    IQueryBuilder AddDeclaration(string declaration);
-
-    /// <summary>
-    /// Adds a Select clause to the PQL query.
-    /// </summary>
-    /// <param name="synonym">The synonym in the Select clause.</param>
-    IQueryBuilder AddSelect(string synonym);
+    #endregion
 }

@@ -1,4 +1,4 @@
-using Parsobober.Pql.Query;
+using Parsobober.Pql.Query.Abstractions;
 
 namespace Parsobober.Pql.Parser.Tests;
 
