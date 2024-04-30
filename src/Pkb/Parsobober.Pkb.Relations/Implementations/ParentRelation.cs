@@ -1,5 +1,8 @@
 using Microsoft.Extensions.Logging;
 using Parsobober.Pkb.Ast;
+using Parsobober.Pkb.Ast.Abstractions;
+using Parsobober.Pkb.Ast.AstTraverser;
+using Parsobober.Pkb.Ast.AstTraverser.Strategies;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Abstractions.Creators;
 using Parsobober.Pkb.Relations.Dto;
@@ -9,7 +12,8 @@ namespace Parsobober.Pkb.Relations.Implementations;
 
 public class ParentRelation(
     ILogger<ParentRelation> logger,
-    IProgramContextAccessor programContext
+    IProgramContextAccessor programContext,
+    IAst ast
 ) : IParentCreator, IParentAccessor
 {
     /// <summary>
@@ -80,21 +84,91 @@ public class ParentRelation(
 
     public IEnumerable<Statement> GetChildrenTransitive<TParentStatement>() where TParentStatement : Statement
     {
-        throw new NotImplementedException();
+        var traversedAst = AstTraverser.Traverse(ast.Root, new DfsStatementStrategy());
+        var containerDepth = -1;
+
+        foreach (var (node, depth) in traversedAst)
+        {
+            if (depth <= containerDepth)
+            {
+                containerDepth = -1;
+            }
+            else if (containerDepth != -1 && node.Type.IsStatement())
+            {
+                yield return node.ToStatement();
+            }
+            else if (node.IsType<TParentStatement>() && node.Type.IsContainerStatement())
+            {
+                containerDepth = depth;
+            }
+        }
     }
 
     public IEnumerable<Statement> GetChildrenTransitive(int lineNumber)
     {
-        throw new NotImplementedException();
+        if (!programContext.StatementsDictionary.TryGetValue(lineNumber, out var statementNode))
+        {
+            return Enumerable.Empty<Statement>();
+        }
+
+        var traversedAst =
+            AstTraverser.Traverse(statementNode, new DfsStatementStrategy());
+
+        return traversedAst
+            .Where(visited => visited.node.Type.IsStatement())
+            .Select(visited => visited.node.ToStatement());
+    }
+
+    private static IEnumerable<Statement> GetNotYieldedParents(
+        Stack<(TreeNode node, int depth)> containerStack,
+        Dictionary<(TreeNode node, int depth), bool> yieldedDictionary
+    )
+    {
+        return containerStack
+            .Where(container => yieldedDictionary.TryAdd(container, true))
+            .Select(container => container.node.ToStatement());
     }
 
     public IEnumerable<Statement> GetParentsTransitive<TChildStatement>() where TChildStatement : Statement
     {
-        throw new NotImplementedException();
+        var traversedAst = AstTraverser.Traverse(ast.Root, new DfsStatementStrategy());
+        var containerStack = new Stack<(TreeNode node, int depth)>();
+        var yieldedDictionary = new Dictionary<(TreeNode node, int depth), bool>();
+
+        foreach (var visited in traversedAst)
+        {
+            while (containerStack.Count != 0 && containerStack.Peek().depth >= visited.depth)
+            {
+                containerStack.Pop();
+            }
+
+            if (visited.node.IsType<TChildStatement>())
+            {
+                foreach (var parent in GetNotYieldedParents(containerStack, yieldedDictionary))
+                {
+                    yield return parent;
+                }
+            }
+
+            if (visited.node.Type.IsContainerStatement())
+            {
+                containerStack.Push(visited);
+            }
+        }
     }
 
     public IEnumerable<Statement> GetParentsTransitive(int lineNumber)
     {
-        throw new NotImplementedException();
+        if (!programContext.StatementsDictionary.TryGetValue(lineNumber, out var statementNode))
+        {
+            return Enumerable.Empty<Statement>();
+        }
+
+        var traversedAst =
+            AstTraverser.Traverse(statementNode, new OnlyParentStrategy());
+
+        return traversedAst
+            .Where(visited => visited.node.Type.IsContainerStatement())
+            .Select(visited => visited.node.ToStatement());
     }
 }
