@@ -15,12 +15,18 @@ public class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
 
     private readonly Parent.Builder _parentBuilder = new(accessor.Parent);
 
+    private readonly Follows.Builder _followsBuilder = new(accessor.Follows);
+
     public IQuery Build()
     {
-        // todo aktualnie działa tylko dla parenta
-        var parent = _parentBuilder.Build(_select, _declarations);
+        // Dla parenta
+        //var parent = _parentBuilder.Build(_select, _declarations);
+        //return new Query(parent);
 
-        return new Query(parent);
+        // Dla follows
+        var follows = _followsBuilder.Build(_select, _declarations);
+        return new Query(follows);
+
     }
 
     public IQueryBuilder AddSelect(string synonym)
@@ -61,6 +67,7 @@ public class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
 
     public IQueryBuilder AddFollows(string reference1, string reference2)
     {
+        _followsBuilder.Add(reference1, reference2);
         return this;
     }
 

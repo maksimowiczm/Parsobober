@@ -19,8 +19,6 @@ internal static class Parent
 
         public IEnumerable<Statement> Build(string select, IReadOnlyDictionary<string, IDeclaration> declarations)
         {
-            // todo aktualnie działa tylko dla jednego parenta i nie bierze pod uwagę atrybutów
-
             var parent = _parentRelations.First().parent;
             var child = _parentRelations.First().child;
 
