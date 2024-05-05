@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Parsobober.Pkb.Ast;
+using Parsobober.Pkb.Ast.Abstractions;
 using Parsobober.Pkb.Ast.AstTraverser;
 using Parsobober.Pkb.Ast.AstTraverser.Strategies;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
@@ -11,7 +12,8 @@ namespace Parsobober.Pkb.Relations.Implementations;
 
 public class FollowsRelation(
     ILogger<FollowsRelation> logger,
-    IProgramContextAccessor programContext
+    IProgramContextAccessor programContext,
+    IAst ast
 ) : IFollowsCreator, IFollowsAccessor
 {
     /// <summary>
@@ -75,7 +77,7 @@ public class FollowsRelation(
 
     public IEnumerable<Statement> GetFollowersTransitive<TStatement>() where TStatement : Statement
     {
-        throw new NotImplementedException();
+        return GetTransitive<TStatement>(new BfsReversedStatementStrategy());
     }
 
     public IEnumerable<Statement> GetFollowersTransitive(int lineNumber)
@@ -95,7 +97,7 @@ public class FollowsRelation(
 
     public IEnumerable<Statement> GetFollowedTransitive<TStatement>() where TStatement : Statement
     {
-        throw new NotImplementedException();
+        return GetTransitive<TStatement>(new BfsStatementStrategy());
     }
 
     public IEnumerable<Statement> GetFollowedTransitive(int lineNumber)
@@ -111,5 +113,35 @@ public class FollowsRelation(
         return traversedAst
             .Where(visited => visited.node.Type.IsStatement())
             .Select(visited => visited.node.ToStatement());
+    }
+
+    private IEnumerable<Statement> GetTransitive<TStatement>(IAstTraversalStrategy strategy)
+        where TStatement : Statement
+    {
+        var traversedAst = AstTraverser.Traverse(ast.Root, strategy);
+        var set = new HashSet<TreeNode>();
+
+        TreeNode? currentScope = null;
+        var currentScopeFollowedList = new Stack<TreeNode>();
+
+        foreach (var (node, _) in traversedAst)
+        {
+            // if nodes have different parent it means they are not in same scope
+            if (currentScope != node.Parent)
+            {
+                currentScope = node.Parent;
+                currentScopeFollowedList.Clear();
+            }
+
+            if (node.IsType<TStatement>())
+            {
+                set.UnionWith(currentScopeFollowedList);
+                currentScopeFollowedList.Clear();
+            }
+
+            currentScopeFollowedList.Push(node);
+        }
+
+        return set.Select(node => node.ToStatement());
     }
 }
