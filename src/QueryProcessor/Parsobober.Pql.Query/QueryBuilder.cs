@@ -1,4 +1,5 @@
 using Parsobober.Pkb.Relations.Abstractions;
+using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Abstractions;
 using Parsobober.Pql.Query.Queries;
 
@@ -15,12 +16,33 @@ public class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
 
     private readonly Parent.Builder _parentBuilder = new(accessor.Parent);
 
+    private readonly ParentTransitive.Builder _parentTransitiveBuilder = new(accessor.Parent);
+
+    private readonly FollowsTransitive.Builder _followsTransitiveBuilder = new(accessor.Follows);
+
+    private readonly Modifies.Builder _modifiesBuilder = new(accessor.Modifies);
+
+    private readonly Uses.Builder _usesBuilder = new(accessor.Uses);
+
     public IQuery Build()
     {
-        // todo aktualnie działa tylko dla parenta
-        var parent = _parentBuilder.Build(_select, _declarations);
+        // rozwiązanie na pierwszą iterację
 
-        return new Query(parent);
+        var results = new List<IEnumerable<Statement>?>
+        {
+            _parentBuilder.Build(_select, _declarations),
+            _parentTransitiveBuilder.Build(_select, _declarations),
+            // todo dodać follows builder
+            _followsTransitiveBuilder.Build(_select, _declarations),
+            _modifiesBuilder.Build(_select, _declarations),
+            _usesBuilder.Build(_select, _declarations)
+        };
+
+        var result = results.Single(r => r is not null);
+
+        // todo przefiltrować atrybuty (with)
+
+        return new Query(result!);
     }
 
     public IQueryBuilder AddSelect(string synonym)
@@ -66,6 +88,7 @@ public class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
 
     public IQueryBuilder AddFollowsTransitive(string reference1, string reference2)
     {
+        _followsTransitiveBuilder.Add(reference1, reference2);
         return this;
     }
 
@@ -77,16 +100,19 @@ public class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
 
     public IQueryBuilder AddParentTransitive(string parent, string child)
     {
+        _parentTransitiveBuilder.Add(parent, child);
         return this;
     }
 
     public IQueryBuilder AddModifies(string reference1, string reference2)
     {
+        _modifiesBuilder.Add(reference1, reference2);
         return this;
     }
 
     public IQueryBuilder AddUses(string reference1, string reference2)
     {
+        _usesBuilder.Add(reference1, reference2);
         return this;
     }
 
