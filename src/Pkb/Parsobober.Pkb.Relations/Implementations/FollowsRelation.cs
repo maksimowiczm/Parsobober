@@ -87,8 +87,7 @@ public class FollowsRelation(
             return Enumerable.Empty<Statement>();
         }
 
-        var traversedAst =
-            AstTraverser.Traverse(statementNode, new RightSiblingStrategy());
+        var traversedAst = statementNode.Traverse(new RightSiblingStrategy());
 
         return traversedAst
             .Where(visited => visited.node.Type.IsStatement())
@@ -107,8 +106,7 @@ public class FollowsRelation(
             return Enumerable.Empty<Statement>();
         }
 
-        var traversedAst =
-            AstTraverser.Traverse(statementNode, new LeftSiblingStrategy());
+        var traversedAst = statementNode.Traverse(new LeftSiblingStrategy());
 
         return traversedAst
             .Where(visited => visited.node.Type.IsStatement())
@@ -118,7 +116,7 @@ public class FollowsRelation(
     private IEnumerable<Statement> GetTransitive<TStatement>(IAstTraversalStrategy strategy)
         where TStatement : Statement
     {
-        var traversedAst = AstTraverser.Traverse(ast.Root, strategy);
+        var traversedAst = ast.Root.Traverse(strategy);
         var set = new HashSet<TreeNode>();
 
         TreeNode? currentScope = null;

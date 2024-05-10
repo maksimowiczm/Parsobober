@@ -84,7 +84,7 @@ public class ParentRelation(
 
     public IEnumerable<Statement> GetChildrenTransitive<TParentStatement>() where TParentStatement : Statement
     {
-        var traversedAst = AstTraverser.Traverse(ast.Root, new DfsStatementStrategy());
+        var traversedAst = ast.Root.Traverse(new DfsStatementStrategy());
         var containerDepth = -1;
 
         foreach (var (node, depth) in traversedAst)
@@ -111,8 +111,7 @@ public class ParentRelation(
             return Enumerable.Empty<Statement>();
         }
 
-        var traversedAst =
-            AstTraverser.Traverse(statementNode, new DfsStatementStrategy());
+        var traversedAst = statementNode.Traverse(new DfsStatementStrategy());
 
         return traversedAst
             .Where(visited => visited.node.Type.IsStatement())
@@ -131,7 +130,7 @@ public class ParentRelation(
 
     public IEnumerable<Statement> GetParentsTransitive<TChildStatement>() where TChildStatement : Statement
     {
-        var traversedAst = AstTraverser.Traverse(ast.Root, new DfsStatementStrategy());
+        var traversedAst = ast.Root.Traverse(new DfsStatementStrategy());
         var containerStack = new Stack<(TreeNode node, int depth)>();
         var yieldedDictionary = new Dictionary<(TreeNode node, int depth), bool>();
 
@@ -164,8 +163,7 @@ public class ParentRelation(
             return Enumerable.Empty<Statement>();
         }
 
-        var traversedAst =
-            AstTraverser.Traverse(statementNode, new OnlyParentStrategy());
+        var traversedAst = statementNode.Traverse(new OnlyParentStrategy());
 
         return traversedAst
             .Where(visited => visited.node.Type.IsContainerStatement())
