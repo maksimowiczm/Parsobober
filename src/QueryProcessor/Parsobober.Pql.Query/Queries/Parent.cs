@@ -17,9 +17,20 @@ internal static class Parent
             _parentRelations.Add((parent, child));
         }
 
-        public IEnumerable<Statement> Build(string select, IReadOnlyDictionary<string, IDeclaration> declarations)
+        public IEnumerable<Statement>? Build(string select, IReadOnlyDictionary<string, IDeclaration> declarations)
         {
-            // todo aktualnie działa tylko dla jednego parenta i nie bierze pod uwagę atrybutów
+            if (_parentRelations.Count == 0)
+            {
+                return null;
+            }
+
+            // todo aktualnie działa tylko dla jednego parenta
+            // na pierwszą iterację wystarczy
+
+            if (_parentRelations.Count > 1)
+            {
+                throw new InvalidOperationException("Invalid query");
+            }
 
             var parent = _parentRelations.First().parent;
             var child = _parentRelations.First().child;

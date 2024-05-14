@@ -1,6 +1,6 @@
 namespace Parsobober.Tests.Sprint1;
 
-public class ParentTests() : Sprint1BaseTestClass(Code1)
+public class ParentTests() : BaseTestClass(Code.ShortStatementsOnly)
 {
     [Theory]
     // stmt
