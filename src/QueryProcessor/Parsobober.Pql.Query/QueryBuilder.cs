@@ -1,5 +1,4 @@
 using Parsobober.Pkb.Relations.Abstractions;
-using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Abstractions;
 using Parsobober.Pql.Query.Queries;
 
@@ -28,7 +27,7 @@ public class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
     {
         // rozwiązanie na pierwszą iterację
 
-        var results = new List<IEnumerable<Statement>?>
+        var results = new List<IEnumerable<IComparable>?>
         {
             _parentBuilder.Build(_select, _declarations),
             _parentTransitiveBuilder.Build(_select, _declarations),
