@@ -90,7 +90,7 @@ internal static class Parent
 
             if (child.key == select)
             {
-                return new GetChildrenByParentType(accessor).Create(child.type).Build(parent.type);
+                return new GetChildrenByParentType(accessor).Create(parent.type).Build(child.type);
             }
 
             throw new InvalidOperationException("Invalid query");
@@ -133,13 +133,13 @@ internal static class Parent
 
     private class GetChildrenByParentType(IParentAccessor parentAccessor)
     {
-        public ParentQuery Create(IStatementDeclaration childStatementDeclaration) =>
-            childStatementDeclaration switch
+        public ParentQuery Create(IStatementDeclaration parentStatementDeclaration) =>
+            parentStatementDeclaration switch
             {
                 IStatementDeclaration.Statement => new GetChildrenByParentType<Statement>(parentAccessor),
                 IStatementDeclaration.Assign => new GetChildrenByParentType<Assign>(parentAccessor),
                 IStatementDeclaration.While => new GetChildrenByParentType<While>(parentAccessor),
-                _ => throw new ArgumentOutOfRangeException(nameof(childStatementDeclaration))
+                _ => throw new ArgumentOutOfRangeException(nameof(parentStatementDeclaration))
             };
     }
 
@@ -151,13 +151,13 @@ internal static class Parent
     private class GetChildrenByParentType<TParent>(IParentAccessor parentAccessor) : ParentQuery
         where TParent : Statement
     {
-        public override IEnumerable<Statement> Build(IStatementDeclaration parentStatementDeclaration) =>
-            parentStatementDeclaration switch
+        public override IEnumerable<Statement> Build(IStatementDeclaration childStatementDeclaration) =>
+            childStatementDeclaration switch
             {
                 IStatementDeclaration.Statement => parentAccessor.GetChildren<TParent>(),
                 IStatementDeclaration.Assign => parentAccessor.GetChildren<TParent>().OfType<Assign>(),
                 IStatementDeclaration.While => parentAccessor.GetChildren<TParent>().OfType<While>(),
-                _ => throw new ArgumentOutOfRangeException(nameof(parentStatementDeclaration))
+                _ => throw new ArgumentOutOfRangeException(nameof(childStatementDeclaration))
             };
     }
 
