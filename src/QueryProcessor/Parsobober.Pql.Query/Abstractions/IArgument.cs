@@ -24,11 +24,13 @@ public interface IArgument
             return new Line(line);
         }
 
-        throw new ArgumentOutOfRangeException();
+        return new VarName(argument);
     }
 
     /// <summary>
     /// Represents a line in a PQL query.
     /// </summary>
     public readonly record struct Line(int Value) : IArgument;
+
+    public readonly record struct VarName(string Value) : IArgument;
 }
