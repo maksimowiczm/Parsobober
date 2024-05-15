@@ -17,8 +17,21 @@ internal static class Follows
             _followsRelations.Add((followed, follows));
         }
 
-        public IEnumerable<Statement> Build(string select, IReadOnlyDictionary<string, IDeclaration> declarations)
+        public IEnumerable<Statement>? Build(string select, IReadOnlyDictionary<string, IDeclaration> declarations)
         {
+            if (_followsRelations.Count == 0)
+            {
+                return null;
+            }
+            
+            // todo aktualnie działa tylko dla jednego follows 
+            // na pierwszą iterację wystarczy
+
+            if (_followsRelations.Count > 1)
+            {
+                throw new InvalidOperationException("Invalid query");
+            }
+            
             var followed = _followsRelations.First().followed;
             var follows = _followsRelations.First().follows;
 
