@@ -57,11 +57,11 @@ internal static class FollowsTransitive
             {
                 // followed*(stmt, 1)
                 (IStatementDeclaration declaration, IArgument.Line follows) =>
-                    new GetTransitivefollowedByLineNumber(accessor, follows.Value).Build(declaration),
+                    new GetTransitiveFollowedByLineNumber(accessor, follows.Value).Build(declaration),
 
                 // followed*(1, stmt)
                 (IArgument.Line followed, IStatementDeclaration follows) =>
-                    new GetTransitivefollowsrenByLineNumber(accessor, followed.Value).Build(follows),
+                    new GetTransitiveFollowsByLineNumber(accessor, followed.Value).Build(follows),
 
                 // followed*(stmt, stmt)
                 (IStatementDeclaration followed, IStatementDeclaration follows) =>
@@ -84,12 +84,12 @@ internal static class FollowsTransitive
 
             if (followed.key == select)
             {
-                return new GetTransitivefollowedsByfollowsType(accessor).Create(follows.type).Build(followed.type);
+                return new GetTransitiveFollowedByFollowsType(accessor).Create(follows.type).Build(followed.type);
             }
 
             if (follows.key == select)
             {
-                return new GetTransitivefollowsrenByfollowedType(accessor).Create(followed.type).Build(follows.type);
+                return new GetTransitiveFollowsByFollowedType(accessor).Create(followed.type).Build(follows.type);
             }
 
             throw new InvalidOperationException("Invalid query");
@@ -100,14 +100,14 @@ internal static class FollowsTransitive
 
     #region Queries
 
-    private class GetTransitivefollowedsByfollowsType(IFollowsAccessor followedAccessor)
+    private class GetTransitiveFollowedByFollowsType(IFollowsAccessor followedAccessor)
     {
         public followedQuery Create(IStatementDeclaration followsStatementDeclaration) =>
             followsStatementDeclaration switch
             {
-                IStatementDeclaration.Statement => new GetTransitivefollowedsByfollowsType<Statement>(followedAccessor),
-                IStatementDeclaration.Assign => new GetTransitivefollowedsByfollowsType<Assign>(followedAccessor),
-                IStatementDeclaration.While => new GetTransitivefollowedsByfollowsType<While>(followedAccessor),
+                IStatementDeclaration.Statement => new GetTransitiveFollowedByFollowsType<Statement>(followedAccessor),
+                IStatementDeclaration.Assign => new GetTransitiveFollowedByFollowsType<Assign>(followedAccessor),
+                IStatementDeclaration.While => new GetTransitiveFollowedByFollowsType<While>(followedAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(followsStatementDeclaration))
             };
     }
@@ -117,7 +117,7 @@ internal static class FollowsTransitive
     /// </summary>
     /// <param name="followedAccessor">followed accessor.</param>
     /// <typeparam name="Tfollows">follows type.</typeparam>
-    private class GetTransitivefollowedsByfollowsType<Tfollows>(IFollowsAccessor followedAccessor) : followedQuery
+    private class GetTransitiveFollowedByFollowsType<Tfollows>(IFollowsAccessor followedAccessor) : followedQuery
         where Tfollows : Statement
     {
         public override IEnumerable<Statement> Build(IStatementDeclaration followsStatementDeclaration) =>
@@ -130,15 +130,15 @@ internal static class FollowsTransitive
             };
     }
 
-    private class GetTransitivefollowsrenByfollowedType(IFollowsAccessor followedAccessor)
+    private class GetTransitiveFollowsByFollowedType(IFollowsAccessor followedAccessor)
     {
         public followedQuery Create(IStatementDeclaration followedStatementDeclaration) =>
             followedStatementDeclaration switch
             {
-                IStatementDeclaration.Statement => new GetTransitivefollowsrenByfollowedType<Statement>(
+                IStatementDeclaration.Statement => new GetTransitiveFollowsByFollowedType<Statement>(
                     followedAccessor),
-                IStatementDeclaration.Assign => new GetTransitivefollowsrenByfollowedType<Assign>(followedAccessor),
-                IStatementDeclaration.While => new GetTransitivefollowsrenByfollowedType<While>(followedAccessor),
+                IStatementDeclaration.Assign => new GetTransitiveFollowsByFollowedType<Assign>(followedAccessor),
+                IStatementDeclaration.While => new GetTransitiveFollowsByFollowedType<While>(followedAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(followedStatementDeclaration))
             };
     }
@@ -148,7 +148,7 @@ internal static class FollowsTransitive
     /// </summary>
     /// <param name="followedAccessor">followed accessor.</param>
     /// <typeparam name="Tfollowed">followed type.</typeparam>
-    private class GetTransitivefollowsrenByfollowedType<Tfollowed>(IFollowsAccessor followedAccessor) : followedQuery
+    private class GetTransitiveFollowsByFollowedType<Tfollowed>(IFollowsAccessor followedAccessor) : followedQuery
         where Tfollowed : Statement
     {
         public override IEnumerable<Statement> Build(IStatementDeclaration followsStatementDeclaration) =>
@@ -166,7 +166,7 @@ internal static class FollowsTransitive
     /// </summary>
     /// <param name="followedAccessor">followed accessor.</param>
     /// <param name="line">Line number.</param>
-    private class GetTransitivefollowedByLineNumber(IFollowsAccessor followedAccessor, int line) : followedQuery
+    private class GetTransitiveFollowedByLineNumber(IFollowsAccessor followedAccessor, int line) : followedQuery
     {
         public override IEnumerable<Statement> Build(IStatementDeclaration followsStatementDeclaration) =>
             followsStatementDeclaration switch
@@ -183,7 +183,7 @@ internal static class FollowsTransitive
     /// </summary>
     /// <param name="followedAccessor">followed accessor.</param>
     /// <param name="line">Line number.</param>
-    private class GetTransitivefollowsrenByLineNumber(IFollowsAccessor followedAccessor, int line) : followedQuery
+    private class GetTransitiveFollowsByLineNumber(IFollowsAccessor followedAccessor, int line) : followedQuery
     {
         public override IEnumerable<Statement> Build(IStatementDeclaration followsStatementDeclaration) =>
             followsStatementDeclaration switch

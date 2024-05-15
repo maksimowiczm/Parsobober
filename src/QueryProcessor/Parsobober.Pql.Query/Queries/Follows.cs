@@ -66,7 +66,7 @@ internal static class Follows
 
                 // Follows(stmt, stmt)
                 (IStatementDeclaration followed, IStatementDeclaration follows) =>
-                    BuildParentWithSelect((followedStr, followed), (followsStr, follows)),
+                    BuildFollowsWithSelect((followedStr, followed), (followsStr, follows)),
 
                 // Follows(1, 2) nie wspierane w tej wersji
                 _ => throw new InvalidOperationException("Invalid query")
@@ -75,13 +75,13 @@ internal static class Follows
             return query;
         }
 
-        private IEnumerable<Statement> BuildParentWithSelect(
+        private IEnumerable<Statement> BuildFollowsWithSelect(
             (string key, IStatementDeclaration type) followed,
             (string key, IStatementDeclaration type) follows
         )
         {
             // tu nastąpi samowywrotka przy zapytaniach, w których nie ma wartości z selecta
-            // przykład: Select x such that Parent(a, b)
+            // przykład: Select x such that Follows(a, b)
 
             if (followed.key == select)
             {
@@ -103,13 +103,13 @@ internal static class Follows
 
     private class GetFollowedByFollowsType(IFollowsAccessor followsAccessor)
     {
-        public FollowsQuery Create(IStatementDeclaration parentStatementDeclaration) =>
-            parentStatementDeclaration switch
+        public FollowsQuery Create(IStatementDeclaration followedStatementDeclaration) =>
+            followedStatementDeclaration switch
             {
                 IStatementDeclaration.Statement => new GetFollowedByFollowsType<Statement>(followsAccessor),
                 IStatementDeclaration.Assign => new GetFollowedByFollowsType<Assign>(followsAccessor),
                 IStatementDeclaration.While => new GetFollowedByFollowsType<While>(followsAccessor),
-                _ => throw new ArgumentOutOfRangeException(nameof(parentStatementDeclaration))
+                _ => throw new ArgumentOutOfRangeException(nameof(followedStatementDeclaration))
             };
     }
 
@@ -121,13 +121,13 @@ internal static class Follows
     private class GetFollowedByFollowsType<TFollowed>(IFollowsAccessor followsAccessor) : FollowsQuery
         where TFollowed : Statement
     {
-        public override IEnumerable<Statement> Build(IStatementDeclaration childStatementDeclaration) =>
-            childStatementDeclaration switch
+        public override IEnumerable<Statement> Build(IStatementDeclaration followsStatementDeclaration) =>
+            followsStatementDeclaration switch
             {
                 IStatementDeclaration.Statement => followsAccessor.GetFollowed<TFollowed>(),
                 IStatementDeclaration.Assign => followsAccessor.GetFollowed<TFollowed>().OfType<Assign>(),
                 IStatementDeclaration.While => followsAccessor.GetFollowed<TFollowed>().OfType<While>(),
-                _ => throw new ArgumentOutOfRangeException(nameof(childStatementDeclaration))
+                _ => throw new ArgumentOutOfRangeException(nameof(followsStatementDeclaration))
             };
     }
 
@@ -136,9 +136,9 @@ internal static class Follows
         public FollowsQuery Create(IStatementDeclaration declaration) =>
             declaration switch
             {
-                IStatementDeclaration.Statement => new GetFollowedByParentType<Statement>(followsAccessor),
-                IStatementDeclaration.Assign => new GetFollowedByParentType<Assign>(followsAccessor),
-                IStatementDeclaration.While => new GetFollowedByParentType<While>(followsAccessor),
+                IStatementDeclaration.Statement => new GetFollowedByFollowedType<Statement>(followsAccessor),
+                IStatementDeclaration.Assign => new GetFollowedByFollowedType<Assign>(followsAccessor),
+                IStatementDeclaration.While => new GetFollowedByFollowedType<While>(followsAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(declaration))
             };
     }
@@ -148,7 +148,7 @@ internal static class Follows
     /// </summary>
     /// <param name="followsAccessor">Followed accessor.</param>
     /// <typeparam name="TFollows">Follows type.</typeparam>
-    private class GetFollowedByParentType<TFollows>(IFollowsAccessor followsAccessor) : FollowsQuery
+    private class GetFollowedByFollowedType<TFollows>(IFollowsAccessor followsAccessor) : FollowsQuery
         where TFollows : Statement
     {
         public override IEnumerable<Statement> Build(IStatementDeclaration declaration) =>
