@@ -27,7 +27,7 @@ public class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
 
     public IQuery Build()
     {
-        // rozwi¹zanie na pierwsz¹ iteracjê
+        // rozwiÄ…zanie na pierwszÄ… iteracjÄ™
 
         var results = new List<IEnumerable<IComparable>?>
         {
@@ -41,7 +41,7 @@ public class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
 
         var result = results.Single(r => r is not null);
 
-        // todo przefiltrowaæ atrybuty (with)
+        // todo przefiltrowaÄ‡ atrybuty (with)
 
         return new Query(result!);
     }
