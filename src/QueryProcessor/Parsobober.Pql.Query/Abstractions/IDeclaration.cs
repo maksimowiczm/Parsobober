@@ -14,7 +14,7 @@ public interface IDeclaration : IArgument
     static IDeclaration Parse(string type)
     {
         // todo really ugly, refactor (clueless)
-        List<Func<string, IDeclaration?>> parsers = [IStatementDeclaration.Parse,];
+        List<Func<string, IDeclaration?>> parsers = [IStatementDeclaration.Parse, IVariableDeclaration.Parse];
 
         foreach (var parser in parsers)
         {
