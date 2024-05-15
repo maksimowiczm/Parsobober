@@ -1,6 +1,6 @@
 namespace Parsobober.Tests.Sprint1;
 
-public class FollowsTransitiveTestsShort() : Sprint1BaseTestClass(Code1)
+public class FollowsTransitiveTestsShort() : BaseTestClass(Code.ShortStatementsOnly)
 {
     [Theory]
     // stmt
@@ -103,7 +103,7 @@ public class FollowsTransitiveTestsShort() : Sprint1BaseTestClass(Code1)
     }
 }
 
-public class FollowsTransitiveTestsLong() : Sprint1BaseTestClass(Code1)
+public class FollowsTransitiveTestsLong() : BaseTestClass(Code.ShortStatementsOnly)
 {
     [Theory]
     // stmt

@@ -4,7 +4,7 @@ using Parsobober.Pql.Query.Abstractions;
 
 namespace Parsobober.Pql.Query.Queries;
 
-internal static class Parent
+internal static class ParentTransitive
 {
     #region Builder
 
@@ -56,19 +56,19 @@ internal static class Parent
             // pattern matching argumentów
             var query = (parentArgument, childArgument) switch
             {
-                // Parent(stmt, 1)
+                // Parent*(stmt, 1)
                 (IStatementDeclaration declaration, IArgument.Line child) =>
-                    new GetParentByLineNumber(accessor, child.Value).Build(declaration),
+                    new GetTransitiveParentByLineNumber(accessor, child.Value).Build(declaration),
 
-                // Parent(1, stmt)
+                // Parent*(1, stmt)
                 (IArgument.Line parent, IStatementDeclaration child) =>
-                    new GetChildrenByLineNumber(accessor, parent.Value).Build(child),
+                    new GetTransitiveChildrenByLineNumber(accessor, parent.Value).Build(child),
 
-                // Parent(stmt, stmt)
+                // Parent*(stmt, stmt)
                 (IStatementDeclaration parent, IStatementDeclaration child) =>
                     BuildParentWithSelect((parentStr, parent), (childStr, child)),
 
-                // Parent(1, 2) nie wspierane w tej wersji
+                // Parent*(1, 2) nie wspierane w tej wersji
                 _ => throw new InvalidOperationException("Invalid query")
             };
 
@@ -85,12 +85,12 @@ internal static class Parent
 
             if (parent.key == select)
             {
-                return new GetParentsByChildType(accessor).Create(child.type).Build(parent.type);
+                return new GetTransitiveParentsByChildType(accessor).Create(child.type).Build(parent.type);
             }
 
             if (child.key == select)
             {
-                return new GetChildrenByParentType(accessor).Create(parent.type).Build(child.type);
+                return new GetTransitiveChildrenByParentType(accessor).Create(parent.type).Build(child.type);
             }
 
             throw new InvalidOperationException("Invalid query");
@@ -101,108 +101,97 @@ internal static class Parent
 
     #region Queries
 
-    private class GetParentsByChildType(IParentAccessor parentAccessor)
+    private class GetTransitiveParentsByChildType(IParentAccessor parentAccessor)
     {
         public ParentQuery Create(IStatementDeclaration childStatementDeclaration) =>
             childStatementDeclaration switch
             {
-                IStatementDeclaration.Statement => new GetParentsByChildType<Statement>(parentAccessor),
-                IStatementDeclaration.Assign => new GetParentsByChildType<Assign>(parentAccessor),
-                IStatementDeclaration.While => new GetParentsByChildType<While>(parentAccessor),
+                IStatementDeclaration.Statement => new GetTransitiveParentsByChildType<Statement>(parentAccessor),
+                IStatementDeclaration.Assign => new GetTransitiveParentsByChildType<Assign>(parentAccessor),
+                IStatementDeclaration.While => new GetTransitiveParentsByChildType<While>(parentAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(childStatementDeclaration))
             };
     }
 
     /// <summary>
-    /// Gets parents of given type by child type.
+    /// Gets transitive parents of given type by child type.
     /// </summary>
     /// <param name="parentAccessor">Parent accessor.</param>
     /// <typeparam name="TChild">Child type.</typeparam>
-    private class GetParentsByChildType<TChild>(IParentAccessor parentAccessor) : ParentQuery
+    private class GetTransitiveParentsByChildType<TChild>(IParentAccessor parentAccessor) : ParentQuery
         where TChild : Statement
     {
-        public override IEnumerable<Statement> Build(IStatementDeclaration parentStatementDeclaration) =>
-            parentStatementDeclaration switch
+        public override IEnumerable<Statement> Build(IStatementDeclaration childStatementDeclaration) =>
+            childStatementDeclaration switch
             {
-                IStatementDeclaration.Statement => parentAccessor.GetParents<TChild>(),
-                IStatementDeclaration.Assign => parentAccessor.GetParents<TChild>().OfType<Assign>(),
-                IStatementDeclaration.While => parentAccessor.GetParents<TChild>().OfType<While>(),
-                _ => throw new ArgumentOutOfRangeException(nameof(parentStatementDeclaration))
+                IStatementDeclaration.Statement => parentAccessor.GetParentsTransitive<TChild>(),
+                IStatementDeclaration.Assign => parentAccessor.GetParentsTransitive<TChild>().OfType<Assign>(),
+                IStatementDeclaration.While => parentAccessor.GetParentsTransitive<TChild>().OfType<While>(),
+                _ => throw new ArgumentOutOfRangeException(nameof(childStatementDeclaration))
             };
     }
 
-    private class GetChildrenByParentType(IParentAccessor parentAccessor)
+    private class GetTransitiveChildrenByParentType(IParentAccessor parentAccessor)
     {
         public ParentQuery Create(IStatementDeclaration parentStatementDeclaration) =>
             parentStatementDeclaration switch
             {
-                IStatementDeclaration.Statement => new GetChildrenByParentType<Statement>(parentAccessor),
-                IStatementDeclaration.Assign => new GetChildrenByParentType<Assign>(parentAccessor),
-                IStatementDeclaration.While => new GetChildrenByParentType<While>(parentAccessor),
+                IStatementDeclaration.Statement => new GetTransitiveChildrenByParentType<Statement>(parentAccessor),
+                IStatementDeclaration.Assign => new GetTransitiveChildrenByParentType<Assign>(parentAccessor),
+                IStatementDeclaration.While => new GetTransitiveChildrenByParentType<While>(parentAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(parentStatementDeclaration))
             };
     }
 
     /// <summary>
-    /// Gets children of given type by parent type.
+    /// Gets transitive children of given type by parent type.
     /// </summary>
     /// <param name="parentAccessor">Parent accessor.</param>
     /// <typeparam name="TParent">Parent type.</typeparam>
-    private class GetChildrenByParentType<TParent>(IParentAccessor parentAccessor) : ParentQuery
+    private class GetTransitiveChildrenByParentType<TParent>(IParentAccessor parentAccessor) : ParentQuery
         where TParent : Statement
     {
         public override IEnumerable<Statement> Build(IStatementDeclaration childStatementDeclaration) =>
             childStatementDeclaration switch
             {
-                IStatementDeclaration.Statement => parentAccessor.GetChildren<TParent>(),
-                IStatementDeclaration.Assign => parentAccessor.GetChildren<TParent>().OfType<Assign>(),
-                IStatementDeclaration.While => parentAccessor.GetChildren<TParent>().OfType<While>(),
+                IStatementDeclaration.Statement => parentAccessor.GetChildrenTransitive<TParent>(),
+                IStatementDeclaration.Assign => parentAccessor.GetChildrenTransitive<TParent>().OfType<Assign>(),
+                IStatementDeclaration.While => parentAccessor.GetChildrenTransitive<TParent>().OfType<While>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(childStatementDeclaration))
             };
     }
 
     /// <summary>
-    /// Get parent of given type by child line number.
+    /// Get transitive parent of given type by child line number.
     /// </summary>
     /// <param name="parentAccessor">Parent accessor.</param>
     /// <param name="line">Line number.</param>
-    private class GetParentByLineNumber(IParentAccessor parentAccessor, int line) : ParentQuery
+    private class GetTransitiveParentByLineNumber(IParentAccessor parentAccessor, int line) : ParentQuery
     {
-        public override IEnumerable<Statement> Build(IStatementDeclaration parent)
-        {
-            var parentStatement = parentAccessor.GetParent(line);
-
-            var result = parent switch
+        public override IEnumerable<Statement> Build(IStatementDeclaration childStatementDeclaration) =>
+            childStatementDeclaration switch
             {
-                IStatementDeclaration.Statement => parentStatement,
-                IStatementDeclaration.Assign => parentStatement as Assign,
-                IStatementDeclaration.While => parentStatement as While,
-                _ => throw new ArgumentOutOfRangeException(nameof(parent))
+                IStatementDeclaration.Statement => parentAccessor.GetParentsTransitive(line),
+                IStatementDeclaration.Assign => parentAccessor.GetParentsTransitive(line).OfType<Assign>(),
+                IStatementDeclaration.While => parentAccessor.GetParentsTransitive(line).OfType<While>(),
+                _ => throw new ArgumentOutOfRangeException(nameof(childStatementDeclaration))
             };
-
-            if (result is null)
-            {
-                return Enumerable.Empty<Statement>();
-            }
-
-            return Enumerable.Repeat(result, 1);
-        }
     }
 
     /// <summary>
-    /// Gets children of given type by parent line number.
+    /// Gets transitive children of given type by parent line number.
     /// </summary>
     /// <param name="parentAccessor">Parent accessor.</param>
     /// <param name="line">Line number.</param>
-    private class GetChildrenByLineNumber(IParentAccessor parentAccessor, int line) : ParentQuery
+    private class GetTransitiveChildrenByLineNumber(IParentAccessor parentAccessor, int line) : ParentQuery
     {
-        public override IEnumerable<Statement> Build(IStatementDeclaration child) =>
-            child switch
+        public override IEnumerable<Statement> Build(IStatementDeclaration childStatementDeclaration) =>
+            childStatementDeclaration switch
             {
-                IStatementDeclaration.Statement => parentAccessor.GetChildren(line),
-                IStatementDeclaration.Assign => parentAccessor.GetChildren(line).OfType<Assign>(),
-                IStatementDeclaration.While => parentAccessor.GetChildren(line).OfType<While>(),
-                _ => throw new ArgumentOutOfRangeException(nameof(child))
+                IStatementDeclaration.Statement => parentAccessor.GetChildrenTransitive(line),
+                IStatementDeclaration.Assign => parentAccessor.GetChildrenTransitive(line).OfType<Assign>(),
+                IStatementDeclaration.While => parentAccessor.GetChildrenTransitive(line).OfType<While>(),
+                _ => throw new ArgumentOutOfRangeException(nameof(childStatementDeclaration))
             };
     }
 
@@ -214,9 +203,9 @@ internal static class Parent
         /// <summary>
         /// Builds a query.
         /// </summary>
-        /// <param name="declaration"> The declaration to build the query for. </param>
+        /// <param name="childStatementDeclaration"> The declaration to build the query for. </param>
         /// <returns> The query. </returns>
-        public abstract IEnumerable<Statement> Build(IStatementDeclaration declaration);
+        public abstract IEnumerable<Statement> Build(IStatementDeclaration childStatementDeclaration);
     }
 
     #endregion

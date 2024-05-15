@@ -1,6 +1,6 @@
 namespace Parsobober.Tests.Sprint1;
 
-public class ParentTests() : Sprint1BaseTestClass(Code1)
+public class ParentTests() : BaseTestClass(Code.ShortStatementsOnly)
 {
     [Theory]
     // stmt
@@ -83,16 +83,16 @@ public class ParentTests() : Sprint1BaseTestClass(Code1)
     [Theory]
     // stmt
     [InlineData("stmt s1, s2;", "s2", "s1", "2,3,4,5,6")]
-    [InlineData("stmt s; assign a;", "a", "s", "2,3,5,6")]
-    [InlineData("stmt s; while w;", "w", "s", "4")]
+    [InlineData("stmt s; assign a;", "a", "s", "None")]
+    [InlineData("stmt s; while w;", "w", "s", "2,3,4,5,6")]
     // while
     [InlineData("while w1, w2;", "w2", "w1", "4")]
-    [InlineData("while w; assign a;", "a", "w", "2,3,5,6")]
-    [InlineData("while w; stmt s;", "s", "w", "2,3,4,5,6")]
+    [InlineData("while w; assign a;", "a", "w", "None")]
+    [InlineData("while w; stmt s;", "s", "w", "4")]
     // assign
     [InlineData("assign a1, a2;", "a2", "a1", "None")]
-    [InlineData("assign a; stmt s;", "s", "a", "None")]
-    [InlineData("assign a; while w;", "w", "a", "None")]
+    [InlineData("assign a; stmt s;", "s", "a", "2,3,5,6")]
+    [InlineData("assign a; while w;", "w", "a", "2,3,5,6")]
     public void Parent_Statement_Statement_Select_Right(string declaration, string left, string right, string expected)
     {
         var query = $"{declaration}\nSelect {right} such that Parent ({left}, {right})";
