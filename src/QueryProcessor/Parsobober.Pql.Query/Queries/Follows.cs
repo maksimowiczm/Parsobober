@@ -45,11 +45,11 @@ internal static class Follows
             {
                 // Follows(stmt, 1)
                 (IStatementDeclaration declaration, IArgument.Line follows) =>
-                  new GetFollowsByLineNumber(accessor, follows.Value).Build(declaration),
+                    new GetFollowsByLineNumber(accessor, follows.Value).Build(declaration),
 
                 //Follows(1, stmt) 
                 (IArgument.Line followed, IStatementDeclaration follows) =>
-                new GetFollowedByLineNumber(accessor, followed.Value).Build(follows),
+                    new GetFollowedByLineNumber(accessor, followed.Value).Build(follows),
 
                 // Follows(stmt, stmt)
                 (IStatementDeclaration followed, IStatementDeclaration follows) =>

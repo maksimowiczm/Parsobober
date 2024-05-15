@@ -38,6 +38,7 @@ internal static class FollowsTransitive
             return query;
         }
     }
+
     private class InnerBuilder(
         IFollowsAccessor accessor,
         string select,
@@ -133,7 +134,8 @@ internal static class FollowsTransitive
         public followedQuery Create(IStatementDeclaration followedStatementDeclaration) =>
             followedStatementDeclaration switch
             {
-                IStatementDeclaration.Statement => new GetTransitivefollowsrenByfollowedType<Statement>(followedAccessor),
+                IStatementDeclaration.Statement => new GetTransitivefollowsrenByfollowedType<Statement>(
+                    followedAccessor),
                 IStatementDeclaration.Assign => new GetTransitivefollowsrenByfollowedType<Assign>(followedAccessor),
                 IStatementDeclaration.While => new GetTransitivefollowsrenByfollowedType<While>(followedAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(followedStatementDeclaration))
