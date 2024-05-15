@@ -1,6 +1,6 @@
 namespace Parsobober.Tests.Sprint1;
 
-public class FollowsTests() : Sprint1BaseTestClass(Code1)
+public class FollowsTests() : BaseTestClass(Code.ShortStatementsOnly)
 {
     [Theory]
     // stmt
@@ -24,7 +24,7 @@ public class FollowsTests() : Sprint1BaseTestClass(Code1)
     [InlineData("assign a;", "a", "4", "3")]
     [InlineData("assign a;", "a", "5", "None")]
     [InlineData("assign a;", "a", "6", "None")]
-    
+
     public void Follows_Statement_Line(string declaration, string select, string line, string expected)
     {
         var query = $"{declaration}\nSelect {select} such that Follows ({select}, {line})";
