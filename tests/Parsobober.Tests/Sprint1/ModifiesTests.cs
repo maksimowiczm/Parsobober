@@ -34,7 +34,7 @@ public class ModifiesTests() : BaseTestClass(Code.ShortStatementsOnly)
         var result = App.Query(query);
         result.Should().Be(expected);
     }
-    
+
     [Theory]
     [InlineData("stmt s;variable v;", "s", "v", "1,2,3,4,5,6")]
     [InlineData("while w;variable v;", "w", "v", "1,4")]
@@ -45,7 +45,7 @@ public class ModifiesTests() : BaseTestClass(Code.ShortStatementsOnly)
         var result = App.Query(query);
         result.Should().Be(expected);
     }
-    
+
     [Theory]
     [InlineData("stmt s;variable v;", "s", "v", "r,t,x,z")]
     [InlineData("while w;variable v;", "w", "v", "r,t,x,z")]
