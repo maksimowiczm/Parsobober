@@ -2,17 +2,23 @@ using Parsobober.Pql.Query.Queries.Abstractions;
 
 namespace Parsobober.Pql.Query.Tree.Node;
 
-internal class AttributeQueryNode(
-    IAttributeQuery attributeQuery,
-    IQueryNode queryNode
-) : IQueryNode
+internal class AttributeQueryNode : IQueryNode
 {
+    private readonly IAttributeQuery _attributeQuery;
+    private readonly IQueryNode _queryNode;
+
+    public AttributeQueryNode(IAttributeQuery attributeQuery, IQueryNode queryNode)
+    {
+        _attributeQuery = attributeQuery;
+        _queryNode = queryNode;
+    }
+
     public IEnumerable<IComparable> Do()
     {
-        var queryResult = queryNode.Do();
-        var attributeResult = attributeQuery.Do();
+        var queryResult = _queryNode.Do();
+        var attributeResult = _attributeQuery.Do();
         var intersection = queryResult.Intersect(attributeResult);
-        
-        return intersection; 
+
+        return intersection;
     }
 }
