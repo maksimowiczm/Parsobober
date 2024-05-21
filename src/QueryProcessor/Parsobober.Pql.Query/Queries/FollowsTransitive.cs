@@ -1,58 +1,21 @@
 ﻿using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Arguments;
+using Parsobober.Pql.Query.Queries.Abstractions;
 
 namespace Parsobober.Pql.Query.Queries;
 
 internal static class FollowsTransitive
 {
-    #region Builder
-
-    public class Builder(IFollowsAccessor accessor)
+    public class QueryDeclaration(IArgument followed, IArgument follows, IFollowsAccessor accessor) : IQueryDeclaration
     {
-        private readonly List<(string followed, string follows)> _followsRelations = [];
+        public IArgument Left { get; } = followed;
+        public IArgument Right { get; } = follows;
 
-        public void Add(string followed, string follows)
+        public IEnumerable<IComparable> Do(IDeclaration select)
         {
-            _followsRelations.Add((followed, follows));
-        }
-
-        public IEnumerable<Statement>? Build(string select, IReadOnlyDictionary<string, IDeclaration> declarations)
-        {
-            if (_followsRelations.Count == 0)
-            {
-                return null;
-            }
-
-
-            if (_followsRelations.Count > 1)
-            {
-                throw new InvalidOperationException("Invalid query");
-            }
-
-            var followed = _followsRelations.First().followed;
-            var follows = _followsRelations.First().follows;
-
-            var query = new InnerBuilder(accessor, select, declarations).Build(followed, follows);
-
-            return query;
-        }
-    }
-
-    private class InnerBuilder(
-        IFollowsAccessor accessor,
-        string select,
-        IReadOnlyDictionary<string, IDeclaration> declarations
-    )
-    {
-        public IEnumerable<Statement> Build(string followedStr, string followsStr)
-        {
-            // parsowanie argumentów
-            var followedArgument = IArgument.Parse(declarations, followedStr);
-            var followsArgument = IArgument.Parse(declarations, followsStr);
-
             // pattern matching argumentów
-            var query = (followedArgument, followsArgument) switch
+            var query = (Left, Right) switch
             {
                 // followed*(stmt, 1)
                 (IStatementDeclaration declaration, IArgument.Line follows) =>
@@ -64,38 +27,36 @@ internal static class FollowsTransitive
 
                 // followed*(stmt, stmt)
                 (IStatementDeclaration followed, IStatementDeclaration follows) =>
-                    BuildfollowedWithSelect((followedStr, followed), (followsStr, follows)),
+                    BuildfollowedWithSelect(followed, follows),
 
                 // followed*(1, 2) nie wspierane w tej wersji
                 _ => throw new InvalidOperationException("Invalid query")
             };
 
             return query;
-        }
 
-        private IEnumerable<Statement> BuildfollowedWithSelect(
-            (string key, IStatementDeclaration type) followed,
-            (string key, IStatementDeclaration type) follows
-        )
-        {
-            // tu nastąpi samowywrotka przy zapytaniach, w których nie ma wartości z selecta
-            // przykład: Select x such that followed(a, b)
-
-            if (followed.key == select)
+            IEnumerable<Statement> BuildfollowedWithSelect(
+                IStatementDeclaration followed,
+                IStatementDeclaration follows
+            )
             {
-                return new GetTransitiveFollowedByFollowsType(accessor).Create(follows.type).Build(followed.type);
-            }
+                // tu nastąpi samowywrotka przy zapytaniach, w których nie ma wartości z selecta
+                // przykład: Select x such that followed(a, b)
 
-            if (follows.key == select)
-            {
-                return new GetTransitiveFollowsByFollowedType(accessor).Create(followed.type).Build(follows.type);
-            }
+                if (followed == select)
+                {
+                    return new GetTransitiveFollowedByFollowsType(accessor).Create(follows).Build(followed);
+                }
 
-            throw new InvalidOperationException("Invalid query");
+                if (follows == select)
+                {
+                    return new GetTransitiveFollowsByFollowedType(accessor).Create(followed).Build(follows);
+                }
+
+                throw new InvalidOperationException("Invalid query");
+            }
         }
     }
-
-    #endregion
 
     #region Queries
 
@@ -208,5 +169,4 @@ internal static class FollowsTransitive
     }
 
     #endregion
-
 }

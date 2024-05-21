@@ -44,12 +44,12 @@ internal class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
 
     public IQueryResult Build()
     {
-        AddQueries(_parent, (left, right) => new Parent.LazyQuery(left, right, accessor.Parent));
-        // AddQueries(_parentTransitive, (left, right) => new ParentTransitive.LazyQuery(left, right, accessor.Parent));
-        // AddQueries(_follows, (left, right) => new Follows.LazyQuery(left, right, accessor.Follows));
-        // AddQueries(_followsTransitive, (left, right) => new FollowsTransitive.LazyQuery(left, right, accessor.Follows));
-        // AddQueries(_modifies, (left, right) => new Modifies.LazyQuery(left, right, accessor.Modifies));
-        // AddQueries(_uses, (left, right) => new Uses.LazyQuery(left, right, accessor.Uses));
+        AddQueries(_parent, (left, right) => new Parent.QueryDeclaration(left, right, accessor.Parent));
+        AddQueries(_parentTransitive, (left, right) => new ParentTransitive.QueryDeclaration(left, right, accessor.Parent));
+        AddQueries(_follows, (left, right) => new Follows.QueryDeclaration(left, right, accessor.Follows));
+        AddQueries(_followsTransitive, (left, right) => new FollowsTransitive.QueryDeclaration(left, right, accessor.Follows));
+        AddQueries(_modifies, (left, right) => new Modifies.QueryDeclaration(left, right, accessor.Modifies));
+        AddQueries(_uses, (left, right) => new Uses.QueryDeclaration(left, right, accessor.Uses));
 
         var organizer = new QueryOrganizer(Select, _queries);
 

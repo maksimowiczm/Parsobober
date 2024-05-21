@@ -7,10 +7,10 @@ namespace Parsobober.Pql.Query.Queries;
 
 internal static class Parent
 {
-    public class LazyQuery(IArgument left, IArgument right, IParentAccessor accessor) : IQueryDeclaration
+    public class QueryDeclaration(IArgument parent, IArgument child, IParentAccessor accessor) : IQueryDeclaration
     {
-        public IArgument Left { get; } = left;
-        public IArgument Right { get; } = right;
+        public IArgument Left { get; } = parent;
+        public IArgument Right { get; } = child;
 
         public IEnumerable<IComparable> Do(IDeclaration select)
         {
@@ -36,12 +36,12 @@ internal static class Parent
 
             IEnumerable<Statement> BuildParentWithSelect(IStatementDeclaration parent, IStatementDeclaration child)
             {
-                if (parent.Name == select.Name)
+                if (parent== select)
                 {
                     return new GetParentsByChildType(accessor).Create(child).Build(parent);
                 }
 
-                if (child.Name == select.Name)
+                if (child== select)
                 {
                     return new GetChildrenByParentType(accessor).Create(parent).Build(child);
                 }
