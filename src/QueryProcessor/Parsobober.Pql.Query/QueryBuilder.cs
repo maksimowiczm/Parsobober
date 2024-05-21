@@ -2,49 +2,58 @@ using Parsobober.Pkb.Relations.Abstractions;
 using Parsobober.Pql.Query.Abstractions;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries;
+using Parsobober.Pql.Query.Queries.Abstractions;
+using Parsobober.Pql.Query.Tree;
 
 namespace Parsobober.Pql.Query;
 
-public class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
+internal class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
 {
     private string _select = string.Empty;
+    private IDeclaration Select => _declarations[_select];
 
     // trzymanie deklaracji jako konkretne typy IDeclaration
     private readonly Dictionary<string, IDeclaration> _declarations = new();
 
     private readonly Dictionary<string, List<string>> _attributes = new();
 
-    private readonly Parent.Builder _parentBuilder = new(accessor.Parent);
+    private readonly List<(string left, string right)> _parent = [];
 
-    private readonly ParentTransitive.Builder _parentTransitiveBuilder = new(accessor.Parent);
+    private readonly List<(string left, string right)> _parentTransitive = [];
 
-    private readonly Follows.Builder _followsBuilder = new(accessor.Follows);
+    private readonly List<(string left, string right)> _follows = [];
 
-    private readonly FollowsTransitive.Builder _followsTransitiveBuilder = new(accessor.Follows);
+    private readonly List<(string left, string right)> _followsTransitive = [];
 
-    private readonly Modifies.Builder _modifiesBuilder = new(accessor.Modifies);
+    private readonly List<(string left, string right)> _modifies = [];
 
-    private readonly Uses.Builder _usesBuilder = new(accessor.Uses);
+    private readonly List<(string left, string right)> _uses = [];
 
-    public IQuery Build()
+    private readonly List<IQueryDeclaration> _queries = [];
+
+    private void AddQueries<T>(List<(string, string)> relations, Func<IArgument, IArgument, T> queryCreator)
+        where T : IQueryDeclaration
     {
-        // rozwiązanie na pierwszą iterację
-
-        var results = new List<IEnumerable<IComparable>?>
+        foreach (var (l, r) in relations)
         {
-            _parentBuilder.Build(_select, _declarations),
-            _parentTransitiveBuilder.Build(_select, _declarations),
-            _followsTransitiveBuilder.Build(_select, _declarations),
-            _followsBuilder.Build(_select, _declarations),
-            _modifiesBuilder.Build(_select, _declarations),
-            _usesBuilder.Build(_select, _declarations)
-        };
+            var left = IArgument.Parse(_declarations, l);
+            var right = IArgument.Parse(_declarations, r);
+            _queries.Add(queryCreator(left, right));
+        }
+    }
 
-        var result = results.Single(r => r is not null);
+    public IQueryResult Build()
+    {
+        AddQueries(_parent, (left, right) => new Parent.LazyQuery(left, right, accessor.Parent));
+        // AddQueries(_parentTransitive, (left, right) => new ParentTransitive.LazyQuery(left, right, accessor.Parent));
+        // AddQueries(_follows, (left, right) => new Follows.LazyQuery(left, right, accessor.Follows));
+        // AddQueries(_followsTransitive, (left, right) => new FollowsTransitive.LazyQuery(left, right, accessor.Follows));
+        // AddQueries(_modifies, (left, right) => new Modifies.LazyQuery(left, right, accessor.Modifies));
+        // AddQueries(_uses, (left, right) => new Uses.LazyQuery(left, right, accessor.Uses));
 
-        // todo przefiltrować atrybuty (with)
+        var organizer = new QueryOrganizer(Select, _queries);
 
-        return new Query(result!);
+        return QueryExecutor.Execute(organizer.Organize());
     }
 
     public IQueryBuilder AddSelect(string synonym)
@@ -58,11 +67,11 @@ public class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
         var split = declaration.Split();
         var rest = string.Join("", split.Skip(1)).Split(',');
 
-        var type = IDeclaration.Parse(split.First());
+        var type = split.First();
 
         foreach (var key in rest.Select(s => s.Replace(";", "")))
         {
-            _declarations.Add(key, type);
+            _declarations.Add(key, IDeclaration.Parse(type, key));
         }
 
         return this;
@@ -85,37 +94,37 @@ public class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
 
     public IQueryBuilder AddFollows(string reference1, string reference2)
     {
-        _followsBuilder.Add(reference1, reference2);
+        _follows.Add((reference1, reference2));
         return this;
     }
 
     public IQueryBuilder AddFollowsTransitive(string reference1, string reference2)
     {
-        _followsTransitiveBuilder.Add(reference1, reference2);
+        _followsTransitive.Add((reference1, reference2));
         return this;
     }
 
     public IQueryBuilder AddParent(string parent, string child)
     {
-        _parentBuilder.Add(parent, child);
+        _parent.Add((parent, child));
         return this;
     }
 
     public IQueryBuilder AddParentTransitive(string parent, string child)
     {
-        _parentTransitiveBuilder.Add(parent, child);
+        _parentTransitive.Add((parent, child));
         return this;
     }
 
     public IQueryBuilder AddModifies(string reference1, string reference2)
     {
-        _modifiesBuilder.Add(reference1, reference2);
+        _modifies.Add((reference1, reference2));
         return this;
     }
 
     public IQueryBuilder AddUses(string reference1, string reference2)
     {
-        _usesBuilder.Add(reference1, reference2);
+        _uses.Add((reference1, reference2));
         return this;
     }
 
