@@ -14,6 +14,35 @@ internal class QueryOrganizer(
     IDtoProgramContextAccessor context
 )
 {
+    private (IQueryNode node, IDeclaration? next) CreateNode(IDeclaration entry)
+    {
+        var query = queries.FirstOrDefault(q => q.Left == entry || q.Right == entry);
+
+        if (query is null)
+        {
+            // na pierwsza iteracje wystarczy
+            var anotherQuery = queries.First()!;
+            var nothingQuery = SelectNothing(entry, anotherQuery);
+            queries.Remove(anotherQuery);
+
+            return (nothingQuery, null);
+        }
+
+        var next = query.GetAnother(entry) as IDeclaration;
+        var attribute = attributes.SingleOrDefault(a => a.Declaration == entry);
+
+        queries.Remove(query);
+        var rawNode = new EnumerableQueryNode(query.Do(entry));
+
+        if (attribute is not null)
+        {
+            attributes.Remove(attribute);
+            return (new AttributeQueryNode(attribute, rawNode), next);
+        }
+
+        return (rawNode, next);
+    }
+
     /// <summary>
     /// Organizes queries and select statement into query tree.
     /// </summary>
@@ -21,29 +50,18 @@ internal class QueryOrganizer(
     public IQueryNode Organize(IDeclaration select)
     {
         // na pierwsza iteracje wystarczy
-        var query = queries.First();
+        var (root, next) = CreateNode(select);
 
-        // if there is nothing to select
-        if (!IsSelect(query, q => q.Left, select) &&
-            !IsSelect(query, q => q.Right, select))
-        {
-            return select switch
-            {
-                // todo replace Enumerable with valid data from context
-                IStatementDeclaration.Statement => new BooleanQueryNode(select, query, context.Statements),
-                IStatementDeclaration.Assign => new BooleanQueryNode(select, query, context.Assigns),
-                IStatementDeclaration.While => new BooleanQueryNode(select, query, context.Whiles),
-                IVariableDeclaration.Variable => new BooleanQueryNode(select, query, context.Variables),
-                _ => throw new Exception("idk")
-            };
-        }
-
-        return new QueryNode(select, query);
+        return root;
     }
 
-    private static bool IsSelect(
-        IQueryDeclaration query,
-        Func<IQueryDeclaration, IArgument> sideSelector,
-        IDeclaration select
-    ) => sideSelector(query) is IDeclaration side && side.Name == select.Name;
+    private BooleanQueryNode SelectNothing(IDeclaration select, IQueryDeclaration query) =>
+        select switch
+        {
+            IStatementDeclaration.Statement => new BooleanQueryNode(query, context.Statements),
+            IStatementDeclaration.Assign => new BooleanQueryNode(query, context.Assigns),
+            IStatementDeclaration.While => new BooleanQueryNode(query, context.Whiles),
+            IVariableDeclaration.Variable => new BooleanQueryNode(query, context.Variables),
+            _ => throw new Exception("idk")
+        };
 }
