@@ -7,7 +7,7 @@ namespace Parsobober.Pql.Query.Tree.Node;
 internal class BooleanQueryNode(
     IDeclaration select,
     IQueryDeclaration predicate,
-    Func<IEnumerable<IComparable>> query
+    IEnumerable<IComparable> query
 ) : IQueryNode
 {
     public IDeclaration Select { get; } = select;

@@ -1,4 +1,4 @@
-using Parsobober.Pkb.Relations.Dto;
+using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
 using Parsobober.Pql.Query.Tree.Node;
@@ -10,7 +10,11 @@ namespace Parsobober.Pql.Query.Tree;
 /// </summary>
 /// <param name="select">Select statement</param>
 /// <param name="queries">Queries declarations</param>
-internal class QueryOrganizer(IDeclaration select, IEnumerable<IQueryDeclaration> queries)
+internal class QueryOrganizer(
+    IDeclaration select,
+    IEnumerable<IQueryDeclaration> queries,
+    IDtoProgramContextAccessor context
+)
 {
     /// <summary>
     /// Organizes queries and select statement into query tree.
@@ -28,10 +32,10 @@ internal class QueryOrganizer(IDeclaration select, IEnumerable<IQueryDeclaration
             return select switch
             {
                 // todo replace Enumerable with valid data from context
-                IStatementDeclaration.Statement => new BooleanQueryNode(select, query, Enumerable.Empty<Statement>),
-                IStatementDeclaration.Assign => new BooleanQueryNode(select, query, Enumerable.Empty<Assign>),
-                IStatementDeclaration.While => new BooleanQueryNode(select, query, Enumerable.Empty<While>),
-                IVariableDeclaration.Variable => new BooleanQueryNode(select, query, Enumerable.Empty<Variable>),
+                IStatementDeclaration.Statement => new BooleanQueryNode(select, query, context.Statements),
+                IStatementDeclaration.Assign => new BooleanQueryNode(select, query, context.Assigns),
+                IStatementDeclaration.While => new BooleanQueryNode(select, query, context.Whiles),
+                IVariableDeclaration.Variable => new BooleanQueryNode(select, query, context.Variables),
                 _ => throw new Exception("idk")
             };
         }

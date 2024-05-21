@@ -3,7 +3,7 @@ using Parsobober.Pql.Query.Queries.Abstractions;
 
 namespace Parsobober.Pql.Query.Queries;
 
-internal class RawQuery(Func<IEnumerable<IComparable>> query) : ILazyQuery
+internal class RawQuery(IEnumerable<IComparable> query) : ILazyQuery
 {
-    public IEnumerable<IComparable> Do(IDeclaration select) => query();
+    public IEnumerable<IComparable> Do(IDeclaration select) => query;
 }

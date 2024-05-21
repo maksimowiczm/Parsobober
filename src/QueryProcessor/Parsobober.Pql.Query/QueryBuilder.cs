@@ -51,7 +51,7 @@ internal class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
         AddQueries(_modifies, (left, right) => new Modifies.QueryDeclaration(left, right, accessor.Modifies));
         AddQueries(_uses, (left, right) => new Uses.QueryDeclaration(left, right, accessor.Uses));
 
-        var organizer = new QueryOrganizer(Select, _queries);
+        var organizer = new QueryOrganizer(Select, _queries, accessor.ProgramContext);
 
         return QueryExecutor.Execute(organizer.Organize());
     }
