@@ -7,15 +7,21 @@ internal class FollowsExtractor(IFollowsCreator creator) : SimpleExtractor
 {
     public override void While(TreeNode result)
     {
-        ContainerStmt(result, result.Children[1]);
+        ContainerStmt(result.Children[1]);
+    }
+
+    public override void If(TreeNode result)
+    {
+        ContainerStmt(result.Children[1]);
+        ContainerStmt(result.Children[2]);
     }
 
     public override void Procedure(TreeNode result)
     {
-        ContainerStmt(result, result.Children[0]);
+        ContainerStmt(result.Children[0]);
     }
 
-    private void ContainerStmt(TreeNode container, TreeNode stmtList)
+    private void ContainerStmt(TreeNode stmtList)
     {
         var stmtListElem = stmtList.Children[0];
         if (stmtListElem is null)

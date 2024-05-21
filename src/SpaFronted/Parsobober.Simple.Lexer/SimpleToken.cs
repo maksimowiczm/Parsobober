@@ -9,6 +9,8 @@ public enum SimpleToken
     [Lexeme("call")] Call,
     [Lexeme("while")] While,
     [Lexeme("if")] If,
+    [Lexeme("then")] Then,
+    [Lexeme("else")] Else,
     #endregion
 
     #region OPERATORS

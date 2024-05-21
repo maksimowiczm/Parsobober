@@ -117,6 +117,10 @@ internal class SimpleParser(
         {
             stmtNode = While();
         }
+        else if (_currentToken.Type == SimpleToken.If)
+        {
+            stmtNode = If();
+        }
         else
         {
             stmtNode = Assign();
@@ -143,6 +147,32 @@ internal class SimpleParser(
 
         NotifyAll(ex => ex.While(whileNode));
         return whileNode;
+    }
+
+    private TreeNode If()
+    {
+        var ifLine = GetNextLineNumber();
+
+        Match(SimpleToken.If);
+        var variableNode = Variable();
+
+        Match(SimpleToken.Then);
+        Match(SimpleToken.LeftCurly);
+        TreeNode stmtList1Node = StmtLst();
+        Match(SimpleToken.RightCurly);
+
+        Match(SimpleToken.Else);
+        Match(SimpleToken.LeftCurly);
+        TreeNode stmtList2Node = StmtLst();
+        Match(SimpleToken.RightCurly);
+
+        var ifNode = CreateTreeNode(EntityType.While, ifLine);
+        AddNthChild(ifNode, variableNode, 1);
+        AddNthChild(ifNode, stmtList1Node, 2);
+        AddNthChild(ifNode, stmtList2Node, 3);
+
+        NotifyAll(ex => ex.If(ifNode));
+        return ifNode;
     }
 
     private TreeNode Assign()

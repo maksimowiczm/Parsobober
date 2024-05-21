@@ -9,6 +9,7 @@ public interface ISimpleExtractor
     void Expr(TreeNode node);
     void Procedure(TreeNode node);
     void While(TreeNode node);
+    void If(TreeNode node);
     void Variable(TreeNode node);
     void Factor(TreeNode node);
     void StmtLst();
