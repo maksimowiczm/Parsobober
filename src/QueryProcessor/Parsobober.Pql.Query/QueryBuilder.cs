@@ -1,13 +1,16 @@
+using System.Text.RegularExpressions;
 using Parsobober.Pkb.Relations.Abstractions;
+using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pql.Query.Abstractions;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries;
 using Parsobober.Pql.Query.Queries.Abstractions;
+using Parsobober.Pql.Query.Queries.With;
 using Parsobober.Pql.Query.Tree;
 
 namespace Parsobober.Pql.Query;
 
-internal class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
+internal partial class QueryBuilder(IPkbAccessors accessor, IProgramContextAccessor programContext) : IQueryBuilder
 {
     private string _select = string.Empty;
     private IDeclaration Select => _declarations[_select];
@@ -15,7 +18,7 @@ internal class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
     // trzymanie deklaracji jako konkretne typy IDeclaration
     private readonly Dictionary<string, IDeclaration> _declarations = new();
 
-    private readonly Dictionary<string, List<string>> _attributes = new();
+    private readonly Dictionary<string, (string attribute, string value)> _attributes = new();
 
     private readonly List<(string left, string right)> _parent = [];
 
@@ -77,15 +80,15 @@ internal class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
         return this;
     }
 
-    public IQueryBuilder With(string attribute, string reference)
+    public IQueryBuilder With(string attribute, string value)
     {
-        if (_attributes.TryGetValue(attribute, out var attributes))
-        {
-            attributes.Add(reference);
-            return this;
-        }
+        var regex = AttributeRegex();
+        var match = regex.Match(attribute);
+        var groups = match.Groups.Values.ToList();
+        var key = groups[1].Value;
+        var attributeKey = groups[2].Value;
 
-        _attributes.Add(attribute, [reference]);
+        _attributes.Add(key, (attributeKey, value));
 
         return this;
     }
@@ -127,6 +130,9 @@ internal class QueryBuilder(IPkbAccessors accessor) : IQueryBuilder
         _uses.Add((reference1, reference2));
         return this;
     }
+
+    [GeneratedRegex(@"^(.+)\.(.+)$", RegexOptions.Compiled)]
+    private static partial Regex AttributeRegex();
 
     #endregion
 }
