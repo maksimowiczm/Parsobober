@@ -2,11 +2,11 @@ namespace Parsobober.Pql.Query.Abstractions;
 
 public interface IVariableDeclaration : IDeclaration
 {
-    new static IDeclaration? Parse(string type)
+    new static IDeclaration? Parse(string type, string name)
     {
         return type switch
         {
-            "variable" => new Variable(),
+            "variable" => new Variable(name),
             _ => null
         };
     }
@@ -14,5 +14,5 @@ public interface IVariableDeclaration : IDeclaration
     /// <summary>
     /// Represents a variable declaration in a PQL query.
     /// </summary>
-    public readonly record struct Variable : IVariableDeclaration;
+    public readonly record struct Variable(string Name) : IVariableDeclaration;
 }
