@@ -8,11 +8,9 @@ namespace Parsobober.Pql.Query.Tree;
 /// <summary>
 /// Organizes queries and select statement into query tree.
 /// </summary>
-/// <param name="select">Select statement</param>
-/// <param name="queries">Queries declarations</param>
 internal class QueryOrganizer(
-    IDeclaration select,
-    IEnumerable<IQueryDeclaration> queries,
+    List<IQueryDeclaration> queries,
+    List<IAttributeQuery> attributes,
     IDtoProgramContextAccessor context
 )
 {
@@ -20,7 +18,7 @@ internal class QueryOrganizer(
     /// Organizes queries and select statement into query tree.
     /// </summary>
     /// <returns>Query tree</returns>
-    public IQueryNode Organize()
+    public IQueryNode Organize(IDeclaration select)
     {
         // na pierwsza iteracje wystarczy
         var query = queries.First();

@@ -47,16 +47,25 @@ internal partial class QueryBuilder(IPkbAccessors accessor, IProgramContextAcces
 
     public IQueryResult Build()
     {
-        AddQueries(_parent, (left, right) => new Parent.QueryDeclaration(left, right, accessor.Parent));
-        AddQueries(_parentTransitive, (left, right) => new ParentTransitive.QueryDeclaration(left, right, accessor.Parent));
-        AddQueries(_follows, (left, right) => new Follows.QueryDeclaration(left, right, accessor.Follows));
-        AddQueries(_followsTransitive, (left, right) => new FollowsTransitive.QueryDeclaration(left, right, accessor.Follows));
-        AddQueries(_modifies, (left, right) => new Modifies.QueryDeclaration(left, right, accessor.Modifies));
-        AddQueries(_uses, (left, right) => new Uses.QueryDeclaration(left, right, accessor.Uses));
+        AddQueries(_parent, (l, r) => new Parent.QueryDeclaration(l, r, accessor.Parent));
+        AddQueries(_parentTransitive, (l, r) => new ParentTransitive.QueryDeclaration(l, r, accessor.Parent));
+        AddQueries(_follows, (l, r) => new Follows.QueryDeclaration(l, r, accessor.Follows));
+        AddQueries(_followsTransitive,
+            (l, r) => new FollowsTransitive.QueryDeclaration(l, r, accessor.Follows));
+        AddQueries(_modifies, (l, r) => new Modifies.QueryDeclaration(l, r, accessor.Modifies));
+        AddQueries(_uses, (l, r) => new Uses.QueryDeclaration(l, r, accessor.Uses));
 
-        var organizer = new QueryOrganizer(Select, _queries, accessor.ProgramContext);
+        var factory = new WithQueryFactory(programContext);
+        var attributes = _attributes.Select(a =>
+        {
+            var (key, (attribute, value)) = a;
+            return factory.Create(_declarations[key], attribute, value);
+        }).ToList<IAttributeQuery>();
 
-        return QueryExecutor.Execute(organizer.Organize());
+        var organizer = new QueryOrganizer(_queries.ToList(), attributes, accessor.ProgramContext);
+        var root = organizer.Organize(Select);
+
+        return new QueryResult(root.Do());
     }
 
     public IQueryBuilder AddSelect(string synonym)
