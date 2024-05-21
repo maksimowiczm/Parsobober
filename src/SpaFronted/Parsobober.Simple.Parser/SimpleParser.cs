@@ -121,6 +121,10 @@ internal class SimpleParser(
         {
             stmtNode = If();
         }
+        else if (_currentToken.Type == SimpleToken.Call)
+        {
+            stmtNode = Call();
+        }
         else
         {
             stmtNode = Assign();
@@ -173,6 +177,19 @@ internal class SimpleParser(
 
         NotifyAll(ex => ex.If(ifNode));
         return ifNode;
+    }
+
+    private TreeNode Call()
+    {
+        var callLine = GetNextLineNumber();
+        Match(SimpleToken.Call);
+        var callProcedureName = _currentToken.Value;
+        Match(SimpleToken.Name);
+        Match(SimpleToken.Semicolon);
+
+        var callNode = CreateTreeNode(EntityType.Call, callLine, callProcedureName);
+        NotifyAll(ex => ex.Call(callNode));
+        return callNode;
     }
 
     private TreeNode Assign()
