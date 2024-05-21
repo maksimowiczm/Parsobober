@@ -36,12 +36,12 @@ internal static class Parent
 
             IEnumerable<Statement> BuildParentWithSelect(IStatementDeclaration parent, IStatementDeclaration child)
             {
-                if (parent== select)
+                if (parent == select)
                 {
                     return new GetParentsByChildType(accessor).Create(child).Build(parent);
                 }
 
-                if (child== select)
+                if (child == select)
                 {
                     return new GetChildrenByParentType(accessor).Create(parent).Build(child);
                 }
