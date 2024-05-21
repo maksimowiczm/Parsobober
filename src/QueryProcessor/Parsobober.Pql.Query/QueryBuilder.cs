@@ -1,5 +1,6 @@
 using Parsobober.Pkb.Relations.Abstractions;
 using Parsobober.Pql.Query.Abstractions;
+using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries;
 
 namespace Parsobober.Pql.Query;

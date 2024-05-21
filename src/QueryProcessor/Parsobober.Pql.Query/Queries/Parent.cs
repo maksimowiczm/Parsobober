@@ -1,6 +1,7 @@
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Abstractions;
+using Parsobober.Pql.Query.Arguments;
 
 namespace Parsobober.Pql.Query.Queries;
 

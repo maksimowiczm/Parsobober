@@ -1,9 +1,9 @@
-namespace Parsobober.Pql.Query.Abstractions;
+namespace Parsobober.Pql.Query.Arguments;
 
 /// <summary>
 /// Represents a declaration in a PQL query.
 /// </summary>
-public interface IDeclaration : IArgument
+internal interface IDeclaration : IArgument
 {
     string Name { get; }
 
