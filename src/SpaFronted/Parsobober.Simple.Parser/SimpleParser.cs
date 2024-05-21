@@ -164,19 +164,56 @@ internal class SimpleParser(
 
     private TreeNode Expr()
     {
+        TreeNode termNode = Term();
+        if (_currentToken.Type == SimpleToken.Semicolon || _currentToken.Type == SimpleToken.RightParenthesis)
+        {
+            return termNode;
+        }
+
+        var mainExprNode = BasicOperator(termNode);
+
+        NotifyAll(ex => ex.Expr(mainExprNode));
+        return mainExprNode;
+    }
+
+    private TreeNode Term()
+    {
         TreeNode factorNode = Factor();
-        if (_currentToken.Type == SimpleToken.Semicolon)
+        if (_currentToken.Type != SimpleToken.Multiply)
         {
             return factorNode;
         }
-        Match(SimpleToken.Plus);
-        TreeNode exprNode = Expr();
 
-        var mainExprNode = CreateTreeNode(EntityType.Plus, _currentLineNumber, "+");
+        Match(SimpleToken.Multiply);
+
+        TreeNode termNode = Term();
+        var mainExprNode = CreateTreeNode(EntityType.Times, _currentLineNumber);
         AddNthChild(mainExprNode, factorNode, 1);
-        AddNthChild(mainExprNode, exprNode, 2);
+        AddNthChild(mainExprNode, termNode, 2);
+        return mainExprNode;
+    }
 
-        NotifyAll(ex => ex.Expr(mainExprNode));
+    private TreeNode BasicOperator(TreeNode termNode)
+    {
+        EntityType entityType;
+        switch (_currentToken.Type)
+        {
+            case SimpleToken.Plus:
+                Match(SimpleToken.Plus);
+                entityType = EntityType.Plus;
+                break;
+            case SimpleToken.Minus:
+                Match(SimpleToken.Minus);
+                entityType = EntityType.Minus;
+                break;
+            default:
+                throw new Exception("Operator not found");
+
+        }
+        TreeNode exprNode = Expr();
+        var mainExprNode = CreateTreeNode(entityType, _currentLineNumber);
+        AddNthChild(mainExprNode, termNode, 1);
+        AddNthChild(mainExprNode, exprNode, 2);
         return mainExprNode;
     }
 
@@ -189,11 +226,18 @@ internal class SimpleParser(
             Match(SimpleToken.Integer);
             return CreateTreeNode(EntityType.Constant, _currentLineNumber, factorValue);
         }
-        else
+        else if (_currentToken.Type == SimpleToken.Name)
         {
             var variableNode = Variable();
             NotifyAll(ex => ex.Factor(variableNode));
             return variableNode;
+        }
+        else
+        {
+            Match(SimpleToken.LeftParenthesis);
+            var exprNode = Expr();
+            Match(SimpleToken.RightParenthesis);
+            return exprNode;
         }
     }
 
