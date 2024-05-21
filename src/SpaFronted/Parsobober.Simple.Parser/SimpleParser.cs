@@ -21,6 +21,14 @@ internal class SimpleParser(
         logger.LogInformation("Starting parsing");
         GetNextToken();
         TreeNode procedureNode = Procedure();
+
+        while (_currentToken.Type == SimpleToken.Procedure)
+        {
+            var nextProcedureNode = Procedure();
+            ast.SetSiblings(procedureNode, nextProcedureNode);
+        }
+
+        Match(SimpleToken.WhiteSpace);
         ast.SetParenthood(ast.Root, procedureNode);
         logger.LogInformation("Parsing completed successfully");
         return ast;
