@@ -15,7 +15,7 @@ public class PqlParser(IQueryBuilder queryBuilder)
     /// </summary>
     /// <param name="input">The string containing the PQL query to parse.</param>
     /// <returns>An IQuery object representing the parsed PQL query.</returns>
-    public IQuery Parse(string input)
+    public IQueryResult Parse(string input)
     {
         // Parses the input string into a PQL query.
         var queryResult = _parser.Parse(input);

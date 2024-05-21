@@ -10,7 +10,7 @@ public interface IQueryBuilder
     /// Builds the PQL query.
     /// </summary>
     /// <returns>The built PQL query.</returns>
-    IQuery Build();
+    IQueryResult Build();
 
     /// <summary>
     /// Adds a Select clause to the PQL query.
