@@ -9,7 +9,7 @@ public class PqlParserTests
     {
         // Arrange
         var builderMock = new Mock<IQueryBuilder>();
-        var queryMock = new Mock<IQuery>();
+        var queryMock = new Mock<IQueryResult>();
         var parser = new PqlParser(builderMock.Object);
 
         const string queryString = "stmt s1, s2; Select s1 such that Parent (s1, s2)";
@@ -32,7 +32,7 @@ public class PqlParserTests
     {
         // Arrange
         var builderMock = new Mock<IQueryBuilder>();
-        var queryMock = new Mock<IQuery>();
+        var queryMock = new Mock<IQueryResult>();
         var parser = new PqlParser(builderMock.Object);
 
         const string queryString = "stmt s1, s2; Select s1 such that Parent* (s1, s2)";
@@ -55,7 +55,7 @@ public class PqlParserTests
     {
         // Arrange
         var builderMock = new Mock<IQueryBuilder>();
-        var queryMock = new Mock<IQuery>();
+        var queryMock = new Mock<IQueryResult>();
         var parser = new PqlParser(builderMock.Object);
 
         const string queryString = "stmt s1, s2; Select s1 such that Modifies (s1, s2)";
@@ -78,7 +78,7 @@ public class PqlParserTests
     {
         // Arrange
         var builderMock = new Mock<IQueryBuilder>();
-        var queryMock = new Mock<IQuery>();
+        var queryMock = new Mock<IQueryResult>();
         var parser = new PqlParser(builderMock.Object);
 
         const string queryString = "stmt s1, s2; Select s1 such that Follows (s1, s2)";
@@ -101,7 +101,7 @@ public class PqlParserTests
     {
         // Arrange
         var builderMock = new Mock<IQueryBuilder>();
-        var queryMock = new Mock<IQuery>();
+        var queryMock = new Mock<IQueryResult>();
         var parser = new PqlParser(builderMock.Object);
 
         const string queryString = "stmt s1, s2; Select s1 such that Follows* (s1, s2)";
@@ -124,7 +124,7 @@ public class PqlParserTests
     {
         // Arrange
         var builderMock = new Mock<IQueryBuilder>();
-        var queryMock = new Mock<IQuery>();
+        var queryMock = new Mock<IQueryResult>();
         var parser = new PqlParser(builderMock.Object);
 
         const string queryString = "stmt s1, s2; Select s1 with s1.stmt# = 1";
@@ -147,7 +147,7 @@ public class PqlParserTests
     {
         // Arrange
         var builderMock = new Mock<IQueryBuilder>();
-        var queryMock = new Mock<IQuery>();
+        var queryMock = new Mock<IQueryResult>();
         var parser = new PqlParser(builderMock.Object);
 
         const string queryString = "stmt s1, s2; Select s1 such that Uses (s1, s2)";
@@ -170,7 +170,7 @@ public class PqlParserTests
     {
         // Arrange
         var builderMock = new Mock<IQueryBuilder>();
-        var queryMock = new Mock<IQuery>();
+        var queryMock = new Mock<IQueryResult>();
         var parser = new PqlParser(builderMock.Object);
 
         const string queryString = "stmt s1; Select s1 such that Parent(s1, 10)";

@@ -17,7 +17,7 @@ internal class PkbContext(
     IModifiesCreator IPkbCreators.Modifies => modifies;
     IParentCreator IPkbCreators.Parent => parent;
     IUsesCreator IPkbCreators.Uses => uses;
-    IProgramContextAccessor IPkbAccessors.ProgramContext => programContext;
+    IDtoProgramContextAccessor IPkbAccessors.ProgramContext => programContext;
     IFollowsAccessor IPkbAccessors.Follows => follows;
     IParentAccessor IPkbAccessors.Parent => parent;
     IModifiesAccessor IPkbAccessors.Modifies => modifies;

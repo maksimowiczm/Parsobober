@@ -1,9 +1,9 @@
-namespace Parsobober.Pql.Query.Abstractions;
+namespace Parsobober.Pql.Query.Arguments;
 
 /// <summary>
 /// Represents an argument in a PQL query.
 /// </summary>
-public interface IArgument
+internal interface IArgument
 {
     /// <summary>
     /// Parses a string argument into an IArgument instance.

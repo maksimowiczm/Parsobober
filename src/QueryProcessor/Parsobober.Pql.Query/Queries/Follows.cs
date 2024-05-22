@@ -1,60 +1,21 @@
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Dto;
-using Parsobober.Pql.Query.Abstractions;
+using Parsobober.Pql.Query.Arguments;
+using Parsobober.Pql.Query.Queries.Abstractions;
 
 namespace Parsobober.Pql.Query.Queries;
 
 internal static class Follows
 {
-    #region Builder
-
-    public class Builder(IFollowsAccessor accessor)
+    public class QueryDeclaration(IArgument followed, IArgument follows, IFollowsAccessor accessor) : IQueryDeclaration
     {
-        private readonly List<(string followed, string follows)> _followsRelations = [];
+        public IArgument Left { get; } = followed;
+        public IArgument Right { get; } = follows;
 
-        public void Add(string followed, string follows)
+        public IEnumerable<IComparable> Do(IDeclaration select)
         {
-            _followsRelations.Add((followed, follows));
-        }
-
-        public IEnumerable<Statement>? Build(string select, IReadOnlyDictionary<string, IDeclaration> declarations)
-        {
-            if (_followsRelations.Count == 0)
-            {
-                return null;
-            }
-            
-            // todo aktualnie działa tylko dla jednego follows 
-            // na pierwszą iterację wystarczy
-
-            if (_followsRelations.Count > 1)
-            {
-                throw new InvalidOperationException("Invalid query");
-            }
-            
-            var followed = _followsRelations.First().followed;
-            var follows = _followsRelations.First().follows;
-
-            var query = new InnerBuilder(accessor, select, declarations).Build(followed, follows);
-
-            return query;
-        }
-    }
-
-    private class InnerBuilder(
-        IFollowsAccessor accessor,
-        string select,
-        IReadOnlyDictionary<string, IDeclaration> declarations
-    )
-    {
-        public IEnumerable<Statement> Build(string followedStr, string followsStr)
-        {
-            // parsowanie argumentów
-            var followedArgument = IArgument.Parse(declarations, followedStr);
-            var followsArgument = IArgument.Parse(declarations, followsStr);
-
             // pattern matching argumentów
-            var query = (followedArgument, followsArgument) switch
+            var query = (Left, Right) switch
             {
                 // Follows(stmt, 1)
                 (IStatementDeclaration declaration, IArgument.Line follows) =>
@@ -66,38 +27,33 @@ internal static class Follows
 
                 // Follows(stmt, stmt)
                 (IStatementDeclaration followed, IStatementDeclaration follows) =>
-                    BuildFollowsWithSelect((followedStr, followed), (followsStr, follows)),
+                    BuildFollowsWithSelect(followed, follows),
 
                 // Follows(1, 2) nie wspierane w tej wersji
                 _ => throw new InvalidOperationException("Invalid query")
             };
 
             return query;
-        }
 
-        private IEnumerable<Statement> BuildFollowsWithSelect(
-            (string key, IStatementDeclaration type) followed,
-            (string key, IStatementDeclaration type) follows
-        )
-        {
-            // tu nastąpi samowywrotka przy zapytaniach, w których nie ma wartości z selecta
-            // przykład: Select x such that Follows(a, b)
-
-            if (followed.key == select)
+            IEnumerable<Statement> BuildFollowsWithSelect(
+                IStatementDeclaration followed,
+                IStatementDeclaration follows
+            )
             {
-                return new GetFollowedByFollowsType(accessor).Create(followed.type).Build(follows.type);
-            }
+                if (followed == select)
+                {
+                    return new GetFollowedByFollowsType(accessor).Create(followed).Build(follows);
+                }
 
-            if (follows.key == select)
-            {
-                return new GetFollowsByFollowedType(accessor).Create(follows.type).Build(followed.type);
-            }
+                if (follows == select)
+                {
+                    return new GetFollowsByFollowedType(accessor).Create(follows).Build(followed);
+                }
 
-            throw new InvalidOperationException("Invalid query");
+                throw new Exception("No chyba coś ci się pomyliło kolego, taka sytuacja nigdy nie mogla zajść");
+            }
         }
     }
-
-    #endregion
 
     #region Queries
 

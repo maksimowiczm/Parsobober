@@ -1,60 +1,21 @@
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Dto;
-using Parsobober.Pql.Query.Abstractions;
+using Parsobober.Pql.Query.Arguments;
+using Parsobober.Pql.Query.Queries.Abstractions;
 
 namespace Parsobober.Pql.Query.Queries;
 
 internal static class Uses
 {
-    #region Builder
-
-    public class Builder(IUsesAccessor accessor)
+    public class QueryDeclaration(IArgument left, IArgument right, IUsesAccessor accessor) : IQueryDeclaration
     {
-        private readonly List<(string left, string right)> _usesRelations = [];
+        public IArgument Left { get; } = left;
+        public IArgument Right { get; } = right;
 
-        public void Add(string left, string right)
+        public IEnumerable<IComparable> Do(IDeclaration select)
         {
-            _usesRelations.Add((left, right));
-        }
-
-        public IEnumerable<IComparable>? Build(string select, IReadOnlyDictionary<string, IDeclaration> declarations)
-        {
-            if (_usesRelations.Count == 0)
-            {
-                return null;
-            }
-
-            // todo aktualnie działa tylko dla jednego uses
-            // na pierwszą iterację wystarczy
-
-            if (_usesRelations.Count > 1)
-            {
-                throw new InvalidOperationException("Invalid query");
-            }
-
-            var left = _usesRelations.First().left;
-            var right = _usesRelations.First().right;
-
-            var query = new InnerBuilder(accessor, select, declarations).Build(left, right);
-
-            return query;
-        }
-    }
-
-    private class InnerBuilder(
-        IUsesAccessor accessor,
-        string select,
-        IReadOnlyDictionary<string, IDeclaration> declarations
-    )
-    {
-        public IEnumerable<IComparable> Build(string leftStr, string rightStr)
-        {
-            // parsowanie argumentów
-            var leftArgument = IArgument.Parse(declarations, leftStr);
-            var rightArgument = IArgument.Parse(declarations, rightStr);
-
             // pattern matching argumentów
-            var query = (leftArgument: leftArgument, rightArgument: rightArgument) switch
+            var query = (Left, Right) switch
             {
                 // Uses(stmt, 'v')
                 (IStatementDeclaration declaration, IArgument.VarName right) =>
@@ -65,39 +26,33 @@ internal static class Uses
                     new GetVariablesByLineNumber(accessor, left.Value).Build(),
 
                 // Uses(stmt, variable)
-                (IStatementDeclaration left, IVariableDeclaration right) =>
-                    BuildUsesWithSelect((leftStr, left), (rightStr, right)),
+                (IStatementDeclaration left, IVariableDeclaration right) => BuildUsesWithSelect(left, right),
 
                 // Uses(1, 'v') nie wspierane w tej wersji
                 _ => throw new InvalidOperationException("Invalid query")
             };
 
             return query;
-        }
 
-        private IEnumerable<IComparable> BuildUsesWithSelect(
-            (string key, IStatementDeclaration type) left,
-            (string key, IVariableDeclaration type) right
-        )
-        {
-            // tu nastąpi samowywrotka przy zapytaniach, w których nie ma wartości z selecta
-            // przykład: Select x such that uses(s, v)
-
-            if (left.key == select)
+            IEnumerable<IComparable> BuildUsesWithSelect(IStatementDeclaration left, IVariableDeclaration right)
             {
-                return new GetStatements(accessor).Build(left.type);
-            }
+                // tu nastąpi samowywrotka przy zapytaniach, w których nie ma wartości z selecta
+                // przykład: Select x such that uses(s, v)
 
-            if (right.key == select)
-            {
-                return new GetVariablesByStatementType(accessor).Build(left.type);
-            }
+                if (left == select)
+                {
+                    return new GetStatements(accessor).Build(left);
+                }
 
-            throw new InvalidOperationException("Invalid query");
+                if (right == select)
+                {
+                    return new GetVariablesByStatementType(accessor).Build(left);
+                }
+
+                throw new InvalidOperationException("Invalid query");
+            }
         }
     }
-
-    #endregion
 
     #region Queries
 

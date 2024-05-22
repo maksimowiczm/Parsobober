@@ -1,103 +1,61 @@
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Dto;
-using Parsobober.Pql.Query.Abstractions;
+using Parsobober.Pql.Query.Arguments;
+using Parsobober.Pql.Query.Queries.Abstractions;
 
 namespace Parsobober.Pql.Query.Queries;
 
 internal static class Modifies
 {
-    #region Builder
-
-    public class Builder(IModifiesAccessor accessor)
+    public class QueryDeclaration(IArgument left, IArgument right, IModifiesAccessor accessor) : IQueryDeclaration
     {
-        private readonly List<(string left, string right)> _modifiesRelations = [];
+        public IArgument Left { get; } = left;
+        public IArgument Right { get; } = right;
 
-        public void Add(string left, string right)
+        public IEnumerable<IComparable> Do(IDeclaration select)
         {
-            _modifiesRelations.Add((left, right));
-        }
-
-        public IEnumerable<IComparable>? Build(string select, IReadOnlyDictionary<string, IDeclaration> declarations)
-        {
-            if (_modifiesRelations.Count == 0)
-            {
-                return null;
-            }
-
-            // todo aktualnie działa tylko dla jednego modifes
-            // na pierwszą iterację wystarczy
-
-            if (_modifiesRelations.Count > 1)
-            {
-                throw new InvalidOperationException("Invalid query");
-            }
-
-            var left = _modifiesRelations.First().left;
-            var right = _modifiesRelations.First().right;
-
-            var query = new InnerBuilder(accessor, select, declarations).Build(left, right);
-
-            return query;
-        }
-    }
-
-    private class InnerBuilder(
-        IModifiesAccessor accessor,
-        string select,
-        IReadOnlyDictionary<string, IDeclaration> declarations
-    )
-    {
-        public IEnumerable<IComparable> Build(string leftStr, string rightStr)
-        {
-            // parsowanie argumentów
-            var leftArgument = IArgument.Parse(declarations, leftStr);
-            var rightArgument = IArgument.Parse(declarations, rightStr);
-
             // pattern matching argumentów
-            var query = (leftArgument: leftArgument, rightArgument: rightArgument) switch
+            var query = (Left, Right) switch
             {
                 // Modifies(stmt, 'v')
                 (IStatementDeclaration declaration, IArgument.VarName right) =>
                     new GetStatementsByVariable(accessor, right.Value).Build(declaration),
 
                 // Modifies(1, variable)
-                (IArgument.Line left, IVariableDeclaration right) =>
+                (IArgument.Line left, IVariableDeclaration) =>
                     new GetVariablesByLineNumber(accessor, left.Value).Build(),
 
                 // Modifies(stmt, variable)
-                (IStatementDeclaration left, IVariableDeclaration right) =>
-                    BuildModifiesWithSelect((leftStr, left), (rightStr, right)),
+                (IStatementDeclaration left, IVariableDeclaration right) => BuildModifiesWithSelect(left, right),
 
                 // Modifies(1, 'v') nie wspierane w tej wersji
                 _ => throw new InvalidOperationException("Invalid query")
             };
 
             return query;
-        }
 
-        private IEnumerable<IComparable> BuildModifiesWithSelect(
-            (string key, IStatementDeclaration type) left,
-            (string key, IVariableDeclaration type) right
-        )
-        {
-            // tu nastąpi samowywrotka przy zapytaniach, w których nie ma wartości z selecta
-            // przykład: Select x such that modifes(s, v)
-
-            if (left.key == select)
+            IEnumerable<IComparable> BuildModifiesWithSelect(
+                IStatementDeclaration left,
+                IVariableDeclaration right
+            )
             {
-                return new GetStatements(accessor).Build(left.type);
-            }
+                // tu nastąpi samowywrotka przy zapytaniach, w których nie ma wartości z selecta
+                // przykład: Select x such that modifes(s, v)
 
-            if (right.key == select)
-            {
-                return new GetVariablesByStatementType(accessor).Build(left.type);
-            }
+                if (left == select)
+                {
+                    return new GetStatements(accessor).Build(left);
+                }
 
-            throw new InvalidOperationException("Invalid query");
+                if (right == select)
+                {
+                    return new GetVariablesByStatementType(accessor).Build(left);
+                }
+
+                throw new InvalidOperationException("Invalid query");
+            }
         }
     }
-
-    #endregion
 
     #region Queries
 

@@ -13,6 +13,7 @@ public static class DependencyInjection
         services.AddScoped<ProgramContext>();
         services.AddScoped<IProgramContextCreator>(s => s.GetRequiredService<ProgramContext>());
         services.AddScoped<IProgramContextAccessor>(s => s.GetRequiredService<ProgramContext>());
+        services.AddScoped<IDtoProgramContextAccessor>(s => s.GetRequiredService<ProgramContext>());
 
         services.AddScoped<FollowsRelation>();
         services.AddScoped<ParentRelation>();

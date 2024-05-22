@@ -1,60 +1,21 @@
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Dto;
-using Parsobober.Pql.Query.Abstractions;
+using Parsobober.Pql.Query.Arguments;
+using Parsobober.Pql.Query.Queries.Abstractions;
 
 namespace Parsobober.Pql.Query.Queries;
 
 internal static class ParentTransitive
 {
-    #region Builder
-
-    public class Builder(IParentAccessor accessor)
+    public class QueryDeclaration(IArgument parent, IArgument child, IParentAccessor accessor) : IQueryDeclaration
     {
-        private readonly List<(string parent, string child)> _parentRelations = [];
+        public IArgument Left { get; } = parent;
+        public IArgument Right { get; } = child;
 
-        public void Add(string parent, string child)
+        public IEnumerable<IComparable> Do(IDeclaration select)
         {
-            _parentRelations.Add((parent, child));
-        }
-
-        public IEnumerable<Statement>? Build(string select, IReadOnlyDictionary<string, IDeclaration> declarations)
-        {
-            if (_parentRelations.Count == 0)
-            {
-                return null;
-            }
-
-            // todo aktualnie działa tylko dla jednego parenta
-            // na pierwszą iterację wystarczy
-
-            if (_parentRelations.Count > 1)
-            {
-                throw new InvalidOperationException("Invalid query");
-            }
-
-            var parent = _parentRelations.First().parent;
-            var child = _parentRelations.First().child;
-
-            var query = new InnerBuilder(accessor, select, declarations).Build(parent, child);
-
-            return query;
-        }
-    }
-
-    private class InnerBuilder(
-        IParentAccessor accessor,
-        string select,
-        IReadOnlyDictionary<string, IDeclaration> declarations
-    )
-    {
-        public IEnumerable<Statement> Build(string parentStr, string childStr)
-        {
-            // parsowanie argumentów
-            var parentArgument = IArgument.Parse(declarations, parentStr);
-            var childArgument = IArgument.Parse(declarations, childStr);
-
             // pattern matching argumentów
-            var query = (parentArgument, childArgument) switch
+            var query = (Left, Right) switch
             {
                 // Parent*(stmt, 1)
                 (IStatementDeclaration declaration, IArgument.Line child) =>
@@ -65,39 +26,33 @@ internal static class ParentTransitive
                     new GetTransitiveChildrenByLineNumber(accessor, parent.Value).Build(child),
 
                 // Parent*(stmt, stmt)
-                (IStatementDeclaration parent, IStatementDeclaration child) =>
-                    BuildParentWithSelect((parentStr, parent), (childStr, child)),
+                (IStatementDeclaration parent, IStatementDeclaration child) => BuildParentWithSelect(parent, child),
 
                 // Parent*(1, 2) nie wspierane w tej wersji
                 _ => throw new InvalidOperationException("Invalid query")
             };
 
             return query;
-        }
 
-        private IEnumerable<Statement> BuildParentWithSelect(
-            (string key, IStatementDeclaration type) parent,
-            (string key, IStatementDeclaration type) child
-        )
-        {
-            // tu nastąpi samowywrotka przy zapytaniach, w których nie ma wartości z selecta
-            // przykład: Select x such that Parent(a, b)
-
-            if (parent.key == select)
+            IEnumerable<Statement> BuildParentWithSelect(IStatementDeclaration parent, IStatementDeclaration child)
             {
-                return new GetTransitiveParentsByChildType(accessor).Create(child.type).Build(parent.type);
-            }
+                // tu nastąpi samowywrotka przy zapytaniach, w których nie ma wartości z selecta
+                // przykład: Select x such that Parent(a, b)
 
-            if (child.key == select)
-            {
-                return new GetTransitiveChildrenByParentType(accessor).Create(parent.type).Build(child.type);
-            }
+                if (parent == select)
+                {
+                    return new GetTransitiveParentsByChildType(accessor).Create(child).Build(parent);
+                }
 
-            throw new InvalidOperationException("Invalid query");
+                if (child == select)
+                {
+                    return new GetTransitiveChildrenByParentType(accessor).Create(parent).Build(child);
+                }
+
+                throw new Exception("No chyba coś ci się pomyliło kolego, taka sytuacja nigdy nie mogla zajść");
+            }
         }
     }
-
-    #endregion
 
     #region Queries
 

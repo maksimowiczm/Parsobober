@@ -2,10 +2,13 @@ using Microsoft.Extensions.Logging;
 using Parsobober.Pkb.Ast;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Abstractions.Creators;
+using Parsobober.Pkb.Relations.Dto;
+using Parsobober.Pkb.Relations.Utilities;
 
 namespace Parsobober.Pkb.Relations.Implementations;
 
-public class ProgramContext(ILogger<ProgramContext> logger) : IProgramContextCreator, IProgramContextAccessor
+public class ProgramContext(ILogger<ProgramContext> logger)
+    : IProgramContextCreator, IProgramContextAccessor, IDtoProgramContextAccessor
 {
     private readonly Dictionary<string, TreeNode> _variablesDictionary = new();
     private readonly Dictionary<int, TreeNode> _statementsDictionary = new();
@@ -71,4 +74,18 @@ public class ProgramContext(ILogger<ProgramContext> logger) : IProgramContextCre
 
         return _proceduresDictionary.TryAdd(procedure.Attribute, procedure);
     }
+
+    public IEnumerable<Statement> Statements => StatementsDictionary.Values
+        .Select(s => s.ToStatement());
+
+    public IEnumerable<Assign> Assigns => StatementsDictionary.Values
+        .Where(s => s.IsType<Assign>())
+        .Select(s => s.ToStatement() as Assign)!;
+
+    public IEnumerable<While> Whiles => StatementsDictionary.Values
+        .Where(s => s.IsType<While>())
+        .Select(s => s.ToStatement() as While)!;
+
+    public IEnumerable<Variable> Variables => VariablesDictionary.Values
+        .Select(v => v.ToVariable());
 }
