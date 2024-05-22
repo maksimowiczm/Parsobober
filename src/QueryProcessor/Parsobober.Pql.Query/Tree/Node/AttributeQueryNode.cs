@@ -2,6 +2,9 @@ using Parsobober.Pql.Query.Queries.Abstractions;
 
 namespace Parsobober.Pql.Query.Tree.Node;
 
+/// <summary>
+/// Returns intersection of query and attribute.
+/// </summary>
 internal class AttributeQueryNode : IQueryNode
 {
     private readonly IAttributeQuery _attributeQuery;
@@ -15,6 +18,7 @@ internal class AttributeQueryNode : IQueryNode
 
     public IEnumerable<IComparable> Do()
     {
+        // intersection of query and attribute
         var queryResult = _queryNode.Do();
         var attributeResult = _attributeQuery.Do();
         var intersection = queryResult.Intersect(attributeResult);

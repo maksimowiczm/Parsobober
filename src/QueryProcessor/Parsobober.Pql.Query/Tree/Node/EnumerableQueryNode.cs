@@ -1,6 +1,13 @@
 namespace Parsobober.Pql.Query.Tree.Node;
 
-internal record EnumerableQueryNode(IEnumerable<IComparable> QueryResult) : IQueryNode
+internal class EnumerableQueryNode : IQueryNode
 {
-    public IEnumerable<IComparable> Do() => QueryResult;
+    private readonly IEnumerable<IComparable> _queryResult;
+
+    public EnumerableQueryNode(IEnumerable<IComparable> queryResult)
+    {
+        _queryResult = queryResult;
+    }
+
+    public IEnumerable<IComparable> Do() => _queryResult;
 }

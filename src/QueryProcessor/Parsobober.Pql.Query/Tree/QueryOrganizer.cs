@@ -23,61 +23,46 @@ internal class QueryOrganizer(
         // na pierwsza iteracje wystarczy
         var query = queries.FirstOrDefault(q => q.Left == select || q.Right == select);
 
-        if (query is null)
+        var selectNode = query switch
         {
-            // na pierwsza iteracje wystarczy
-            var anotherQuery = queries.First();
+            null => OrganizeSelectNothing(select),
+            not null => new EnumerableQueryNode(query.Do(select))
+        };
 
-            var attributeLeft = attributes.SingleOrDefault(a => a.Declaration == anotherQuery.Left);
-            var attributeRight = attributes.SingleOrDefault(a => a.Declaration == anotherQuery.Right);
-            var anotherAttribute = (attributeLeft, attributeRight) switch
-            {
-                (null, { }) => attributeRight,
-                ({ }, null) => attributeLeft,
-                _ => null
-            };
-
-            if (anotherAttribute is not null)
-            {
-                var anotherRawNode = new EnumerableQueryNode(anotherQuery.Do(select));
-                var anotherAttributeQuery = new AttributeQueryNode(anotherAttribute, anotherRawNode);
-                return SelectNothing(select, anotherAttributeQuery);
-            }
-
-            var nothingQuery = SelectNothing(select, anotherQuery);
-
-            return nothingQuery;
-        }
-
+        // apply attribute on select
         var attribute = attributes.SingleOrDefault(a => a.Declaration == select);
-
-        var rawNode = new EnumerableQueryNode(query.Do(select));
-
         if (attribute is not null)
         {
-            return new AttributeQueryNode(attribute, rawNode);
+            return new AttributeQueryNode(attribute, selectNode);
         }
 
-        return rawNode;
+        return selectNode;
     }
 
-    private BooleanQueryNode SelectNothing(IDeclaration select, IQueryDeclaration query) =>
-        select switch
+    private IQueryNode OrganizeSelectNothing(IDeclaration select)
+    {
+        // na pierwsza iteracje wystarczy
+        var query = queries.First();
+
+        var attributeLeft = attributes.SingleOrDefault(a => a.Declaration == query.Left);
+        var attributeRight = attributes.SingleOrDefault(a => a.Declaration == query.Right);
+        var queryAttribute = (attributeLeft, attributeRight) switch
         {
-            IStatementDeclaration.Statement => new BooleanQueryNode(query, context.Statements),
-            IStatementDeclaration.Assign => new BooleanQueryNode(query, context.Assigns),
-            IStatementDeclaration.While => new BooleanQueryNode(query, context.Whiles),
-            IVariableDeclaration.Variable => new BooleanQueryNode(query, context.Variables),
-            _ => throw new Exception("idk")
+            (null, { }) => attributeRight,
+            ({ }, null) => attributeLeft,
+            _ => null
         };
 
-    private BooleanQueryNode SelectNothing(IDeclaration select, IQueryNode query) =>
-        select switch
+        // apply attribute on query without select
+        if (queryAttribute is not null)
         {
-            IStatementDeclaration.Statement => new BooleanQueryNode(query, context.Statements),
-            IStatementDeclaration.Assign => new BooleanQueryNode(query, context.Assigns),
-            IStatementDeclaration.While => new BooleanQueryNode(query, context.Whiles),
-            IVariableDeclaration.Variable => new BooleanQueryNode(query, context.Variables),
-            _ => throw new Exception("idk")
-        };
+            var rawQuery = new AmbiguousConditionalQueryNode(select, query, context);
+            var attributeNode = new AttributeQueryNode(queryAttribute, new EnumerableQueryNode(query.DoLeft()));
+            var selectNothingNode = new ConditionalQueryNode(attributeNode, rawQuery);
+            return selectNothingNode;
+        }
+
+        var selectNode = new AmbiguousConditionalQueryNode(select, query, context);
+        return selectNode;
+    }
 }
