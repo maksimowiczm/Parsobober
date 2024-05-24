@@ -360,4 +360,35 @@ public class PqlParserTests
         builderMock.Verify(b => b.With("w2.stmt#", "10"));
         builderMock.Verify(b => b.Build(), Times.Once);
     }
+
+    [Theory]
+    [InlineData("variable v;", "v.varName", "test")]
+    [InlineData("procedure p;", "p.procName", "test")]
+    [InlineData("call c;", "c.procName", "test")]
+    [InlineData("constant c;", "c.value", "1")]
+    [InlineData("stmt s;", "s.stmt#", "1")]
+    public void ParseWithAttribute(string declaration, string attribute, string value)
+    {
+        // Arrange
+        var builderMock = new Mock<IQueryBuilder>();
+        var queryMock = new Mock<IQueryResult>();
+        var parser = new PqlParser(builderMock.Object);
+
+        var queryString = $"""
+                           {declaration}
+                           Select s with {attribute} = {value}
+                           """;
+
+        builderMock.Setup(b => b.Build()).Returns(queryMock.Object);
+
+        // Act
+        var query = parser.Parse(queryString);
+
+        // Assert
+        query.Should().NotBeNull();
+        query.Should().Be(queryMock.Object);
+        builderMock.Verify(b => b.AddDeclaration(declaration));
+        builderMock.Verify(b => b.With(attribute, value));
+        builderMock.Verify(b => b.Build(), Times.Once);
+    }
 }
