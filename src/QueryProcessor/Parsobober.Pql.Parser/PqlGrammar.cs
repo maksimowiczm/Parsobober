@@ -23,11 +23,6 @@ internal class PqlGrammar(IQueryBuilder queryBuilder)
     [Production("condition-clause : with-clause")]
     public IQueryBuilder ConditionClause(IQueryBuilder relation) => relation;
 
-    [Production("such-that-clause : SuchThat[d] relation and-relation*")]
-    public IQueryBuilder SuchThatClause(IQueryBuilder relation, List<IQueryBuilder> _) => relation;
-
-    [Production("and-relation : And[d] relation")]
-    public IQueryBuilder AndRelation(IQueryBuilder relation) => relation;
 
     #region With Clause
 
@@ -42,6 +37,15 @@ internal class PqlGrammar(IQueryBuilder queryBuilder)
         queryBuilder.With(attribute.Value, reference.Value);
 
     #endregion
+
+
+    #region Such That Clause
+
+    [Production("such-that-clause : SuchThat[d] relation and-relation*")]
+    public IQueryBuilder SuchThatClause(IQueryBuilder relation, List<IQueryBuilder> _) => relation;
+
+    [Production("and-relation : And[d] relation")]
+    public IQueryBuilder AndRelation(IQueryBuilder relation) => relation;
 
     [Production("relation : Parent[d] LeftParenthesis[d] Reference Coma[d] Reference RightParenthesis[d]")]
     public IQueryBuilder ParentExpression(Token<PqlToken> parent, Token<PqlToken> child) =>
@@ -66,4 +70,6 @@ internal class PqlGrammar(IQueryBuilder queryBuilder)
     [Production("relation : Uses[d] LeftParenthesis[d] Reference Coma[d] Reference RightParenthesis[d]")]
     public IQueryBuilder UsesExpression(Token<PqlToken> reference1, Token<PqlToken> reference2) =>
         queryBuilder.AddUses(reference1.Value, reference2.Value);
+
+    #endregion
 }
