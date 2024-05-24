@@ -45,6 +45,9 @@ internal enum PqlToken
     [Lexeme("with")]
     With,
 
+    [Lexeme("and")]
+    And,
+    
     #region Relations
 
     // Each relation should be a separate token
