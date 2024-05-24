@@ -29,9 +29,19 @@ internal class PqlGrammar(IQueryBuilder queryBuilder)
     [Production("and-relation : And[d] relation")]
     public IQueryBuilder AndRelation(IQueryBuilder relation) => relation;
 
-    [Production("with-clause : With[d] Attribute Equal[d] Reference")]
-    public IQueryBuilder WithClause(Token<PqlToken> attribute, Token<PqlToken> reference) =>
+    #region With Clause
+
+    [Production("with-clause : With[d] attribute-compare and-attribute-compare*")]
+    public IQueryBuilder WithClause(IQueryBuilder compare, List<IQueryBuilder> _) => compare;
+
+    [Production("and-attribute-compare : And[d] attribute-compare")]
+    public IQueryBuilder AndAttributeCompare(IQueryBuilder compare) => compare;
+
+    [Production("attribute-compare : Attribute Equal[d] Reference")]
+    public IQueryBuilder AttributeCompare(Token<PqlToken> attribute, Token<PqlToken> reference) =>
         queryBuilder.With(attribute.Value, reference.Value);
+
+    #endregion
 
     [Production("relation : Parent[d] LeftParenthesis[d] Reference Coma[d] Reference RightParenthesis[d]")]
     public IQueryBuilder ParentExpression(Token<PqlToken> parent, Token<PqlToken> child) =>
