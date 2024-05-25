@@ -178,7 +178,7 @@ internal class SimpleParser(
         TreeNode stmtList2Node = StmtLst();
         Match(SimpleToken.RightCurly);
 
-        var ifNode = CreateTreeNode(EntityType.While, ifLine);
+        var ifNode = CreateTreeNode(EntityType.If, ifLine);
         AddNthChild(ifNode, variableNode, 1);
         AddNthChild(ifNode, stmtList1Node, 2);
         AddNthChild(ifNode, stmtList2Node, 3);
