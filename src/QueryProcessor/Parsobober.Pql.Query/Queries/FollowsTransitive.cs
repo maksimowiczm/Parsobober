@@ -2,17 +2,19 @@
 using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
+using Parsobober.Pql.Query.Queries.Core;
 
 namespace Parsobober.Pql.Query.Queries;
 
 internal static class FollowsTransitive
 {
-    public class QueryDeclaration(IArgument followed, IArgument follows, IFollowsAccessor accessor) : IQueryDeclaration
+    public class QueryDeclaration(IArgument followed, IArgument follows, IFollowsAccessor accessor)
+        : ReplaceableArgumentQueryDeclaration<QueryDeclaration>, IQueryDeclaration
     {
-        public IArgument Left { get; } = followed;
-        public IArgument Right { get; } = follows;
+        public override IArgument Left { get; } = followed;
+        public override IArgument Right { get; } = follows;
 
-        public IEnumerable<IComparable> Do(IDeclaration select)
+        public override IEnumerable<IComparable> Do(IDeclaration select)
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
@@ -56,6 +58,8 @@ internal static class FollowsTransitive
                 throw new InvalidOperationException("Invalid query");
             }
         }
+
+        protected override QueryDeclaration CloneSelf(IArgument left, IArgument right) => new(left, right, accessor);
     }
 
     #region Queries

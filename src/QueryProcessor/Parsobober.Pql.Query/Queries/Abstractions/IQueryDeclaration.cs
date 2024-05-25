@@ -31,4 +31,27 @@ internal interface IQueryDeclaration
             (Left: IDeclaration left, Right: IDeclaration) => Do(left),
             _ => []
         };
+
+    /// <summary>
+    /// Replace the argument in the query.
+    /// </summary>
+    /// <param name="select">The argument to replace.</param>
+    /// <param name="replacement">The replacement.</param>
+    /// <returns> Query with replaced argument. </returns>
+    IQueryDeclaration ReplaceArgument(IDeclaration select, IArgument replacement);
+
+    IDeclaration? GetAnotherSide(IDeclaration select)
+    {
+        if (select == Left)
+        {
+            return Right as IDeclaration;
+        }
+
+        if (select == Right)
+        {
+            return Left as IDeclaration;
+        }
+
+        return null;
+    }
 }

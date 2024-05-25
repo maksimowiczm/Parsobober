@@ -2,17 +2,19 @@ using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
+using Parsobober.Pql.Query.Queries.Core;
 
 namespace Parsobober.Pql.Query.Queries;
 
 internal static class Modifies
 {
-    public class QueryDeclaration(IArgument left, IArgument right, IModifiesAccessor accessor) : IQueryDeclaration
+    public class QueryDeclaration(IArgument left, IArgument right, IModifiesAccessor accessor)
+        : ReplaceableArgumentQueryDeclaration<QueryDeclaration>, IQueryDeclaration
     {
-        public IArgument Left { get; } = left;
-        public IArgument Right { get; } = right;
+        public override IArgument Left { get; } = left;
+        public override IArgument Right { get; } = right;
 
-        public IEnumerable<IComparable> Do(IDeclaration select)
+        public override IEnumerable<IComparable> Do(IDeclaration select)
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
@@ -55,6 +57,8 @@ internal static class Modifies
                 throw new InvalidOperationException("Invalid query");
             }
         }
+
+        protected override QueryDeclaration CloneSelf(IArgument left, IArgument right) => new(left, right, accessor);
     }
 
     #region Queries
