@@ -21,6 +21,14 @@ internal class SimpleParser(
         logger.LogInformation("Starting parsing");
         GetNextToken();
         TreeNode procedureNode = Procedure();
+
+        while (_currentToken.Type == SimpleToken.Procedure)
+        {
+            var nextProcedureNode = Procedure();
+            ast.SetSiblings(procedureNode, nextProcedureNode);
+        }
+
+        Match(SimpleToken.WhiteSpace);
         ast.SetParenthood(ast.Root, procedureNode);
         logger.LogInformation("Parsing completed successfully");
         return ast;
@@ -117,6 +125,14 @@ internal class SimpleParser(
         {
             stmtNode = While();
         }
+        else if (_currentToken.Type == SimpleToken.If)
+        {
+            stmtNode = If();
+        }
+        else if (_currentToken.Type == SimpleToken.Call)
+        {
+            stmtNode = Call();
+        }
         else
         {
             stmtNode = Assign();
@@ -145,6 +161,45 @@ internal class SimpleParser(
         return whileNode;
     }
 
+    private TreeNode If()
+    {
+        var ifLine = GetNextLineNumber();
+
+        Match(SimpleToken.If);
+        var variableNode = Variable();
+
+        Match(SimpleToken.Then);
+        Match(SimpleToken.LeftCurly);
+        TreeNode stmtList1Node = StmtLst();
+        Match(SimpleToken.RightCurly);
+
+        Match(SimpleToken.Else);
+        Match(SimpleToken.LeftCurly);
+        TreeNode stmtList2Node = StmtLst();
+        Match(SimpleToken.RightCurly);
+
+        var ifNode = CreateTreeNode(EntityType.If, ifLine);
+        AddNthChild(ifNode, variableNode, 1);
+        AddNthChild(ifNode, stmtList1Node, 2);
+        AddNthChild(ifNode, stmtList2Node, 3);
+
+        NotifyAll(ex => ex.If(ifNode));
+        return ifNode;
+    }
+
+    private TreeNode Call()
+    {
+        var callLine = GetNextLineNumber();
+        Match(SimpleToken.Call);
+        var callProcedureName = _currentToken.Value;
+        Match(SimpleToken.Name);
+        Match(SimpleToken.Semicolon);
+
+        var callNode = CreateTreeNode(EntityType.Call, callLine, callProcedureName);
+        NotifyAll(ex => ex.Call(callNode));
+        return callNode;
+    }
+
     private TreeNode Assign()
     {
         var line = GetNextLineNumber();
@@ -164,19 +219,56 @@ internal class SimpleParser(
 
     private TreeNode Expr()
     {
+        TreeNode termNode = Term();
+        if (_currentToken.Type == SimpleToken.Semicolon || _currentToken.Type == SimpleToken.RightParenthesis)
+        {
+            return termNode;
+        }
+
+        var mainExprNode = BasicOperator(termNode);
+
+        NotifyAll(ex => ex.Expr(mainExprNode));
+        return mainExprNode;
+    }
+
+    private TreeNode Term()
+    {
         TreeNode factorNode = Factor();
-        if (_currentToken.Type == SimpleToken.Semicolon)
+        if (_currentToken.Type != SimpleToken.Multiply)
         {
             return factorNode;
         }
-        Match(SimpleToken.Plus);
-        TreeNode exprNode = Expr();
 
-        var mainExprNode = CreateTreeNode(EntityType.Plus, _currentLineNumber, "+");
+        Match(SimpleToken.Multiply);
+
+        TreeNode termNode = Term();
+        var mainExprNode = CreateTreeNode(EntityType.Times, _currentLineNumber);
         AddNthChild(mainExprNode, factorNode, 1);
-        AddNthChild(mainExprNode, exprNode, 2);
+        AddNthChild(mainExprNode, termNode, 2);
+        return mainExprNode;
+    }
 
-        NotifyAll(ex => ex.Expr(mainExprNode));
+    private TreeNode BasicOperator(TreeNode termNode)
+    {
+        EntityType entityType;
+        switch (_currentToken.Type)
+        {
+            case SimpleToken.Plus:
+                Match(SimpleToken.Plus);
+                entityType = EntityType.Plus;
+                break;
+            case SimpleToken.Minus:
+                Match(SimpleToken.Minus);
+                entityType = EntityType.Minus;
+                break;
+            default:
+                throw new Exception("Operator not found");
+
+        }
+        TreeNode exprNode = Expr();
+        var mainExprNode = CreateTreeNode(entityType, _currentLineNumber);
+        AddNthChild(mainExprNode, termNode, 1);
+        AddNthChild(mainExprNode, exprNode, 2);
         return mainExprNode;
     }
 
@@ -189,11 +281,18 @@ internal class SimpleParser(
             Match(SimpleToken.Integer);
             return CreateTreeNode(EntityType.Constant, _currentLineNumber, factorValue);
         }
-        else
+        else if (_currentToken.Type == SimpleToken.Name)
         {
             var variableNode = Variable();
             NotifyAll(ex => ex.Factor(variableNode));
             return variableNode;
+        }
+        else
+        {
+            Match(SimpleToken.LeftParenthesis);
+            var exprNode = Expr();
+            Match(SimpleToken.RightParenthesis);
+            return exprNode;
         }
     }
 
