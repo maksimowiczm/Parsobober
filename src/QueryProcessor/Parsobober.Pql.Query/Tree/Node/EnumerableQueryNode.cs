@@ -10,4 +10,8 @@ internal class EnumerableQueryNode : IQueryNode
     }
 
     public IEnumerable<IComparable> Do() => _queryResult;
+
+#if DEBUG
+    private List<IComparable> Result => Do().ToList();
+#endif
 }

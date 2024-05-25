@@ -23,4 +23,8 @@ internal class ConditionalQueryNode : IQueryNode
 
         return [];
     }
+
+#if DEBUG
+    private List<IComparable> Result => Do().ToList();
+#endif
 }

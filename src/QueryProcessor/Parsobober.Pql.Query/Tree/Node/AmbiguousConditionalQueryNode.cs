@@ -40,4 +40,8 @@ internal class AmbiguousConditionalQueryNode : IQueryNode
 
         return [];
     }
+
+#if DEBUG
+    private List<IComparable> Result => Do().ToList();
+#endif
 }

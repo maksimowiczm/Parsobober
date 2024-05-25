@@ -25,4 +25,8 @@ internal class AttributeQueryNode : IQueryNode
 
         return intersection;
     }
+
+#if DEBUG
+    private List<IComparable> Result => Do().ToList();
+#endif
 }
