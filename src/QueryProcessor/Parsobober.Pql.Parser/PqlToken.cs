@@ -7,7 +7,7 @@ internal static class PqlAuxiliaryTokens
     public const string Integer = @"\d+";
     public const string Ident = @"([a-zA-Z][a-zA-Z\d#]*)";
     public const string Synonym = Ident;
-    public const string DesignEntity = "(stmt|assign|while|variable|constant|prog_line)";
+    public const string DesignEntity = "(procedure|stmtLst|stmt|assign|call|while|if|variable|constant|prog_line)";
     public const string Name = @"([a-zA-Z][a-zA-Z\d]*)";
     public const string StatementReference = $"({Synonym}|_|{Integer})";
     public const string EntReference = $"({Synonym}|_|\"{Ident}\")";
@@ -44,6 +44,9 @@ internal enum PqlToken
 
     [Lexeme("with")]
     With,
+
+    [Lexeme("and")]
+    And,
 
     #region Relations
 
