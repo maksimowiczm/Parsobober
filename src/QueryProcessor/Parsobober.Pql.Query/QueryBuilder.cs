@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 using Parsobober.Pkb.Relations.Abstractions;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pql.Query.Abstractions;
@@ -10,7 +11,11 @@ using Parsobober.Pql.Query.Tree;
 
 namespace Parsobober.Pql.Query;
 
-internal partial class QueryBuilder(IPkbAccessors accessor, IProgramContextAccessor programContext) : IQueryBuilder
+internal partial class QueryBuilder(
+    IPkbAccessors accessor,
+    IProgramContextAccessor programContext,
+    ILogger<QueryOrganizer> organizerLogger
+) : IQueryBuilder
 {
     private string _select = string.Empty;
     private IDeclaration Select => _declarations[_select];
@@ -62,7 +67,7 @@ internal partial class QueryBuilder(IPkbAccessors accessor, IProgramContextAcces
             return factory.Create(_declarations[key], attribute, value);
         }).ToList<IAttributeQuery>();
 
-        var organizer = new QueryOrganizer(_queries.ToList(), attributes, accessor.ProgramContext);
+        var organizer = new QueryOrganizer(_queries.ToList(), attributes, accessor.ProgramContext, organizerLogger);
         var root = organizer.Organize(Select);
 
         return new QueryResult(root.Do());
