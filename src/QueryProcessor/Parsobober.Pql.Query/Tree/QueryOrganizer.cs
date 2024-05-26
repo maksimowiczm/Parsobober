@@ -12,8 +12,7 @@ namespace Parsobober.Pql.Query.Tree;
 internal class QueryOrganizer(
     List<IQueryDeclaration> queries,
     List<IAttributeQuery> attributes,
-    IDtoProgramContextAccessor context,
-    ILogger<QueryOrganizer> logger
+    IDtoProgramContextAccessor context
 )
 {
     /// <summary>
@@ -26,12 +25,12 @@ internal class QueryOrganizer(
 
         if (attributes.Count > 0)
         {
-            logger.LogWarning("Not all attributes were used in query.");
+            throw new Exception("Not all attributes were used in query.");
         }
 
         if (queries.Count > 0)
         {
-            logger.LogWarning("Not all queries were used in query.");
+            throw new Exception("Not all relations were used in query.");
         }
 
         return result;
