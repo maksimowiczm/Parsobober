@@ -28,6 +28,10 @@ internal class WithQueryFactory(IProgramContextAccessor accessor)
 
             return [];
         }
+
+#if DEBUG
+        public override string ToString() => $"{declaration.Name}.stmt# = {line}";
+#endif
     }
 
     private class VariableName(IDeclaration declaration, string name, IProgramContextAccessor accessor)

@@ -7,4 +7,8 @@ internal abstract class WithQuery(IDeclaration declaration) : IAttributeQuery
 {
     public IDeclaration Declaration => declaration;
     public abstract IEnumerable<IComparable> Do();
+
+#if DEBUG
+    private IEnumerable<IComparable> Result => Do();
+#endif
 }

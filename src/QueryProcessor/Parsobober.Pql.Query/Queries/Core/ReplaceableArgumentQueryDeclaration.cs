@@ -31,6 +31,8 @@ internal abstract class ReplaceableArgumentQueryDeclaration<TSelf> : IQueryDecla
     #region DEBUG
 
 #if DEBUG
+    public override string ToString() => $"{GetType().DeclaringType!.Name}({Left}, {Right})";
+
     public List<IComparable> LeftResult
     {
         get

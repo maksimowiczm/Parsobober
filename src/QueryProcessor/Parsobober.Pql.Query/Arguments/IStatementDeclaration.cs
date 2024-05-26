@@ -16,15 +16,30 @@ internal interface IStatementDeclaration : IDeclaration
     /// <summary>
     /// Represents a statement declaration in a PQL query.
     /// </summary>
-    public readonly record struct Statement(string Name) : IStatementDeclaration;
+    public readonly record struct Statement(string Name) : IStatementDeclaration
+    {
+#if DEBUG
+        public override string ToString() => Name;
+#endif
+    }
 
     /// <summary>
     /// Represents a while declaration in a PQL query.
     /// </summary>
-    public readonly record struct While(string Name) : IStatementDeclaration;
+    public readonly record struct While(string Name) : IStatementDeclaration
+    {
+#if DEBUG
+        public override string ToString() => Name;
+#endif
+    }
 
     /// <summary>
     /// Represents an assign declaration in a PQL query.
     /// </summary>
-    public readonly record struct Assign(string Name) : IStatementDeclaration;
+    public readonly record struct Assign(string Name) : IStatementDeclaration
+    {
+#if DEBUG
+        public override string ToString() => Name;
+#endif
+    }
 }
