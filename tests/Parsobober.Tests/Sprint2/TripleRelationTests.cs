@@ -7,11 +7,11 @@ public class TripleRelationTests() : BaseTestClass(Code.ZadanieDomowe1)
     [InlineData("""
                 stmt s; if i; while w; assign a;
                 Select a such that Parent(w, i) and Parent(i, s) and Uses(a, t)
-                """, "25, 26")]
+                """, "25,26")]
     [InlineData("""
                 stmt s; while w; assign a;
                 Select a such that Parent(w, s) and Parent(s, a) and Uses(a, t)
-                """, "25, 26")]
+                """, "25,26")]
     [InlineData("""
                 stmt s; while w; assign a;
                 Select w such that Parent(w, s) and Parent(s, a) and Uses(a, t)
