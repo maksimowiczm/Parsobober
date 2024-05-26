@@ -31,3 +31,8 @@ public record While(int LineNumber) : Statement(LineNumber)
 {
     public override string ToString() => base.ToString();
 }
+
+public record Call(int LineNumber) : Statement(LineNumber)
+{
+    public override string ToString() => base.ToString();
+}

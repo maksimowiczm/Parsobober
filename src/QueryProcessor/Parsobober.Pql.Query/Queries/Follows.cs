@@ -69,6 +69,8 @@ internal static class Follows
                 IStatementDeclaration.Statement => new GetFollowedByFollowsType<Statement>(followsAccessor),
                 IStatementDeclaration.Assign => new GetFollowedByFollowsType<Assign>(followsAccessor),
                 IStatementDeclaration.While => new GetFollowedByFollowsType<While>(followsAccessor),
+                IStatementDeclaration.If => new GetFollowedByFollowsType<If>(followsAccessor),
+                IStatementDeclaration.Call => new GetFollowedByFollowsType<Call>(followsAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(followedStatementDeclaration))
             };
     }
@@ -87,6 +89,8 @@ internal static class Follows
                 IStatementDeclaration.Statement => followsAccessor.GetFollowed<TFollowed>(),
                 IStatementDeclaration.Assign => followsAccessor.GetFollowed<TFollowed>().OfType<Assign>(),
                 IStatementDeclaration.While => followsAccessor.GetFollowed<TFollowed>().OfType<While>(),
+                IStatementDeclaration.If => followsAccessor.GetFollowed<TFollowed>().OfType<If>(),
+                IStatementDeclaration.Call => followsAccessor.GetFollowed<TFollowed>().OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(followsStatementDeclaration))
             };
     }
@@ -99,6 +103,8 @@ internal static class Follows
                 IStatementDeclaration.Statement => new GetFollowedByFollowedType<Statement>(followsAccessor),
                 IStatementDeclaration.Assign => new GetFollowedByFollowedType<Assign>(followsAccessor),
                 IStatementDeclaration.While => new GetFollowedByFollowedType<While>(followsAccessor),
+                IStatementDeclaration.If => new GetFollowedByFollowedType<If>(followsAccessor),
+                IStatementDeclaration.Call => new GetFollowedByFollowedType<Call>(followsAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(declaration))
             };
     }
@@ -117,6 +123,8 @@ internal static class Follows
                 IStatementDeclaration.Statement => followsAccessor.GetFollowed<TFollows>(),
                 IStatementDeclaration.Assign => followsAccessor.GetFollowed<TFollows>().OfType<Assign>(),
                 IStatementDeclaration.While => followsAccessor.GetFollowed<TFollows>().OfType<While>(),
+                IStatementDeclaration.If => followsAccessor.GetFollowed<TFollows>().OfType<If>(),
+                IStatementDeclaration.Call => followsAccessor.GetFollowed<TFollows>().OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(declaration))
             };
     }
@@ -137,6 +145,8 @@ internal static class Follows
                 IStatementDeclaration.Statement => followsStatement,
                 IStatementDeclaration.Assign => followsStatement as Assign,
                 IStatementDeclaration.While => followsStatement as While,
+                IStatementDeclaration.If => followsStatement as If,
+                IStatementDeclaration.Call => followsStatement as Call,
                 _ => throw new ArgumentOutOfRangeException(nameof(follows))
             };
 
@@ -165,6 +175,8 @@ internal static class Follows
                 IStatementDeclaration.Statement => followsStatement,
                 IStatementDeclaration.Assign => followsStatement as Assign,
                 IStatementDeclaration.While => followsStatement as While,
+                IStatementDeclaration.If => followsStatement as If,
+                IStatementDeclaration.Call => followsStatement as Call,
                 _ => throw new ArgumentOutOfRangeException(nameof(follows))
             };
 

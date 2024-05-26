@@ -78,14 +78,20 @@ public class ProgramContext(ILogger<ProgramContext> logger)
     public IEnumerable<Statement> Statements => StatementsDictionary.Values
         .Select(s => s.ToStatement());
 
-    public IEnumerable<Assign> Assigns => StatementsDictionary.Values
-        .Where(s => s.IsType<Assign>())
-        .Select(s => s.ToStatement() as Assign)!;
+    public IEnumerable<Assign> Assigns => GetStatementsOfType<Assign>();
 
-    public IEnumerable<While> Whiles => StatementsDictionary.Values
-        .Where(s => s.IsType<While>())
-        .Select(s => s.ToStatement() as While)!;
+    public IEnumerable<While> Whiles => GetStatementsOfType<While>();
 
+    public IEnumerable<If> Ifs => GetStatementsOfType<If>();
+
+    public IEnumerable<Call> Calls => GetStatementsOfType<Call>();
+
+    private IEnumerable<T> GetStatementsOfType<T>()
+        where T : Statement
+        => StatementsDictionary.Values
+            .Where(s => s.IsType<T>())
+            .Select(s => s.ToStatement() as T)!;
+    
     public IEnumerable<Variable> Variables => VariablesDictionary.Values
         .Select(v => v.ToVariable());
 }

@@ -71,6 +71,8 @@ internal static class Modifies
                 IStatementDeclaration.Statement => modifiesAccessor.GetStatements(),
                 IStatementDeclaration.Assign => modifiesAccessor.GetStatements().OfType<Assign>(),
                 IStatementDeclaration.While => modifiesAccessor.GetStatements().OfType<While>(),
+                IStatementDeclaration.If => modifiesAccessor.GetStatements().OfType<If>(),
+                IStatementDeclaration.Call => modifiesAccessor.GetStatements().OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(statementDeclaration))
             };
     }
@@ -83,6 +85,8 @@ internal static class Modifies
                 IStatementDeclaration.Statement => modifiesAccessor.GetVariables<Statement>(),
                 IStatementDeclaration.Assign => modifiesAccessor.GetVariables<Assign>(),
                 IStatementDeclaration.While => modifiesAccessor.GetVariables<While>(),
+                IStatementDeclaration.If => modifiesAccessor.GetVariables<If>(),
+                IStatementDeclaration.Call => modifiesAccessor.GetVariables<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(statementDeclaration))
             };
     }
@@ -103,6 +107,8 @@ internal static class Modifies
                 IStatementDeclaration.Statement => modifiesAccessor.GetStatements(variableName),
                 IStatementDeclaration.Assign => modifiesAccessor.GetStatements(variableName).OfType<Assign>(),
                 IStatementDeclaration.While => modifiesAccessor.GetStatements(variableName).OfType<While>(),
+                IStatementDeclaration.If => modifiesAccessor.GetStatements(variableName).OfType<If>(),
+                IStatementDeclaration.Call => modifiesAccessor.GetStatements(variableName).OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(left))
             };
         }

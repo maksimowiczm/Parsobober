@@ -13,6 +13,8 @@ internal class AmbiguousQueryNode(IDeclaration select, IDtoProgramContextAccesso
         IStatementDeclaration.Statement => context.Statements,
         IStatementDeclaration.Assign => context.Assigns,
         IStatementDeclaration.While => context.Whiles,
+        IStatementDeclaration.If => context.Ifs,
+        IStatementDeclaration.Call => context.Calls,
         IVariableDeclaration.Variable => context.Variables,
         _ => throw new Exception("idk")
     };

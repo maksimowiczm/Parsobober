@@ -65,6 +65,8 @@ internal static class Parent
                 IStatementDeclaration.Statement => new GetParentsByChildType<Statement>(parentAccessor),
                 IStatementDeclaration.Assign => new GetParentsByChildType<Assign>(parentAccessor),
                 IStatementDeclaration.While => new GetParentsByChildType<While>(parentAccessor),
+                IStatementDeclaration.If => new GetParentsByChildType<If>(parentAccessor),
+                IStatementDeclaration.Call => new GetParentsByChildType<Call>(parentAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(childStatementDeclaration))
             };
     }
@@ -83,6 +85,8 @@ internal static class Parent
                 IStatementDeclaration.Statement => parentAccessor.GetParents<TChild>(),
                 IStatementDeclaration.Assign => parentAccessor.GetParents<TChild>().OfType<Assign>(),
                 IStatementDeclaration.While => parentAccessor.GetParents<TChild>().OfType<While>(),
+                IStatementDeclaration.If => parentAccessor.GetParents<TChild>().OfType<If>(),
+                IStatementDeclaration.Call => parentAccessor.GetParents<TChild>().OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(parentStatementDeclaration))
             };
     }
@@ -95,6 +99,8 @@ internal static class Parent
                 IStatementDeclaration.Statement => new GetChildrenByParentType<Statement>(parentAccessor),
                 IStatementDeclaration.Assign => new GetChildrenByParentType<Assign>(parentAccessor),
                 IStatementDeclaration.While => new GetChildrenByParentType<While>(parentAccessor),
+                IStatementDeclaration.If => new GetChildrenByParentType<If>(parentAccessor),
+                IStatementDeclaration.Call => new GetChildrenByParentType<Call>(parentAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(parentStatementDeclaration))
             };
     }
@@ -113,6 +119,8 @@ internal static class Parent
                 IStatementDeclaration.Statement => parentAccessor.GetChildren<TParent>(),
                 IStatementDeclaration.Assign => parentAccessor.GetChildren<TParent>().OfType<Assign>(),
                 IStatementDeclaration.While => parentAccessor.GetChildren<TParent>().OfType<While>(),
+                IStatementDeclaration.If => parentAccessor.GetChildren<TParent>().OfType<If>(),
+                IStatementDeclaration.Call => parentAccessor.GetChildren<TParent>().OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(childStatementDeclaration))
             };
     }
@@ -133,6 +141,8 @@ internal static class Parent
                 IStatementDeclaration.Statement => parentStatement,
                 IStatementDeclaration.Assign => parentStatement as Assign,
                 IStatementDeclaration.While => parentStatement as While,
+                IStatementDeclaration.If => parentStatement as If,
+                IStatementDeclaration.Call => parentStatement as Call,
                 _ => throw new ArgumentOutOfRangeException(nameof(parent))
             };
 
@@ -158,6 +168,8 @@ internal static class Parent
                 IStatementDeclaration.Statement => parentAccessor.GetChildren(line),
                 IStatementDeclaration.Assign => parentAccessor.GetChildren(line).OfType<Assign>(),
                 IStatementDeclaration.While => parentAccessor.GetChildren(line).OfType<While>(),
+                IStatementDeclaration.If => parentAccessor.GetChildren(line).OfType<If>(),
+                IStatementDeclaration.Call => parentAccessor.GetChildren(line).OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(child))
             };
     }
