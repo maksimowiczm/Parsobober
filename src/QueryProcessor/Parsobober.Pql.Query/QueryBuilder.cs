@@ -23,26 +23,30 @@ internal partial class QueryBuilder(
     // trzymanie deklaracji jako konkretne typy IDeclaration
     private readonly Dictionary<string, IDeclaration> _declarations = new();
 
-    private readonly Dictionary<string, (string attribute, string value)> _attributes = new();
+    private record AttributeDeclaration(string Attribute, string Value);
 
-    private readonly List<(string left, string right)> _parent = [];
+    private readonly Dictionary<string, AttributeDeclaration> _attributes = new();
 
-    private readonly List<(string left, string right)> _parentTransitive = [];
+    private record QueryDeclaration(string Left, string Right);
 
-    private readonly List<(string left, string right)> _follows = [];
+    private readonly List<QueryDeclaration> _parent = [];
 
-    private readonly List<(string left, string right)> _followsTransitive = [];
+    private readonly List<QueryDeclaration> _parentTransitive = [];
 
-    private readonly List<(string left, string right)> _modifies = [];
+    private readonly List<QueryDeclaration> _follows = [];
 
-    private readonly List<(string left, string right)> _uses = [];
+    private readonly List<QueryDeclaration> _followsTransitive = [];
+
+    private readonly List<QueryDeclaration> _modifies = [];
+
+    private readonly List<QueryDeclaration> _uses = [];
 
     private readonly List<IQueryDeclaration> _queries = [];
 
-    private void AddQueries<T>(List<(string, string)> relations, Func<IArgument, IArgument, T> queryCreator)
+    private void AddQueries<T>(List<QueryDeclaration> relations, Func<IArgument, IArgument, T> queryCreator)
         where T : IQueryDeclaration
     {
-        foreach (var (l, r) in relations)
+        foreach (var (l, r) in relations.Distinct())
         {
             var left = IArgument.Parse(_declarations, l);
             var right = IArgument.Parse(_declarations, r);
@@ -61,11 +65,14 @@ internal partial class QueryBuilder(
         AddQueries(_uses, (l, r) => new Uses.QueryDeclaration(l, r, accessor.Uses));
 
         var factory = new WithQueryFactory(programContext);
-        var attributes = _attributes.Select(a =>
-        {
-            var (key, (attribute, value)) = a;
-            return factory.Create(_declarations[key], attribute, value);
-        }).ToList<IAttributeQuery>();
+        var attributes = _attributes
+            .Distinct()
+            .Select(a =>
+            {
+                var (key, (attribute, value)) = a;
+                return factory.Create(_declarations[key], attribute, value);
+            })
+            .ToList<IAttributeQuery>();
 
         var organizer = new QueryOrganizer(_queries.ToList(), attributes, accessor.ProgramContext, organizerLogger);
         var root = organizer.Organize(Select);
@@ -102,7 +109,7 @@ internal partial class QueryBuilder(
         var key = groups[1].Value;
         var attributeKey = groups[2].Value;
 
-        _attributes.Add(key, (attributeKey, value));
+        _attributes.Add(key, new AttributeDeclaration(attributeKey, value));
 
         return this;
     }
@@ -111,37 +118,37 @@ internal partial class QueryBuilder(
 
     public IQueryBuilder AddFollows(string reference1, string reference2)
     {
-        _follows.Add((reference1, reference2));
+        _follows.Add(new QueryDeclaration(reference1, reference2));
         return this;
     }
 
     public IQueryBuilder AddFollowsTransitive(string reference1, string reference2)
     {
-        _followsTransitive.Add((reference1, reference2));
+        _followsTransitive.Add(new QueryDeclaration(reference1, reference2));
         return this;
     }
 
     public IQueryBuilder AddParent(string parent, string child)
     {
-        _parent.Add((parent, child));
+        _parent.Add(new QueryDeclaration(parent, child));
         return this;
     }
 
     public IQueryBuilder AddParentTransitive(string parent, string child)
     {
-        _parentTransitive.Add((parent, child));
+        _parentTransitive.Add(new QueryDeclaration(parent, child));
         return this;
     }
 
     public IQueryBuilder AddModifies(string reference1, string reference2)
     {
-        _modifies.Add((reference1, reference2));
+        _modifies.Add(new QueryDeclaration(reference1, reference2));
         return this;
     }
 
     public IQueryBuilder AddUses(string reference1, string reference2)
     {
-        _uses.Add((reference1, reference2));
+        _uses.Add(new QueryDeclaration(reference1, reference2));
         return this;
     }
 
