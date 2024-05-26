@@ -1,7 +1,6 @@
 using Parsobober.Pql.Query.Abstractions;
 using sly.lexer;
 using sly.parser.generator;
-using sly.parser.parser;
 
 namespace Parsobober.Pql.Parser;
 
