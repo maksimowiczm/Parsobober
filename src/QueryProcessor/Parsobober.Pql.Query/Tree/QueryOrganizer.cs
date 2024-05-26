@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
@@ -69,8 +68,7 @@ internal class QueryOrganizer(
         // create root node
         var rootNode = rootQuery switch
         {
-            // todo select something else doesn't work right now 
-            null => null, // OrganizeSelectNothing(select),
+            null => OrganizeSelectNothing(select),
             not null => OrganizeSelect(select, rootQuery)
         };
 
@@ -78,6 +76,7 @@ internal class QueryOrganizer(
         var attribute = attributes.SingleOrDefault(a => a.Declaration == select);
         if (attribute is not null)
         {
+            attributes.Remove(attribute);
             return new AttributeQueryNode(attribute, rootNode);
         }
 
@@ -86,28 +85,60 @@ internal class QueryOrganizer(
 
     private IQueryNode OrganizeSelectNothing(IDeclaration select)
     {
-        // na pierwsza iteracje wystarczy
+        // get first query, guaranteed that it doesn't have select
         var query = queries.First();
+        queries.Remove(query);
 
-        var attributeLeft = attributes.SingleOrDefault(a => a.Declaration == query.Left);
-        var attributeRight = attributes.SingleOrDefault(a => a.Declaration == query.Right);
-        var queryAttribute = (attributeLeft, attributeRight) switch
-        {
-            (null, { }) => attributeRight,
-            ({ }, null) => attributeLeft,
-            _ => null
-        };
+        IQueryNode ambiguousNode = new AmbiguousQueryNode(select, context);
 
-        // apply attribute on query without select
-        if (queryAttribute is not null)
+        IQueryNode? conditionNode = null;
+        // Na drugą iterację wystarczy chyba
+        if (query.Left is IDeclaration leftSelect &&
+            queries.Any(q => q.Left == leftSelect || q.Right == leftSelect))
         {
-            var rawQuery = new AmbiguousConditionalQueryNode(select, query, context);
-            var attributeNode = new AttributeQueryNode(queryAttribute, new EnumerableQueryNode(query.DoLeft()));
-            var selectNothingNode = new ConditionalQueryNode(attributeNode, rawQuery);
-            return selectNothingNode;
+            var leftNode = InnerOrganize(leftSelect)!;
+            conditionNode = new DependentQueryNode(query, leftSelect, leftNode);
+        }
+        else if (query.Right is IDeclaration rightSelect &&
+                 queries.Any(q => q.Left == rightSelect || q.Right == rightSelect))
+        {
+            var rightNode = InnerOrganize(rightSelect)!;
+            conditionNode = new DependentQueryNode(query, rightSelect, rightNode);
+        }
+        else
+        {
+            var node = InnerOrganize(select);
+            if (node is not null)
+            {
+                conditionNode = new ConditionalQueryNode(ambiguousNode, node);
+            }
         }
 
-        var selectNode = new AmbiguousConditionalQueryNode(select, query, context);
-        return selectNode;
+        if (conditionNode is null)
+        {
+            var attributeLeft = attributes.SingleOrDefault(a => a.Declaration == query.Left);
+            if (attributeLeft is not null)
+            {
+                attributes.Remove(attributeLeft);
+                var attributeNode = new AttributeQueryNode(attributeLeft,
+                    new AmbiguousQueryNode((IDeclaration)query.Left, context));
+                ambiguousNode = new ConditionalQueryNode(attributeNode, ambiguousNode);
+            }
+
+            var attributeRight = attributes.SingleOrDefault(a => a.Declaration == query.Right);
+            if (attributeRight is not null)
+            {
+                attributes.Remove(attributeRight);
+                var attributeNode = new AttributeQueryNode(attributeRight,
+                    new AmbiguousQueryNode((IDeclaration)query.Right, context));
+                ambiguousNode = new ConditionalQueryNode(attributeNode, ambiguousNode);
+            }
+            
+            return new ConditionalQueryNode(new EnumerableQueryNode(query.Do()), ambiguousNode);
+        }
+
+        var result = new ConditionalQueryNode(conditionNode, ambiguousNode);
+
+        return result;
     }
 }
