@@ -1,6 +1,7 @@
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
+using Parsobober.Pql.Query.Tree.Exceptions;
 using Parsobober.Pql.Query.Tree.Node;
 
 namespace Parsobober.Pql.Query.Tree;
@@ -24,43 +25,15 @@ internal class QueryOrganizer(
 
         if (attributes.Count > 0)
         {
-            throw new Exception("Not all attributes were used in query.");
+            throw new NotAllAttributesUsedException();
         }
 
         if (queries.Count > 0)
         {
-            throw new Exception("Not all relations were used in query.");
+            throw new NotAllRelationsUsedException();
         }
 
         return result;
-    }
-
-    private IQueryNode OrganizeSelect(IDeclaration select, IQueryDeclaration rootQuery)
-    {
-        queries.Remove(rootQuery);
-
-        var anotherSelect = rootQuery.GetAnotherSide(select);
-
-        if (anotherSelect is not null)
-        {
-            var anotherNode = InnerOrganize(anotherSelect);
-
-            return anotherNode switch
-            {
-                null => new EnumerableQueryNode(rootQuery.Do(select)),
-                not null => new DependentQueryNode(rootQuery, anotherSelect, anotherNode)
-            };
-        }
-
-        var rootNode = new EnumerableQueryNode(rootQuery.Do(select));
-
-        var rest = InnerOrganize(select);
-        if (rest is not null)
-        {
-            return new ConditionalQueryNode(rest, rootNode);
-        }
-
-        return rootNode;
     }
 
     private IQueryNode? InnerOrganize(IDeclaration select)
@@ -71,21 +44,67 @@ internal class QueryOrganizer(
             return null;
         }
 
-        var rootQuery = queries.FirstOrDefault(q => q.Left == select || q.Right == select);
+        // get query with select
+        var selectQuery = queries.FirstOrDefault(q => q.Left == select || q.Right == select);
 
         // create root node
-        var rootNode = rootQuery switch
+        var selectNode = selectQuery switch
         {
-            null => OrganizeSelectNothing(select),
-            not null => OrganizeSelect(select, rootQuery)
+            // if there is query with select => OrganizeSelect
+            not null => OrganizeSelect(select, selectQuery),
+            // if there is no query with select => OrganizeSelectNothing
+            null => OrganizeSelectNothing(select)
         };
 
         // apply attribute 
-        var attribute = attributes.SingleOrDefault(a => a.Declaration == select);
-        if (attribute is not null)
+        var selectAttribute = attributes.SingleOrDefault(a => a.Declaration == select);
+        // if there is attribute, create attribute node wrapper
+        if (selectAttribute is not null)
         {
-            attributes.Remove(attribute);
-            return new AttributeQueryNode(attribute, rootNode);
+            attributes.Remove(selectAttribute);
+            return new AttributeQueryNode(selectAttribute, selectNode);
+        }
+
+        // otherwise return select node
+        return selectNode;
+    }
+
+    private IQueryNode OrganizeSelect(IDeclaration select, IQueryDeclaration rootQuery)
+    {
+        queries.Remove(rootQuery);
+
+        // get another side of query, example `Parent(a, b)` with `select` = a then `anotherSelect` = b
+        var anotherDeclaration = rootQuery.GetAnotherSide(select);
+
+        // if there is another declaration
+        if (anotherDeclaration is not null)
+        {
+            // recursively organize another declaration (subquery)
+            var anotherNode = InnerOrganize(anotherDeclaration);
+
+            // If there is another node, it means that there is subquery,
+            // example `Select a such that Parent(a, b) and Parent(b, c)`.
+            // It will create DependentQueryNode which will replace `b` in `Parent(a, b)`
+            // with result of subquery `Parent(b, c)`.
+            // Otherwise create EnumerableQueryNode.
+            return anotherNode switch
+            {
+                null => new EnumerableQueryNode(rootQuery.Do(select)),
+                not null => new ReplacerQueryNode(rootQuery, anotherDeclaration, anotherNode)
+            };
+        }
+
+        var rootNode = new EnumerableQueryNode(rootQuery.Do(select));
+
+        // if there is no another declaration, it means that there might be boolean condition,
+        // example |             query       |   conditions...
+        // `Select a such that Parent(a, b) and Parent(c, d) and Parent(d, e)`.
+        // Delegate to InnerOrganize to find out if there are any conditions.
+        var rest = InnerOrganize(select);
+        // if there are conditions, create ConditionalQueryNode
+        if (rest is not null)
+        {
+            return new ConditionalQueryNode(rest, rootNode);
         }
 
         return rootNode;
@@ -93,11 +112,14 @@ internal class QueryOrganizer(
 
     private IQueryNode OrganizeSelectNothing(IDeclaration select)
     {
-        // get first query, guaranteed that it doesn't have select
+        // czarna magia nie wiem o co tu chodziło xD. Działa, pozdrawiam
+
+        // get first query, guaranteed that it doesn't have select as any of declarations
         var query = queries.First();
         queries.Remove(query);
 
-        IQueryNode ambiguousNode = new AmbiguousQueryNode(select, context);
+        // create ambiguous node with select
+        IQueryNode ambiguousNode = new PkbQueryNode(select, context);
 
         IQueryNode? conditionNode = null;
         // Na drugą iterację wystarczy chyba
@@ -105,13 +127,13 @@ internal class QueryOrganizer(
             queries.Any(q => q.Left == leftSelect || q.Right == leftSelect))
         {
             var leftNode = InnerOrganize(leftSelect)!;
-            conditionNode = new DependentQueryNode(query, leftSelect, leftNode);
+            conditionNode = new ReplacerQueryNode(query, leftSelect, leftNode);
         }
         else if (query.Right is IDeclaration rightSelect &&
                  queries.Any(q => q.Left == rightSelect || q.Right == rightSelect))
         {
             var rightNode = InnerOrganize(rightSelect)!;
-            conditionNode = new DependentQueryNode(query, rightSelect, rightNode);
+            conditionNode = new ReplacerQueryNode(query, rightSelect, rightNode);
         }
         else
         {
@@ -129,7 +151,7 @@ internal class QueryOrganizer(
             {
                 attributes.Remove(attributeLeft);
                 var attributeNode = new AttributeQueryNode(attributeLeft,
-                    new AmbiguousQueryNode((IDeclaration)query.Left, context));
+                    new PkbQueryNode((IDeclaration)query.Left, context));
                 ambiguousNode = new ConditionalQueryNode(attributeNode, ambiguousNode);
             }
 
@@ -138,7 +160,7 @@ internal class QueryOrganizer(
             {
                 attributes.Remove(attributeRight);
                 var attributeNode = new AttributeQueryNode(attributeRight,
-                    new AmbiguousQueryNode((IDeclaration)query.Right, context));
+                    new PkbQueryNode((IDeclaration)query.Right, context));
                 ambiguousNode = new ConditionalQueryNode(attributeNode, ambiguousNode);
             }
 

@@ -40,6 +40,12 @@ internal interface IQueryDeclaration
     /// <returns> Query with replaced argument. </returns>
     IQueryDeclaration ReplaceArgument(IDeclaration select, IArgument replacement);
 
+    /// <summary>
+    /// Get the other side of the query. If the select is not in the query, throw exception.
+    /// </summary>
+    /// <param name="select">The side that is the other side xD.</param>
+    /// <returns>The other side of the query.</returns>
+    /// <exception cref="DeclarationNotFoundException">If the select is not in the query.</exception>
     IDeclaration? GetAnotherSide(IDeclaration select)
     {
         if (select == Left)

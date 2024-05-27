@@ -1,5 +1,8 @@
 namespace Parsobober.Pql.Query.Tree.Node;
 
+/// <summary>
+/// Query node that returns raw enumerable. The most simple query node.
+/// </summary>
 internal class EnumerableQueryNode : IQueryNode
 {
     private readonly IEnumerable<IComparable> _queryResult;

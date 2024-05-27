@@ -3,14 +3,18 @@ using Parsobober.Pql.Query.Queries.Abstractions;
 
 namespace Parsobober.Pql.Query.Tree.Node;
 
-internal class DependentQueryNode : IQueryNode
+/// <summary>
+/// Replaces given <see cref="IDeclaration"/> in <see cref="IQueryDeclaration"/> with results from <see cref="IQueryNode"/>.
+/// Useful in query that depends on another query.
+/// </summary>
+internal class ReplacerQueryNode : IQueryNode
 {
     private readonly IQueryDeclaration _queryToReplace;
     private readonly IDeclaration _argumentToReplace;
     private readonly IQueryNode _replacerQueryNode;
 
     /// <summary>
-    /// Creates new instance of <see cref="DependentQueryNode"/>.
+    /// Creates new instance of <see cref="ReplacerQueryNode"/>.
     /// Replaces <paramref name="argumentToReplace"/> argument with results from <paramref name="replacerQueryNode"/>.
     /// </summary>
     /// <param name="queryToReplace">
@@ -22,7 +26,7 @@ internal class DependentQueryNode : IQueryNode
     /// <param name="replacerQueryNode">
     /// Query that will be executed to get results for <paramref name="argumentToReplace"/> replacement.
     /// </param>
-    public DependentQueryNode(
+    public ReplacerQueryNode(
         IQueryDeclaration queryToReplace,
         IDeclaration argumentToReplace,
         IQueryNode replacerQueryNode
@@ -38,14 +42,15 @@ internal class DependentQueryNode : IQueryNode
         // god forgive me
         // I am doing this only to pass my studies
 
-        var dependentResult = _replacerQueryNode
+        var arguments = _replacerQueryNode
             .Do()
             .Select(r =>
                 // 💀💀💀💀💀💀💀💀💀
+                // todo make query result to be IArgument?
                 IArgument.Parse(new Dictionary<string, IDeclaration>(), r.ToString()!)
             );
 
-        var result = dependentResult
+        var result = arguments
             .SelectMany(arg =>
                 _queryToReplace
                     .ReplaceArgument(_argumentToReplace, arg)
