@@ -52,7 +52,15 @@ internal class QueryOrganizer(
             };
         }
 
-        return new EnumerableQueryNode(rootQuery.Do(select));
+        var rootNode = new EnumerableQueryNode(rootQuery.Do(select));
+
+        var rest = InnerOrganize(select);
+        if (rest is not null)
+        {
+            return new ConditionalQueryNode(rest, rootNode);
+        }
+
+        return rootNode;
     }
 
     private IQueryNode? InnerOrganize(IDeclaration select)
