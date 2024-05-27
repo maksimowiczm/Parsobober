@@ -3,6 +3,7 @@ using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
 using Parsobober.Pql.Query.Queries.Core;
+using Parsobober.Pql.Query.Queries.Exceptions;
 
 namespace Parsobober.Pql.Query.Queries;
 
@@ -30,8 +31,8 @@ internal static class Modifies
                 // Modifies(stmt, variable)
                 (IStatementDeclaration left, IVariableDeclaration right) => BuildModifiesWithSelect(left, right),
 
-                // Modifies(1, 'v') nie wspierane w tej wersji
-                _ => throw new InvalidOperationException("Invalid query")
+                // Modifies(1, 'v') nie wspierane w tej wersji todo już wspierane
+                _ => throw new QueryNotSupported(this, $"Modifies({Left}, {Right}) is not supported.")
             };
 
             return query;
@@ -54,7 +55,7 @@ internal static class Modifies
                     return new GetVariablesByStatementType(accessor).Build(left);
                 }
 
-                throw new InvalidOperationException("Invalid query");
+                throw new DeclarationNotFoundException(select, this);
             }
         }
 

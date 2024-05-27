@@ -3,6 +3,7 @@ using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
 using Parsobober.Pql.Query.Queries.Core;
+using Parsobober.Pql.Query.Queries.Exceptions;
 
 namespace Parsobober.Pql.Query.Queries;
 
@@ -31,8 +32,8 @@ internal static class Follows
                 (IStatementDeclaration followed, IStatementDeclaration follows) =>
                     BuildFollowsWithSelect(followed, follows),
 
-                // Follows(1, 2) nie wspierane w tej wersji
-                _ => throw new InvalidOperationException("Invalid query")
+                // Follows(1, 2) nie wspierane w tej wersji todo już wspierane
+                _ => throw new QueryNotSupported(this, $"Follows({Left}, {Right}) is not supported.")
             };
 
             return query;
@@ -52,7 +53,7 @@ internal static class Follows
                     return new GetFollowsByFollowedType(accessor).Create(follows).Build(followed);
                 }
 
-                throw new Exception("No chyba coś ci się pomyliło kolego, taka sytuacja nigdy nie mogla zajść");
+                throw new DeclarationNotFoundException(select, this);
             }
         }
 

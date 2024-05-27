@@ -3,6 +3,7 @@ using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
 using Parsobober.Pql.Query.Queries.Core;
+using Parsobober.Pql.Query.Queries.Exceptions;
 
 namespace Parsobober.Pql.Query.Queries;
 
@@ -31,8 +32,8 @@ internal static class FollowsTransitive
                 (IStatementDeclaration followed, IStatementDeclaration follows) =>
                     BuildFollowedWithSelect(followed, follows),
 
-                // followed*(1, 2) niewspierane w tej wersji
-                _ => throw new InvalidOperationException("Invalid query")
+                // followed*(1, 2) niewspierane w tej wersji todo już wspierane
+                _ => throw new QueryNotSupported(this, $"Followed*({Left}, {Right}) is not supported.")
             };
 
             return query;
@@ -55,7 +56,7 @@ internal static class FollowsTransitive
                     return new GetTransitiveFollowsByFollowedType(accessor).Create(followed).Build(follows);
                 }
 
-                throw new InvalidOperationException("Invalid query");
+                throw new DeclarationNotFoundException(select, this);
             }
         }
 

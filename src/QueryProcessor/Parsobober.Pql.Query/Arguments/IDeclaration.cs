@@ -1,3 +1,5 @@
+using Parsobober.Pql.Query.Arguments.Exceptions;
+
 namespace Parsobober.Pql.Query.Arguments;
 
 /// <summary>
@@ -17,7 +19,11 @@ internal interface IDeclaration : IArgument
     static IDeclaration Parse(string type, string name)
     {
         // todo really ugly, refactor (clueless)
-        List<Func<string, string, IDeclaration?>> parsers = [IStatementDeclaration.Parse, IVariableDeclaration.Parse];
+        List<Func<string, string, IDeclaration?>> parsers =
+        [
+            IStatementDeclaration.Parse,
+            IVariableDeclaration.Parse
+        ];
 
         foreach (var parser in parsers)
         {
@@ -28,6 +34,6 @@ internal interface IDeclaration : IArgument
             }
         }
 
-        throw new ArgumentOutOfRangeException($"Declaration type '{type}' is not supported.");
+        throw new DeclarationParseException(type, name);
     }
 }

@@ -3,6 +3,7 @@ using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
 using Parsobober.Pql.Query.Queries.Core;
+using Parsobober.Pql.Query.Queries.Exceptions;
 
 namespace Parsobober.Pql.Query.Queries;
 
@@ -30,8 +31,8 @@ internal static class Parent
                 // Parent(stmt, stmt)
                 (IStatementDeclaration parent, IStatementDeclaration child) => BuildParentWithSelect(parent, child),
 
-                // Parent(1, 2) nie wspierane w tej wersji
-                _ => throw new InvalidOperationException("Invalid query")
+                // Parent(1, 2) nie wspierane w tej wersji todo już wspierane
+                _ => throw new QueryNotSupported(this, $"Parent({Left}, {Right}) is not supported.")
             };
 
             return query;
@@ -48,7 +49,7 @@ internal static class Parent
                     return new GetChildrenByParentType(accessor).Create(parent).Build(child);
                 }
 
-                throw new Exception("No chyba coś ci się pomyliło kolego, taka sytuacja nigdy nie mogla zajść");
+                throw new DeclarationNotFoundException(select, this);
             }
         }
 

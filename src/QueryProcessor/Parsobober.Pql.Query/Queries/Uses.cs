@@ -3,6 +3,7 @@ using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
 using Parsobober.Pql.Query.Queries.Core;
+using Parsobober.Pql.Query.Queries.Exceptions;
 
 namespace Parsobober.Pql.Query.Queries;
 
@@ -24,14 +25,14 @@ internal static class Uses
                     new GetStatementsByVariable(accessor, right.Value).Build(declaration),
 
                 // Uses(1, variable)
-                (IArgument.Line left, IVariableDeclaration right) =>
+                (IArgument.Line left, IVariableDeclaration) =>
                     new GetVariablesByLineNumber(accessor, left.Value).Build(),
 
                 // Uses(stmt, variable)
                 (IStatementDeclaration left, IVariableDeclaration right) => BuildUsesWithSelect(left, right),
 
-                // Uses(1, 'v') nie wspierane w tej wersji
-                _ => throw new InvalidOperationException("Invalid query")
+                // Uses(1, 'v') nie wspierane w tej wersji todo już wspierane
+                _ => throw new QueryNotSupported(this, $"Uses({Left}, {Right}) is not supported.")
             };
 
             return query;
@@ -51,7 +52,7 @@ internal static class Uses
                     return new GetVariablesByStatementType(accessor).Build(left);
                 }
 
-                throw new InvalidOperationException("Invalid query");
+                throw new DeclarationNotFoundException(select, this);
             }
         }
 

@@ -1,5 +1,6 @@
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
+using Parsobober.Pql.Query.Queries.Exceptions;
 
 namespace Parsobober.Pql.Query.Queries.Core;
 
@@ -24,8 +25,13 @@ internal abstract class ReplaceableArgumentQueryDeclaration<TSelf> : IQueryDecla
             return CloneSelf(left, replacement);
         }
 
-        // I don't know if it is true xD but for now it is
-        throw new InvalidOperationException("You can't create a query without any declaration in it.");
+        if (select != Left && select != Right)
+        {
+            throw new DeclarationNotFoundException(select, this);
+        }
+
+        // I don't know if it is true xD but for now it is todo it's not because boolean queries are now supported
+        throw new QueryNotSupported(this, "You can't create a query without any declaration in it.");
     }
 
     #region DEBUG

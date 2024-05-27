@@ -1,4 +1,5 @@
 using Parsobober.Pql.Query.Arguments;
+using Parsobober.Pql.Query.Queries.Exceptions;
 
 namespace Parsobober.Pql.Query.Queries.Abstractions;
 
@@ -22,7 +23,7 @@ internal interface IQueryDeclaration
     /// If able do the query using left side. If not try to do it using right side.
     /// If both sides are not able to do the query, return empty list.
     /// </summary>
-    /// <returns></returns>
+    // todo refactor to support boolean, Parent(1,2)... is now supported 💀
     IEnumerable<IComparable> DoLeft() =>
         (Left, Right) switch
         {
@@ -58,6 +59,6 @@ internal interface IQueryDeclaration
             return Left as IDeclaration;
         }
 
-        return null;
+        throw new DeclarationNotFoundException(select, this);
     }
 }

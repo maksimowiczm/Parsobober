@@ -1,6 +1,7 @@
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Utilities;
 using Parsobober.Pql.Query.Arguments;
+using Parsobober.Pql.Query.Queries.Exceptions;
 
 namespace Parsobober.Pql.Query.Queries.With;
 
@@ -12,7 +13,7 @@ internal class WithQueryFactory(IProgramContextAccessor accessor)
         {
             "stmt#" => new StatementLine(declaration, int.Parse(value), accessor),
             "varName" => new VariableName(declaration, value, accessor),
-            _ => throw new ArgumentException($"Unknown attribute: {attribute}")
+            _ => throw new AttributeParseException(attribute)
         };
     }
 
