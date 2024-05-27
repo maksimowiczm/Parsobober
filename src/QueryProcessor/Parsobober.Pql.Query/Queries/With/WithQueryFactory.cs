@@ -30,7 +30,7 @@ internal class WithQueryFactory(IProgramContextAccessor accessor)
         }
 
 #if DEBUG
-        public override string ToString() => $"{declaration.Name}.stmt# = {line}";
+        public override string ToString() => $"{Declaration.Name}.stmt# = {line}";
 #endif
     }
 
