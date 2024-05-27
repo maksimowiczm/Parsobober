@@ -91,7 +91,7 @@ public class ProgramContext(ILogger<ProgramContext> logger)
         => StatementsDictionary.Values
             .Where(s => s.IsType<T>())
             .Select(s => s.ToStatement() as T)!;
-    
+
     public IEnumerable<Variable> Variables => VariablesDictionary.Values
         .Select(v => v.ToVariable());
 }

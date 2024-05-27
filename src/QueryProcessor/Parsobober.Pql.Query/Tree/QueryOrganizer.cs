@@ -133,7 +133,7 @@ internal class QueryOrganizer(
                     new AmbiguousQueryNode((IDeclaration)query.Right, context));
                 ambiguousNode = new ConditionalQueryNode(attributeNode, ambiguousNode);
             }
-            
+
             return new ConditionalQueryNode(new EnumerableQueryNode(query.Do()), ambiguousNode);
         }
 

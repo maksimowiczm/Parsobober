@@ -44,7 +44,7 @@ internal interface IStatementDeclaration : IDeclaration
         public override string ToString() => Name;
 #endif
     }
-    
+
     /// <summary>
     /// Represents an if declaration in a PQL query.
     /// </summary>
@@ -54,7 +54,7 @@ internal interface IStatementDeclaration : IDeclaration
         public override string ToString() => Name;
 #endif
     }
-    
+
     /// <summary>
     /// Represents an call declaration in a PQL query.
     /// </summary>
