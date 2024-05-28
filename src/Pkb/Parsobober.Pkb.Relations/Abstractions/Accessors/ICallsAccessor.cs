@@ -19,6 +19,16 @@ public interface ICallsAccessor
     IEnumerable<Procedure> GetCallers(string calledName);
 
     /// <summary>
+    /// Returns procedures that are called by any procedure (can be used as transitive)
+    /// </summary>
+    IEnumerable<Procedure> GetCalled();
+
+    /// <summary>
+    /// Returns procedures that are calling anu procedure (can be used as transitive)
+    /// </summary>
+    IEnumerable<Procedure> GetCallers();
+
+    /// <summary>
     /// Returns procedures that are transitive called by given procedure
     /// => Calls*(provided, returned)
     /// </summary>
@@ -31,4 +41,18 @@ public interface ICallsAccessor
     /// </summary>
     /// <param name="calledName">Called procedure name</param>
     IEnumerable<Procedure> GetCallersTransitive(string calledName);
+
+    /// <summary>
+    /// Returns true if caller calls called, false otherwise.
+    /// </summary>
+    /// <param name="callerName">Caller procedure name</param>
+    /// <param name="calledName">Called procedure name</param>
+    bool IsCalled(string callerName, string calledName);
+
+    /// <summary>
+    /// Returns true if caller calls transitively called, false otherwise.
+    /// </summary>
+    /// <param name="callerName">Caller procedure name</param>
+    /// <param name="calledName">Called procedure name</param>
+    bool IsCalledTransitive(string callerName, string calledName);
 }

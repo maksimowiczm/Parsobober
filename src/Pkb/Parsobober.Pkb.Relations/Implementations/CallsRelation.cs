@@ -93,6 +93,18 @@ public class CallsRelation(
             : Enumerable.Empty<Procedure>();
     }
 
+    public IEnumerable<Procedure> GetCalled()
+    {
+        return _calledDictionary.Keys.Select(
+            calledName => programContext.ProceduresDictionary[calledName].ToProcedure());
+    }
+
+    public IEnumerable<Procedure> GetCallers()
+    {
+        return _callersDictionary.Keys.Select(
+            callerName => programContext.ProceduresDictionary[callerName].ToProcedure());
+    }
+
     public IEnumerable<Procedure> GetCalledTransitive(string callerName)
     {
         var visited = new HashSet<string>();
@@ -151,5 +163,15 @@ public class CallsRelation(
 
         visited.Remove(calledName);
         return visited.Select(callerName => programContext.ProceduresDictionary[callerName].ToProcedure());
+    }
+
+    public bool IsCalled(string callerName, string calledName)
+    {
+        return GetCalled(callerName).Any(called => called.ProcName == calledName);
+    }
+
+    public bool IsCalledTransitive(string callerName, string calledName)
+    {
+        return GetCalledTransitive(callerName).Any(called => called.ProcName == calledName);
     }
 }
