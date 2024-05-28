@@ -28,6 +28,9 @@ internal enum PqlToken
 
     [Lexeme(";")]
     SemiColon,
+    
+    [Lexeme("\"")]
+    Quote,
 
     #endregion
 
