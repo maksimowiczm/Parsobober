@@ -7,10 +7,15 @@ using Parsobober.Pql.Query.Queries;
 using Parsobober.Pql.Query.Queries.Abstractions;
 using Parsobober.Pql.Query.Queries.With;
 using Parsobober.Pql.Query.Tree;
+using static Parsobober.Pql.Query.Tree.Abstraction.IQueryContainer;
 
 namespace Parsobober.Pql.Query;
 
-internal partial class QueryBuilder(IPkbAccessors accessor, IProgramContextAccessor programContext) : IQueryBuilder
+internal partial class QueryBuilder(
+    IPkbAccessors accessor,
+    IProgramContextAccessor programContext,
+    IQueryContainerBuilder queryContainerBuilder
+) : IQueryBuilder
 {
     private string _select = string.Empty;
     private IDeclaration Select => _declarations[_select];
@@ -36,8 +41,6 @@ internal partial class QueryBuilder(IPkbAccessors accessor, IProgramContextAcces
 
     private readonly List<QueryDeclaration> _uses = [];
 
-    private readonly List<IQueryDeclaration> _queries = [];
-
     private void AddQueries<T>(List<QueryDeclaration> relations, Func<IArgument, IArgument, T> queryCreator)
         where T : IQueryDeclaration
     {
@@ -45,7 +48,7 @@ internal partial class QueryBuilder(IPkbAccessors accessor, IProgramContextAcces
         {
             var left = IArgument.Parse(_declarations, l);
             var right = IArgument.Parse(_declarations, r);
-            _queries.Add(queryCreator(left, right));
+            queryContainerBuilder.Add(queryCreator(left, right));
         }
     }
 
@@ -69,7 +72,7 @@ internal partial class QueryBuilder(IPkbAccessors accessor, IProgramContextAcces
             })
             .ToList<IAttributeQuery>();
 
-        var organizer = new QueryOrganizer(_queries.ToList(), attributes, accessor.ProgramContext);
+        var organizer = new QueryOrganizer(queryContainerBuilder.Build(), attributes, accessor.ProgramContext);
         var root = organizer.Organize(Select);
 
         return new QueryResult(root.Do());

@@ -1,3 +1,5 @@
+using Parsobober.Pql.Query.Tree.Abstraction;
+
 namespace Parsobober.Pql.Query.Tree.Node;
 
 /// <summary>

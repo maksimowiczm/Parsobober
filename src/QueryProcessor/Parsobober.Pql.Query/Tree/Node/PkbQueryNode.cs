@@ -1,5 +1,6 @@
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pql.Query.Arguments;
+using Parsobober.Pql.Query.Tree.Abstraction;
 using Parsobober.Pql.Query.Tree.Exceptions;
 
 namespace Parsobober.Pql.Query.Tree.Node;

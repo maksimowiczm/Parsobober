@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
+using Parsobober.Pql.Query.Tree.Abstraction;
 using Parsobober.Pql.Query.Tree.Exceptions;
 using Parsobober.Pql.Query.Tree.Node;
 
@@ -11,7 +12,7 @@ namespace Parsobober.Pql.Query.Tree;
 /// Organizes queries and select statement into query tree.
 /// </summary>
 internal class QueryOrganizer(
-    List<IQueryDeclaration> queries,
+    IQueryContainer queries,
     List<IAttributeQuery> attributes,
     IDtoProgramContextAccessor context
 )
@@ -49,7 +50,8 @@ internal class QueryOrganizer(
         }
 
         // get query with select
-        var selectQuery = queries.FirstOrDefault(q => q.Left == select || q.Right == select);
+        // var selectQuery = queries.FirstOrDefault(q => q.Left == select || q.Right == select);
+        var selectQuery = queries.Get(select);
 
         // create root node
         var selectNode = selectQuery switch
@@ -127,7 +129,8 @@ internal class QueryOrganizer(
         // example `Select a such that Parent(b, c)`.
 
         // get first query, guaranteed that it doesn't have select as any of declarations
-        var query = queries.First();
+        var query = queries.GetAny();
+
         queries.Remove(query);
 
         // create node which returns all elements of select type
@@ -140,11 +143,11 @@ internal class QueryOrganizer(
         {
             // if left side of query is a declaration, check if it's used in any other query
             // example `Select a such that Parent(b, c) and Parent(b, d)`
-            { Left: IDeclaration left } when queries.Any(q => q.Left == left || q.Right == left) =>
+            { Left: IDeclaration left } when queries.HasQueryWith(left) =>
                 new ReplacerQueryNode(query, left, InnerOrganize(left)!),
             // if right side of query is a declaration, check if it's used in any other query
             // example `Select a such that Parent(b, c) and Parent(c, d)`
-            { Right: IDeclaration right } when queries.Any(q => q.Left == right || q.Right == right) =>
+            { Right: IDeclaration right } when queries.HasQueryWith(right) =>
                 new ReplacerQueryNode(query, right, InnerOrganize(right)!),
             // otherwise, split query into subquery
             // example `Select a such that Parent(b, c) and Parent(d, e)`
