@@ -14,6 +14,20 @@ internal static class Calls
         public override IArgument Left { get; } = caller;
         public override IArgument Right { get; } = called;
 
+        public override IEnumerable<IComparable> Do()
+        {
+            var query = (Left, Right) switch
+            {
+                // Calls('name', 'name')
+                (IArgument.VarName left, IArgument.VarName right) =>
+                    new BooleanCallsQuery(accessor, left.Value, right.Value).Build(),
+
+                _ => DoDeclaration()
+            };
+
+            return query;
+        }
+
         public override IEnumerable<IComparable> Do(IDeclaration select)
         {
             var query = (Left, Right) switch
@@ -28,10 +42,6 @@ internal static class Calls
 
                 // Calls(proc, proc)
                 (IProcedureDeclaration caller, IProcedureDeclaration called) => BuildCallsWithSelect(caller, called),
-
-                // Calls('name', 'name')
-                (IArgument.VarName caller, IArgument.VarName called) =>
-                    new IsCalled(accessor, caller.Value, called.Value).Build(),
 
                 _ => throw new QueryNotSupported(this, $"Calls({Left}, {Right}) is not supported.")
             };
@@ -107,7 +117,7 @@ internal static class Calls
     /// <param name="callsAccessor">Calls accessor.</param>
     /// <param name="callerName">Caller procedure name.</param>
     /// <param name="calledName">Called procedure name.</param>
-    private class IsCalled(ICallsAccessor callsAccessor, string callerName, string calledName) : CallsQuery
+    private class BooleanCallsQuery(ICallsAccessor callsAccessor, string callerName, string calledName) : CallsQuery
     {
         public override IEnumerable<IComparable> Build() =>
             callsAccessor.IsCalled(callerName, calledName)

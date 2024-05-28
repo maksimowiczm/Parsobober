@@ -14,6 +14,20 @@ internal static class CallsTransitive
         public override IArgument Left { get; } = caller;
         public override IArgument Right { get; } = called;
 
+        public override IEnumerable<IComparable> Do()
+        {
+            var query = (Left, Right) switch
+            {
+                // Calls*('name', 'name')
+                (IArgument.VarName left, IArgument.VarName right) =>
+                    new BooleanCallsTransitiveQuery(accessor, left.Value, right.Value).Build(),
+
+                _ => DoDeclaration()
+            };
+
+            return query;
+        }
+
         public override IEnumerable<IComparable> Do(IDeclaration select)
         {
             // pattern matching argumentów
@@ -28,18 +42,17 @@ internal static class CallsTransitive
                     new GetCalledTransitiveByCallerName(accessor, caller.Value).Build(),
 
                 // Calls*(proc, proc)
-                (IProcedureDeclaration caller, IProcedureDeclaration called) => BuildCallsTransitiveWithSelect(caller, called),
+                (IProcedureDeclaration caller, IProcedureDeclaration called) => BuildCallsTransitiveWithSelect(caller,
+                    called),
 
-                // Calls*('name', 'name')
-                (IArgument.VarName caller, IArgument.VarName called) =>
-                    new IsCalledTransitive(accessor, caller.Value, called.Value).Build(),
 
                 _ => throw new QueryNotSupported(this, $"Calls({Left}, {Right}) is not supported.")
             };
 
             return query;
 
-            IEnumerable<IComparable> BuildCallsTransitiveWithSelect(IProcedureDeclaration caller, IProcedureDeclaration called)
+            IEnumerable<IComparable> BuildCallsTransitiveWithSelect(IProcedureDeclaration caller,
+                IProcedureDeclaration called)
             {
                 if (caller == select)
                 {
@@ -65,7 +78,8 @@ internal static class CallsTransitive
     /// </summary>
     /// <param name="callsAccessor">Calls accessor.</param>
     /// <param name="callerName">Caller procedure name.</param>
-    private class GetCalledTransitiveByCallerName(ICallsAccessor callsAccessor, string callerName) : CallsTransitiveQuery
+    private class GetCalledTransitiveByCallerName(ICallsAccessor callsAccessor, string callerName)
+        : CallsTransitiveQuery
     {
         public override IEnumerable<IComparable> Build() =>
             callsAccessor.GetCalledTransitive(callerName);
@@ -76,7 +90,8 @@ internal static class CallsTransitive
     /// </summary>
     /// <param name="callsAccessor">Calls accessor.</param>
     /// <param name="calledName">Called procedure name.</param>
-    private class GetCallersTransitiveByCalledName(ICallsAccessor callsAccessor, string calledName) : CallsTransitiveQuery
+    private class GetCallersTransitiveByCalledName(ICallsAccessor callsAccessor, string calledName)
+        : CallsTransitiveQuery
     {
         public override IEnumerable<IComparable> Build() =>
             callsAccessor.GetCallersTransitive(calledName);
@@ -108,7 +123,8 @@ internal static class CallsTransitive
     /// <param name="callsAccessor">Calls accessor.</param>
     /// <param name="callerName">Caller procedure name.</param>
     /// <param name="calledName">Called procedure name.</param>
-    private class IsCalledTransitive(ICallsAccessor callsAccessor, string callerName, string calledName) : CallsTransitiveQuery
+    private class BooleanCallsTransitiveQuery(ICallsAccessor callsAccessor, string callerName, string calledName)
+        : CallsTransitiveQuery
     {
         public override IEnumerable<IComparable> Build() =>
             callsAccessor.IsCalledTransitive(callerName, calledName)
