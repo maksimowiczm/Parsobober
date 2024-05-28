@@ -32,9 +32,17 @@ public interface IUsesAccessor
     IEnumerable<Statement> GetStatements(string variableName);
 
     /// <summary>
+    /// Returns true if statement with given line number uses variable with given variableName
+    /// </summary>
+    bool IsUsed(int lineNumber, string variableName);
+
+    /// <summary>
+    /// Returns true if procedure with given name uses variable with given variableName
+    /// </summary>
+    bool IsUsed(string procedureName, string variableName);
+
+    /// <summary>
     /// Boxed uses request.
     /// </summary>
-    interface IRequest
-    {
-    }
+    interface IRequest;
 }

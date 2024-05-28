@@ -55,4 +55,14 @@ public interface IParentAccessor
     /// => Parent*(returned, <paramref name="lineNumber"/>)
     /// </summary>
     IEnumerable<Statement> GetParentsTransitive(int lineNumber);
+
+    /// <summary>
+    /// Returns true if statement with given line number is parent of statement with given line number
+    /// </summary>
+    bool IsParent(int parentLineNumber, int childLineNumber);
+
+    /// <summary>
+    /// Returns true if statement with given line number is transitive parent of statement with given line number
+    /// </summary>
+    bool IsParentTransitive(int parentLineNumber, int childLineNumber);
 }
