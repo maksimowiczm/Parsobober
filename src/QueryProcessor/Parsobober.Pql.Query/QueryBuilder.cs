@@ -6,6 +6,7 @@ using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries;
 using Parsobober.Pql.Query.Queries.Abstractions;
 using Parsobober.Pql.Query.Queries.With;
+using Parsobober.Pql.Query.QueryResult;
 using Parsobober.Pql.Query.Tree;
 using static Parsobober.Pql.Query.Tree.Abstraction.IQueryContainer;
 
@@ -18,7 +19,8 @@ internal partial class QueryBuilder(
 ) : IQueryBuilder
 {
     private string _select = string.Empty;
-    private IDeclaration Select => _declarations[_select];
+
+    private IDeclaration? Select => _declarations.GetValueOrDefault(_select);
 
     // trzymanie deklaracji jako konkretne typy IDeclaration
     private readonly Dictionary<string, IDeclaration> _declarations = new();
@@ -75,9 +77,14 @@ internal partial class QueryBuilder(
             .ToList<IAttributeQuery>();
 
         var organizer = new QueryOrganizer(queryContainerBuilder.Build(), attributes, accessor.ProgramContext);
-        var root = organizer.Organize(Select);
 
-        return new QueryResult(root.Do());
+        var root = Select switch
+        {
+            not null => organizer.Organize(Select),
+            _ => organizer.OrganizeBoolean()
+        };
+
+        return _queryResultFactory.Create(root.Do());
     }
 
     public IQueryBuilder AddSelect(string synonym)

@@ -38,6 +38,24 @@ internal class QueryOrganizer(
         return result;
     }
 
+    public IQueryNode OrganizeBoolean()
+    {
+        var select = queries.GetDeclaration();
+
+        // if there is select in any query declaration => Organize
+        if (select is not null)
+        {
+            return Organize(select);
+        }
+
+        // otherwise just do every query in place
+        var result = queries.Declarations
+            .Select(q => q.Do())
+            .All(r => r.Any());
+
+        return new BooleanQueryNode(result);
+    }
+
     /// <summary>
     /// Creates query tree with given select statement.
     /// </summary>

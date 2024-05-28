@@ -14,6 +14,8 @@ internal interface IQueryContainer
 
     int Count { get; }
 
+    IEnumerable<IQueryDeclaration> Declarations { get; }
+
     /// <summary>
     /// Get query with given declaration.
     /// </summary>
@@ -23,6 +25,11 @@ internal interface IQueryContainer
     /// Get any query.
     /// </summary>
     IQueryDeclaration GetAny();
+
+    /// <summary>
+    /// Gets argument from one of query declarations.
+    /// </summary>
+    IDeclaration? GetDeclaration();
 
     /// <summary>
     /// Check if there is any query with given declaration.
