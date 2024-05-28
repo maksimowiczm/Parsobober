@@ -41,6 +41,8 @@ internal partial class QueryBuilder(
 
     private readonly List<QueryDeclaration> _uses = [];
 
+    private IQueryResultFactory _queryResultFactory = new QueryListResult.Factory();
+
     private void AddQueries<T>(List<QueryDeclaration> relations, Func<IArgument, IArgument, T> queryCreator)
         where T : IQueryDeclaration
     {
@@ -80,7 +82,14 @@ internal partial class QueryBuilder(
 
     public IQueryBuilder AddSelect(string synonym)
     {
+        _queryResultFactory = new QueryListResult.Factory();
         _select = synonym;
+        return this;
+    }
+
+    public IQueryBuilder SetBoolean()
+    {
+        _queryResultFactory = new QueryBooleanResult.Factory();
         return this;
     }
 
