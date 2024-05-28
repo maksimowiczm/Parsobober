@@ -169,4 +169,14 @@ public class ParentRelation(
             .Where(visited => visited.node.Type.IsContainerStatement())
             .Select(visited => visited.node.ToStatement());
     }
+
+    public bool IsParent(int parentLineNumber, int childLineNumber) =>
+        GetParent(childLineNumber) switch
+        {
+            { LineNumber: var line } => line == parentLineNumber,
+            _ => false
+        };
+
+    public bool IsParentTransitive(int parentLineNumber, int childLineNumber) =>
+        GetParentsTransitive(childLineNumber).Any(p => p.LineNumber == parentLineNumber);
 }

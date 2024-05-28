@@ -94,4 +94,12 @@ public class UsesRelation(
             .Where(stmt => stmt.Value.Contains(variableName))
             .Select(stmt => programContext.StatementsDictionary[stmt.Key].ToStatement());
     }
+
+    public bool IsUsed(int lineNumber, string variableName) =>
+        GetVariables(lineNumber).Any(variable => variable.Name == variableName);
+
+    public bool IsUsed(string procedureName, string variableName)
+    {
+        throw new NotImplementedException();
+    }
 }
