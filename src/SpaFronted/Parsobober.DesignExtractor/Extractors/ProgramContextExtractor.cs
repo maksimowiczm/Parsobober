@@ -1,7 +1,7 @@
 ﻿using Parsobober.Pkb.Ast;
 using Parsobober.Pkb.Relations.Abstractions.Creators;
 
-namespace Parsobober.Simple.Parser.Extractor;
+namespace Parsobober.DesignExtractor.Extractors;
 
 internal class ProgramContextExtractor(IProgramContextCreator creator) : SimpleExtractor
 {

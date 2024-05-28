@@ -1,7 +1,7 @@
 ﻿using Parsobober.Pkb.Ast;
 using Parsobober.Simple.Parser.Abstractions;
 
-namespace Parsobober.Simple.Parser.Extractor;
+namespace Parsobober.DesignExtractor.Extractors;
 
 internal abstract class SimpleExtractor : ISimpleExtractor
 {

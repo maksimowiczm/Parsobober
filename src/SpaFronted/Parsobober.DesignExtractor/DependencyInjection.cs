@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using Parsobober.DesignExtractor.Extractors;
 using Parsobober.Simple.Parser.Abstractions;
-using Parsobober.Simple.Parser.Extractor;
 
 namespace Parsobober.DesignExtractor;
 
