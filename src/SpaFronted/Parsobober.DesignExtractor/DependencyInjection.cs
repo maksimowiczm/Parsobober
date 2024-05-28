@@ -13,6 +13,7 @@ public static class DependencyInjection
         services.AddScoped<ISimpleExtractor, ParentExtractor>();
         services.AddScoped<ISimpleExtractor, ProgramContextExtractor>();
         services.AddScoped<ISimpleExtractor, UsesExtractor>();
+        services.AddScoped<ISimpleExtractor, CallsExtractor>();
 
         return services;
     }
