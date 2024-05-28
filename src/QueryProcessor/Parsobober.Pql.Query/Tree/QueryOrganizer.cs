@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
@@ -36,6 +37,9 @@ internal class QueryOrganizer(
         return result;
     }
 
+    /// <summary>
+    /// Creates query tree with given select statement.
+    /// </summary>
     private IQueryNode? InnerOrganize(IDeclaration select)
     {
         // break recursion if there are no queries
@@ -69,6 +73,9 @@ internal class QueryOrganizer(
         return selectNode;
     }
 
+    /// <summary>
+    /// Creates query node with given select statement. Select statement has to be part of query declaration.
+    /// </summary>
     private IQueryNode OrganizeSelect(IDeclaration select, IQueryDeclaration rootQuery)
     {
         queries.Remove(rootQuery);
@@ -110,65 +117,95 @@ internal class QueryOrganizer(
         return rootNode;
     }
 
-    private IQueryNode OrganizeSelectNothing(IDeclaration select)
+
+    /// <summary>
+    /// Creates query node with given select statement. Select statement is not part of any query declarations.
+    /// </summary>
+    private ConditionalQueryNode OrganizeSelectNothing(IDeclaration select)
     {
-        // czarna magia nie wiem o co tu chodziło xD. Działa, pozdrawiam
+        // Select nothing => boolean query which returns all elements of select type,
+        // example `Select a such that Parent(b, c)`.
 
         // get first query, guaranteed that it doesn't have select as any of declarations
         var query = queries.First();
         queries.Remove(query);
 
-        // create ambiguous node with select
-        IQueryNode ambiguousNode = new PkbQueryNode(select, context);
+        // create node which returns all elements of select type
+        IQueryNode selectNode = new PkbQueryNode(select, context);
 
-        IQueryNode? conditionNode = null;
         // Na drugą iterację wystarczy chyba
-        if (query.Left is IDeclaration leftSelect &&
-            queries.Any(q => q.Left == leftSelect || q.Right == leftSelect))
-        {
-            var leftNode = InnerOrganize(leftSelect)!;
-            conditionNode = new ReplacerQueryNode(query, leftSelect, leftNode);
-        }
-        else if (query.Right is IDeclaration rightSelect &&
-                 queries.Any(q => q.Left == rightSelect || q.Right == rightSelect))
-        {
-            var rightNode = InnerOrganize(rightSelect)!;
-            conditionNode = new ReplacerQueryNode(query, rightSelect, rightNode);
-        }
-        else
-        {
-            var node = InnerOrganize(select);
-            if (node is not null)
-            {
-                conditionNode = new ConditionalQueryNode(ambiguousNode, node);
-            }
-        }
 
+        // create condition node, if there are any conditions, this node will determine if selectNode should return any elements
+        IQueryNode? conditionNode = query switch
+        {
+            // if left side of query is a declaration, check if it's used in any other query
+            // example `Select a such that Parent(b, c) and Parent(b, d)`
+            { Left: IDeclaration left } when queries.Any(q => q.Left == left || q.Right == left) =>
+                new ReplacerQueryNode(query, left, InnerOrganize(left)!),
+            // if right side of query is a declaration, check if it's used in any other query
+            // example `Select a such that Parent(b, c) and Parent(c, d)`
+            { Right: IDeclaration right } when queries.Any(q => q.Left == right || q.Right == right) =>
+                new ReplacerQueryNode(query, right, InnerOrganize(right)!),
+            // otherwise, split query into subquery
+            // example `Select a such that Parent(b, c) and Parent(d, e)`
+            // or      `Select a such that Parent(b, c)`
+            _ => IntoSubquery(select, selectNode)
+        };
+
+        // no conditions,
+        // example `Select a such that Parent(b, c)`
         if (conditionNode is null)
         {
-            var attributeLeft = attributes.SingleOrDefault(a => a.Declaration == query.Left);
-            if (attributeLeft is not null)
-            {
-                attributes.Remove(attributeLeft);
-                var attributeNode = new AttributeQueryNode(attributeLeft,
-                    new PkbQueryNode((IDeclaration)query.Left, context));
-                ambiguousNode = new ConditionalQueryNode(attributeNode, ambiguousNode);
-            }
+            // if there are no conditions, attributes could be used as conditions
+            // example
+            //       select    |      query       | attributeLeft | attributeRight
+            // `Select a such that Parent(b, c) with b.stmt# = 1 and c.stmt# = 2`
 
-            var attributeRight = attributes.SingleOrDefault(a => a.Declaration == query.Right);
-            if (attributeRight is not null)
-            {
-                attributes.Remove(attributeRight);
-                var attributeNode = new AttributeQueryNode(attributeRight,
-                    new PkbQueryNode((IDeclaration)query.Right, context));
-                ambiguousNode = new ConditionalQueryNode(attributeNode, ambiguousNode);
-            }
+            // check if query declarations are used in any attribute,
+            selectNode = ApplyAttribute(query.Left, selectNode);
+            selectNode = ApplyAttribute(query.Right, selectNode);
 
-            return new ConditionalQueryNode(new EnumerableQueryNode(query.Do()), ambiguousNode);
+            return new ConditionalQueryNode(new EnumerableQueryNode(query.Do()), selectNode);
         }
 
-        var result = new ConditionalQueryNode(conditionNode, ambiguousNode);
+        // otherwise use condition node
+        var result = new ConditionalQueryNode(conditionNode, selectNode);
 
         return result;
+
+        #region Inner helper functions
+
+        [SuppressMessage("ReSharper", "VariableHidesOuterVariable")]
+        ConditionalQueryNode? IntoSubquery(IDeclaration select, IQueryNode selectNode)
+        {
+            var subQuery = InnerOrganize(select);
+            if (subQuery is not null)
+            {
+                // if there is a subquery, create conditional node
+                return new ConditionalQueryNode(selectNode, subQuery);
+            }
+
+            return null;
+        }
+
+        IQueryNode ApplyAttribute(IArgument argument, IQueryNode node)
+        {
+            var attribute = attributes.SingleOrDefault(a => a.Declaration == argument);
+
+            if (attribute is not null)
+            {
+                attributes.Remove(attribute);
+                // guaranteed that there are no subqueries with this argument, so we have to use all elements of select type
+                var pkbNode = new PkbQueryNode((IDeclaration)argument, context);
+                // create attribute node
+                var attributeNode = new AttributeQueryNode(attribute, pkbNode);
+                return new ConditionalQueryNode(attributeNode, node);
+            }
+
+            // if there are no attributes, return node
+            return node;
+        }
+
+        #endregion
     }
 }
