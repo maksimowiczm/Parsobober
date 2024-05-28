@@ -9,4 +9,5 @@ public interface IPkbAccessors
     IParentAccessor Parent { get; }
     IModifiesAccessor Modifies { get; }
     IUsesAccessor Uses { get; }
+    ICallsAccessor Calls { get; }
 }
