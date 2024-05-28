@@ -19,6 +19,11 @@ public interface IQueryBuilder
     IQueryBuilder AddSelect(string synonym);
 
     /// <summary>
+    /// Set query as a boolean query.
+    /// </summary>
+    IQueryBuilder SetBoolean();
+
+    /// <summary>
     /// Adds a declaration to the PQL query.
     /// </summary>
     /// <param name="declaration">The declaration to add.</param>

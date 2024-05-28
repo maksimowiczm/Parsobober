@@ -15,6 +15,19 @@ internal static class ParentTransitive
         public override IArgument Left { get; } = parent;
         public override IArgument Right { get; } = child;
 
+        public override IEnumerable<IComparable> Do()
+        {
+            var query = (Left, Right) switch
+            {
+                (IArgument.Line parent, IArgument.Line child) =>
+                    new BooleanParentQuery(accessor, parent.Value, child.Value).Build(),
+
+                _ => DoDeclaration()
+            };
+
+            return query;
+        }
+
         public override IEnumerable<IComparable> Do(IDeclaration select)
         {
             // pattern matching argumentów
@@ -178,6 +191,19 @@ internal static class ParentTransitive
         /// <param name="childStatementDeclaration"> The declaration to build the query for. </param>
         /// <returns> The query. </returns>
         public abstract IEnumerable<Statement> Build(IStatementDeclaration childStatementDeclaration);
+    }
+
+    private class BooleanParentQuery(IParentAccessor accessor, int parent, int child)
+    {
+        public IEnumerable<IComparable> Build()
+        {
+            if (accessor.IsParentTransitive(parent, child))
+            {
+                return Enumerable.Repeat<IComparable>(true, 1);
+            }
+
+            return Enumerable.Empty<Statement>();
+        }
     }
 
     #endregion

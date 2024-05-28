@@ -113,6 +113,16 @@ public class FollowsRelation(
             .Select(visited => visited.node.ToStatement());
     }
 
+    public bool IsFollowed(int lineNumber, int followerLineNumber) =>
+        GetFollowed(lineNumber) switch
+        {
+            { LineNumber: var line } => line == followerLineNumber,
+            _ => false
+        };
+
+    public bool IsFollowedTransitive(int lineNumber, int followerLineNumber) =>
+        GetFollowedTransitive(followerLineNumber).Any(f => f.LineNumber == lineNumber);
+
     private IEnumerable<Statement> GetTransitive<TStatement>(IAstTraversalStrategy strategy)
         where TStatement : Statement
     {

@@ -27,6 +27,16 @@ internal interface IArgument
         return new VarName(argument);
     }
 
+    static IArgument Parse(object argument)
+    {
+        if (int.TryParse(argument.ToString(), out var line))
+        {
+            return new Line(line);
+        }
+
+        return new VarName(argument.ToString()!);
+    }
+
     /// <summary>
     /// Represents a line in a PQL query.
     /// </summary>

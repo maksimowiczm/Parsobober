@@ -28,7 +28,7 @@ internal enum PqlToken
 
     [Lexeme(";")]
     SemiColon,
-    
+
     [Lexeme("\"")]
     Quote,
 
@@ -50,6 +50,9 @@ internal enum PqlToken
 
     [Lexeme("and")]
     And,
+
+    [Lexeme("BOOLEAN")]
+    Boolean,
 
     #region Relations
 

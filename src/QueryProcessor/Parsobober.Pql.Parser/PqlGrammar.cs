@@ -7,13 +7,22 @@ namespace Parsobober.Pql.Parser;
 internal class PqlGrammar(IQueryBuilder queryBuilder)
 {
     [Production("select-clause : Declaration* Select[d] Reference condition-clause+")]
+    [Production("select-clause : Declaration* Select[d] Boolean condition-clause+")]
     public IQueryBuilder SelectClause(
         List<Token<PqlToken>> declaration, // declarations
-        Token<PqlToken> synonym, // reference
+        Token<PqlToken> queryType, // reference
         List<IQueryBuilder> _ // condition-clauses
     )
     {
-        queryBuilder.AddSelect(synonym.Value);
+        if (queryType.TokenID == PqlToken.Boolean)
+        {
+            queryBuilder.SetBoolean();
+        }
+        else
+        {
+            queryBuilder.AddSelect(queryType.Value);
+        }
+
         declaration.ForEach(d => queryBuilder.AddDeclaration(d.Value));
         return queryBuilder;
     }

@@ -45,11 +45,7 @@ internal class ReplacerQueryNode : IQueryNode
 
         var arguments = _replacerQueryNode
             .Do()
-            .Select(r =>
-                // 💀💀💀💀💀💀💀💀💀
-                // todo make query result to be IArgument?
-                IArgument.Parse(new Dictionary<string, IDeclaration>(), r.ToString()!)
-            );
+            .Select(IArgument.Parse);
 
         var result = arguments
             .SelectMany(arg =>

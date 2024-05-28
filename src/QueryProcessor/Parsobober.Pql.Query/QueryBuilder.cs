@@ -6,7 +6,9 @@ using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries;
 using Parsobober.Pql.Query.Queries.Abstractions;
 using Parsobober.Pql.Query.Queries.With;
+using Parsobober.Pql.Query.QueryResult;
 using Parsobober.Pql.Query.Tree;
+using Parsobober.Pql.Query.Tree.Abstraction;
 using static Parsobober.Pql.Query.Tree.Abstraction.IQueryContainer;
 
 namespace Parsobober.Pql.Query;
@@ -14,11 +16,13 @@ namespace Parsobober.Pql.Query;
 internal partial class QueryBuilder(
     IPkbAccessors accessor,
     IProgramContextAccessor programContext,
-    IQueryContainerBuilder queryContainerBuilder
+    IQueryContainerBuilder queryContainerBuilder,
+    IQueryOrganizerFactory queryOrganizerFactory
 ) : IQueryBuilder
 {
     private string _select = string.Empty;
-    private IDeclaration Select => _declarations[_select];
+
+    private IDeclaration? Select => _declarations.GetValueOrDefault(_select);
 
     // trzymanie deklaracji jako konkretne typy IDeclaration
     private readonly Dictionary<string, IDeclaration> _declarations = new();
@@ -40,6 +44,8 @@ internal partial class QueryBuilder(
     private readonly List<QueryDeclaration> _modifies = [];
 
     private readonly List<QueryDeclaration> _uses = [];
+
+    private IQueryResultFactory _queryResultFactory = new QueryListResult.Factory();
 
     private void AddQueries<T>(List<QueryDeclaration> relations, Func<IArgument, IArgument, T> queryCreator)
         where T : IQueryDeclaration
@@ -72,15 +78,27 @@ internal partial class QueryBuilder(
             })
             .ToList<IAttributeQuery>();
 
-        var organizer = new QueryOrganizer(queryContainerBuilder.Build(), attributes, accessor.ProgramContext);
-        var root = organizer.Organize(Select);
+        var organizer = queryOrganizerFactory.Create(queryContainerBuilder.Build(), attributes);
 
-        return new QueryResult(root.Do());
+        var root = Select switch
+        {
+            not null => organizer.Organize(Select),
+            _ => organizer.OrganizeBoolean()
+        };
+
+        return _queryResultFactory.Create(root.Do());
     }
 
     public IQueryBuilder AddSelect(string synonym)
     {
+        _queryResultFactory = new QueryListResult.Factory();
         _select = synonym;
+        return this;
+    }
+
+    public IQueryBuilder SetBoolean()
+    {
+        _queryResultFactory = new QueryBooleanResult.Factory();
         return this;
     }
 

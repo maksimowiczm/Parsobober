@@ -96,4 +96,12 @@ public class ModifiesRelation(
             .Where(stmt => stmt.Value.Contains(variableName))
             .Select(stmt => programContext.StatementsDictionary[stmt.Key].ToStatement());
     }
+
+    public bool IsModified(int lineNumber, string variableName) =>
+        GetVariables(lineNumber).Any(variable => variable.Name == variableName);
+
+    public bool IsModified(string procedureName, string variableName)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -9,7 +9,21 @@ internal abstract class ReplaceableArgumentQueryDeclaration<TSelf> : IQueryDecla
 {
     public abstract IArgument Left { get; }
     public abstract IArgument Right { get; }
+    public abstract IEnumerable<IComparable> Do();
     public abstract IEnumerable<IComparable> Do(IDeclaration select);
+
+    /// <summary>
+    /// If able do the query using left side. If not try to do it using right side.
+    /// If both sides are not able to do the query, return empty list.
+    /// </summary>
+    protected IEnumerable<IComparable> DoDeclaration() =>
+        (Left, Right) switch
+        {
+            (Left: IDeclaration left, Right: IDeclaration) => Do(left),
+            (Left: IDeclaration left, Right: not IDeclaration) => Do(left),
+            (Left: not IDeclaration, Right: IDeclaration right) => Do(right),
+            _ => throw new AmbiguousQueryDeclarationException(this),
+        };
 
     protected abstract TSelf CloneSelf(IArgument left, IArgument right);
 

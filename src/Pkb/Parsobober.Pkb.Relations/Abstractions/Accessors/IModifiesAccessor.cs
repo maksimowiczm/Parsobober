@@ -32,9 +32,17 @@ public interface IModifiesAccessor
     IEnumerable<Statement> GetStatements(string variableName);
 
     /// <summary>
+    /// Returns true if statement with given line number modifies variable with given variableName
+    /// </summary>
+    bool IsModified(int lineNumber, string variableName);
+
+    /// <summary>
+    /// Returns true if procedure with given name modifies variable with given variableName
+    /// </summary>
+    bool IsModified(string procedureName, string variableName);
+
+    /// <summary>
     /// Boxed modifies request.
     /// </summary>
-    interface IRequest
-    {
-    }
+    interface IRequest;
 }

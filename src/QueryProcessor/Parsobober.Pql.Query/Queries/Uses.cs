@@ -15,6 +15,19 @@ internal static class Uses
         public override IArgument Left { get; } = left;
         public override IArgument Right { get; } = right;
 
+        public override IEnumerable<IComparable> Do()
+        {
+            // pattern matching argumentów
+            var query = (Left, Right) switch
+            {
+                (IArgument.Line line, IArgument.VarName name) =>
+                    new BooleanUsesQuery(accessor, line.Value, name.Value).Build(),
+                _ => DoDeclaration()
+            };
+
+            return query;
+        }
+
         public override IEnumerable<IComparable> Do(IDeclaration select)
         {
             // pattern matching argumentów
@@ -146,6 +159,19 @@ internal static class Uses
         /// <param name="declaration"> The declaration to build the query for. </param>
         /// <returns> The query. </returns>
         public abstract IEnumerable<Variable> Build(IStatementDeclaration declaration);
+    }
+
+    private class BooleanUsesQuery(IUsesAccessor accessor, int line, string variableName)
+    {
+        public IEnumerable<IComparable> Build()
+        {
+            if (accessor.IsUsed(line, variableName))
+            {
+                return Enumerable.Repeat<IComparable>(true, 1);
+            }
+
+            return Enumerable.Empty<Statement>();
+        }
     }
 
     #endregion

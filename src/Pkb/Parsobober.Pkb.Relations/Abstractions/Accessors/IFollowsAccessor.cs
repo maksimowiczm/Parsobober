@@ -55,4 +55,14 @@ public interface IFollowsAccessor
     /// => Follows*(returned, <paramref name="lineNumber"/>)
     /// </summary>
     IEnumerable<Statement> GetFollowedTransitive(int lineNumber);
+
+    /// <summary>
+    /// Returns true if statement with given line number follows statement with given line number
+    /// </summary>
+    bool IsFollowed(int lineNumber, int followerLineNumber);
+
+    /// <summary>
+    /// Returns true if statement with given line number follows transitive statement with given line number
+    /// </summary>
+    bool IsFollowedTransitive(int lineNumber, int followerLineNumber);
 }
