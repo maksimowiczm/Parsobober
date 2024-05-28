@@ -2,17 +2,20 @@ using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
+using Parsobober.Pql.Query.Queries.Core;
+using Parsobober.Pql.Query.Queries.Exceptions;
 
 namespace Parsobober.Pql.Query.Queries;
 
 internal static class ParentTransitive
 {
-    public class QueryDeclaration(IArgument parent, IArgument child, IParentAccessor accessor) : IQueryDeclaration
+    public class QueryDeclaration(IArgument parent, IArgument child, IParentAccessor accessor) :
+        ReplaceableArgumentQueryDeclaration<QueryDeclaration>, IQueryDeclaration
     {
-        public IArgument Left { get; } = parent;
-        public IArgument Right { get; } = child;
+        public override IArgument Left { get; } = parent;
+        public override IArgument Right { get; } = child;
 
-        public IEnumerable<IComparable> Do(IDeclaration select)
+        public override IEnumerable<IComparable> Do(IDeclaration select)
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
@@ -29,7 +32,7 @@ internal static class ParentTransitive
                 (IStatementDeclaration parent, IStatementDeclaration child) => BuildParentWithSelect(parent, child),
 
                 // Parent*(1, 2) nie wspierane w tej wersji
-                _ => throw new InvalidOperationException("Invalid query")
+                _ => throw new QueryNotSupported(this, $"Parent*({Left}, {Right}) is not supported.")
             };
 
             return query;
@@ -49,9 +52,11 @@ internal static class ParentTransitive
                     return new GetTransitiveChildrenByParentType(accessor).Create(parent).Build(child);
                 }
 
-                throw new Exception("No chyba coś ci się pomyliło kolego, taka sytuacja nigdy nie mogla zajść");
+                throw new DeclarationNotFoundException(select, this);
             }
         }
+
+        protected override QueryDeclaration CloneSelf(IArgument left, IArgument right) => new(left, right, accessor);
     }
 
     #region Queries
@@ -64,6 +69,8 @@ internal static class ParentTransitive
                 IStatementDeclaration.Statement => new GetTransitiveParentsByChildType<Statement>(parentAccessor),
                 IStatementDeclaration.Assign => new GetTransitiveParentsByChildType<Assign>(parentAccessor),
                 IStatementDeclaration.While => new GetTransitiveParentsByChildType<While>(parentAccessor),
+                IStatementDeclaration.If => new GetTransitiveParentsByChildType<If>(parentAccessor),
+                IStatementDeclaration.Call => new GetTransitiveParentsByChildType<Call>(parentAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(childStatementDeclaration))
             };
     }
@@ -82,6 +89,8 @@ internal static class ParentTransitive
                 IStatementDeclaration.Statement => parentAccessor.GetParentsTransitive<TChild>(),
                 IStatementDeclaration.Assign => parentAccessor.GetParentsTransitive<TChild>().OfType<Assign>(),
                 IStatementDeclaration.While => parentAccessor.GetParentsTransitive<TChild>().OfType<While>(),
+                IStatementDeclaration.If => parentAccessor.GetParentsTransitive<TChild>().OfType<If>(),
+                IStatementDeclaration.Call => parentAccessor.GetParentsTransitive<TChild>().OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(childStatementDeclaration))
             };
     }
@@ -94,6 +103,8 @@ internal static class ParentTransitive
                 IStatementDeclaration.Statement => new GetTransitiveChildrenByParentType<Statement>(parentAccessor),
                 IStatementDeclaration.Assign => new GetTransitiveChildrenByParentType<Assign>(parentAccessor),
                 IStatementDeclaration.While => new GetTransitiveChildrenByParentType<While>(parentAccessor),
+                IStatementDeclaration.If => new GetTransitiveChildrenByParentType<If>(parentAccessor),
+                IStatementDeclaration.Call => new GetTransitiveChildrenByParentType<Call>(parentAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(parentStatementDeclaration))
             };
     }
@@ -112,6 +123,8 @@ internal static class ParentTransitive
                 IStatementDeclaration.Statement => parentAccessor.GetChildrenTransitive<TParent>(),
                 IStatementDeclaration.Assign => parentAccessor.GetChildrenTransitive<TParent>().OfType<Assign>(),
                 IStatementDeclaration.While => parentAccessor.GetChildrenTransitive<TParent>().OfType<While>(),
+                IStatementDeclaration.If => parentAccessor.GetChildrenTransitive<TParent>().OfType<If>(),
+                IStatementDeclaration.Call => parentAccessor.GetChildrenTransitive<TParent>().OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(childStatementDeclaration))
             };
     }
@@ -129,6 +142,8 @@ internal static class ParentTransitive
                 IStatementDeclaration.Statement => parentAccessor.GetParentsTransitive(line),
                 IStatementDeclaration.Assign => parentAccessor.GetParentsTransitive(line).OfType<Assign>(),
                 IStatementDeclaration.While => parentAccessor.GetParentsTransitive(line).OfType<While>(),
+                IStatementDeclaration.If => parentAccessor.GetParentsTransitive(line).OfType<If>(),
+                IStatementDeclaration.Call => parentAccessor.GetParentsTransitive(line).OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(childStatementDeclaration))
             };
     }
@@ -146,6 +161,8 @@ internal static class ParentTransitive
                 IStatementDeclaration.Statement => parentAccessor.GetChildrenTransitive(line),
                 IStatementDeclaration.Assign => parentAccessor.GetChildrenTransitive(line).OfType<Assign>(),
                 IStatementDeclaration.While => parentAccessor.GetChildrenTransitive(line).OfType<While>(),
+                IStatementDeclaration.If => parentAccessor.GetChildrenTransitive(line).OfType<If>(),
+                IStatementDeclaration.Call => parentAccessor.GetChildrenTransitive(line).OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(childStatementDeclaration))
             };
     }

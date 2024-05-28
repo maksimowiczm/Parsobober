@@ -1,3 +1,5 @@
+using Parsobober.Pql.Query.Tree.Abstraction;
+
 namespace Parsobober.Pql.Query.Tree.Node;
 
 /// <summary>
@@ -23,4 +25,8 @@ internal class ConditionalQueryNode : IQueryNode
 
         return [];
     }
+
+#if DEBUG
+    private List<IComparable> Result => Do().ToList();
+#endif
 }

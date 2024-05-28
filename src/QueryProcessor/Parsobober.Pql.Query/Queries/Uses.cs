@@ -2,17 +2,20 @@ using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
+using Parsobober.Pql.Query.Queries.Core;
+using Parsobober.Pql.Query.Queries.Exceptions;
 
 namespace Parsobober.Pql.Query.Queries;
 
 internal static class Uses
 {
-    public class QueryDeclaration(IArgument left, IArgument right, IUsesAccessor accessor) : IQueryDeclaration
+    public class QueryDeclaration(IArgument left, IArgument right, IUsesAccessor accessor)
+        : ReplaceableArgumentQueryDeclaration<QueryDeclaration>, IQueryDeclaration
     {
-        public IArgument Left { get; } = left;
-        public IArgument Right { get; } = right;
+        public override IArgument Left { get; } = left;
+        public override IArgument Right { get; } = right;
 
-        public IEnumerable<IComparable> Do(IDeclaration select)
+        public override IEnumerable<IComparable> Do(IDeclaration select)
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
@@ -22,14 +25,14 @@ internal static class Uses
                     new GetStatementsByVariable(accessor, right.Value).Build(declaration),
 
                 // Uses(1, variable)
-                (IArgument.Line left, IVariableDeclaration right) =>
+                (IArgument.Line left, IVariableDeclaration) =>
                     new GetVariablesByLineNumber(accessor, left.Value).Build(),
 
                 // Uses(stmt, variable)
                 (IStatementDeclaration left, IVariableDeclaration right) => BuildUsesWithSelect(left, right),
 
-                // Uses(1, 'v') nie wspierane w tej wersji
-                _ => throw new InvalidOperationException("Invalid query")
+                // Uses(1, 'v') nie wspierane w tej wersji todo już wspierane
+                _ => throw new QueryNotSupported(this, $"Uses({Left}, {Right}) is not supported.")
             };
 
             return query;
@@ -49,9 +52,11 @@ internal static class Uses
                     return new GetVariablesByStatementType(accessor).Build(left);
                 }
 
-                throw new InvalidOperationException("Invalid query");
+                throw new DeclarationNotFoundException(select, this);
             }
         }
+
+        protected override QueryDeclaration CloneSelf(IArgument left, IArgument right) => new(left, right, accessor);
     }
 
     #region Queries
@@ -64,6 +69,8 @@ internal static class Uses
                 IStatementDeclaration.Statement => usesAccessor.GetStatements(),
                 IStatementDeclaration.Assign => usesAccessor.GetStatements().OfType<Assign>(),
                 IStatementDeclaration.While => usesAccessor.GetStatements().OfType<While>(),
+                IStatementDeclaration.If => usesAccessor.GetStatements().OfType<If>(),
+                IStatementDeclaration.Call => usesAccessor.GetStatements().OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(statementDeclaration))
             };
     }
@@ -76,6 +83,8 @@ internal static class Uses
                 IStatementDeclaration.Statement => usesAccessor.GetVariables<Statement>(),
                 IStatementDeclaration.Assign => usesAccessor.GetVariables<Assign>(),
                 IStatementDeclaration.While => usesAccessor.GetVariables<While>(),
+                IStatementDeclaration.If => usesAccessor.GetVariables<If>(),
+                IStatementDeclaration.Call => usesAccessor.GetVariables<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(statementDeclaration))
             };
     }
@@ -96,6 +105,8 @@ internal static class Uses
                 IStatementDeclaration.Statement => usesAccessor.GetStatements(variableName),
                 IStatementDeclaration.Assign => usesAccessor.GetStatements(variableName).OfType<Assign>(),
                 IStatementDeclaration.While => usesAccessor.GetStatements(variableName).OfType<While>(),
+                IStatementDeclaration.If => usesAccessor.GetStatements(variableName).OfType<If>(),
+                IStatementDeclaration.Call => usesAccessor.GetStatements(variableName).OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(left))
             };
         }

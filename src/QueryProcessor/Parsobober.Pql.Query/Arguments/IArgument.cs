@@ -30,7 +30,17 @@ internal interface IArgument
     /// <summary>
     /// Represents a line in a PQL query.
     /// </summary>
-    public readonly record struct Line(int Value) : IArgument;
+    public readonly record struct Line(int Value) : IArgument
+    {
+#if DEBUG
+        public override string ToString() => Value.ToString();
+#endif
+    }
 
-    public readonly record struct VarName(string Value) : IArgument;
+    public readonly record struct VarName(string Value) : IArgument
+    {
+#if DEBUG
+        public override string ToString() => Value;
+#endif
+    }
 }

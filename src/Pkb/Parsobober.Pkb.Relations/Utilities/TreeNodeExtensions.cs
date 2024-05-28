@@ -13,6 +13,7 @@ public static class TreeNodeExtensions
             EntityType.Assign => new Assign(treeNode.LineNumber),
             EntityType.If => new If(treeNode.LineNumber),
             EntityType.While => new While(treeNode.LineNumber),
+            EntityType.Call => new Call(treeNode.LineNumber),
             _ => throw new NotSupportedException()
         };
     }
@@ -24,6 +25,7 @@ public static class TreeNodeExtensions
             true when typeof(T) == typeof(Assign) => treeNode.Type == EntityType.Assign,
             true when typeof(T) == typeof(While) => treeNode.Type == EntityType.While,
             true when typeof(T) == typeof(If) => treeNode.Type == EntityType.If,
+            true when typeof(T) == typeof(Call) => treeNode.Type == EntityType.Call,
             true when typeof(T) == typeof(Statement) => treeNode.Type.IsStatement(),
             _ => throw new NotSupportedException(),
         };

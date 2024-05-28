@@ -2,17 +2,20 @@ using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
+using Parsobober.Pql.Query.Queries.Core;
+using Parsobober.Pql.Query.Queries.Exceptions;
 
 namespace Parsobober.Pql.Query.Queries;
 
 internal static class Parent
 {
-    public class QueryDeclaration(IArgument parent, IArgument child, IParentAccessor accessor) : IQueryDeclaration
+    public class QueryDeclaration(IArgument parent, IArgument child, IParentAccessor accessor)
+        : ReplaceableArgumentQueryDeclaration<QueryDeclaration>, IQueryDeclaration
     {
-        public IArgument Left { get; } = parent;
-        public IArgument Right { get; } = child;
+        public override IArgument Left { get; } = parent;
+        public override IArgument Right { get; } = child;
 
-        public IEnumerable<IComparable> Do(IDeclaration select)
+        public override IEnumerable<IComparable> Do(IDeclaration select)
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
@@ -28,8 +31,8 @@ internal static class Parent
                 // Parent(stmt, stmt)
                 (IStatementDeclaration parent, IStatementDeclaration child) => BuildParentWithSelect(parent, child),
 
-                // Parent(1, 2) nie wspierane w tej wersji
-                _ => throw new InvalidOperationException("Invalid query")
+                // Parent(1, 2) nie wspierane w tej wersji todo już wspierane
+                _ => throw new QueryNotSupported(this, $"Parent({Left}, {Right}) is not supported.")
             };
 
             return query;
@@ -46,9 +49,11 @@ internal static class Parent
                     return new GetChildrenByParentType(accessor).Create(parent).Build(child);
                 }
 
-                throw new Exception("No chyba coś ci się pomyliło kolego, taka sytuacja nigdy nie mogla zajść");
+                throw new DeclarationNotFoundException(select, this);
             }
         }
+
+        protected override QueryDeclaration CloneSelf(IArgument left, IArgument right) => new(left, right, accessor);
     }
 
     #region Queries
@@ -61,6 +66,8 @@ internal static class Parent
                 IStatementDeclaration.Statement => new GetParentsByChildType<Statement>(parentAccessor),
                 IStatementDeclaration.Assign => new GetParentsByChildType<Assign>(parentAccessor),
                 IStatementDeclaration.While => new GetParentsByChildType<While>(parentAccessor),
+                IStatementDeclaration.If => new GetParentsByChildType<If>(parentAccessor),
+                IStatementDeclaration.Call => new GetParentsByChildType<Call>(parentAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(childStatementDeclaration))
             };
     }
@@ -79,6 +86,8 @@ internal static class Parent
                 IStatementDeclaration.Statement => parentAccessor.GetParents<TChild>(),
                 IStatementDeclaration.Assign => parentAccessor.GetParents<TChild>().OfType<Assign>(),
                 IStatementDeclaration.While => parentAccessor.GetParents<TChild>().OfType<While>(),
+                IStatementDeclaration.If => parentAccessor.GetParents<TChild>().OfType<If>(),
+                IStatementDeclaration.Call => parentAccessor.GetParents<TChild>().OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(parentStatementDeclaration))
             };
     }
@@ -91,6 +100,8 @@ internal static class Parent
                 IStatementDeclaration.Statement => new GetChildrenByParentType<Statement>(parentAccessor),
                 IStatementDeclaration.Assign => new GetChildrenByParentType<Assign>(parentAccessor),
                 IStatementDeclaration.While => new GetChildrenByParentType<While>(parentAccessor),
+                IStatementDeclaration.If => new GetChildrenByParentType<If>(parentAccessor),
+                IStatementDeclaration.Call => new GetChildrenByParentType<Call>(parentAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(parentStatementDeclaration))
             };
     }
@@ -109,6 +120,8 @@ internal static class Parent
                 IStatementDeclaration.Statement => parentAccessor.GetChildren<TParent>(),
                 IStatementDeclaration.Assign => parentAccessor.GetChildren<TParent>().OfType<Assign>(),
                 IStatementDeclaration.While => parentAccessor.GetChildren<TParent>().OfType<While>(),
+                IStatementDeclaration.If => parentAccessor.GetChildren<TParent>().OfType<If>(),
+                IStatementDeclaration.Call => parentAccessor.GetChildren<TParent>().OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(childStatementDeclaration))
             };
     }
@@ -129,6 +142,8 @@ internal static class Parent
                 IStatementDeclaration.Statement => parentStatement,
                 IStatementDeclaration.Assign => parentStatement as Assign,
                 IStatementDeclaration.While => parentStatement as While,
+                IStatementDeclaration.If => parentStatement as If,
+                IStatementDeclaration.Call => parentStatement as Call,
                 _ => throw new ArgumentOutOfRangeException(nameof(parent))
             };
 
@@ -154,6 +169,8 @@ internal static class Parent
                 IStatementDeclaration.Statement => parentAccessor.GetChildren(line),
                 IStatementDeclaration.Assign => parentAccessor.GetChildren(line).OfType<Assign>(),
                 IStatementDeclaration.While => parentAccessor.GetChildren(line).OfType<While>(),
+                IStatementDeclaration.If => parentAccessor.GetChildren(line).OfType<If>(),
+                IStatementDeclaration.Call => parentAccessor.GetChildren(line).OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(child))
             };
     }

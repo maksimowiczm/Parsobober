@@ -1,4 +1,4 @@
-namespace Parsobober.Pql.Query.Tree.Node;
+namespace Parsobober.Pql.Query.Tree.Abstraction;
 
 internal interface IQueryNode
 {

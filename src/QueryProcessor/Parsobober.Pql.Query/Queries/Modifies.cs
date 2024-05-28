@@ -2,17 +2,20 @@ using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
+using Parsobober.Pql.Query.Queries.Core;
+using Parsobober.Pql.Query.Queries.Exceptions;
 
 namespace Parsobober.Pql.Query.Queries;
 
 internal static class Modifies
 {
-    public class QueryDeclaration(IArgument left, IArgument right, IModifiesAccessor accessor) : IQueryDeclaration
+    public class QueryDeclaration(IArgument left, IArgument right, IModifiesAccessor accessor)
+        : ReplaceableArgumentQueryDeclaration<QueryDeclaration>, IQueryDeclaration
     {
-        public IArgument Left { get; } = left;
-        public IArgument Right { get; } = right;
+        public override IArgument Left { get; } = left;
+        public override IArgument Right { get; } = right;
 
-        public IEnumerable<IComparable> Do(IDeclaration select)
+        public override IEnumerable<IComparable> Do(IDeclaration select)
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
@@ -28,8 +31,8 @@ internal static class Modifies
                 // Modifies(stmt, variable)
                 (IStatementDeclaration left, IVariableDeclaration right) => BuildModifiesWithSelect(left, right),
 
-                // Modifies(1, 'v') nie wspierane w tej wersji
-                _ => throw new InvalidOperationException("Invalid query")
+                // Modifies(1, 'v') nie wspierane w tej wersji todo już wspierane
+                _ => throw new QueryNotSupported(this, $"Modifies({Left}, {Right}) is not supported.")
             };
 
             return query;
@@ -52,9 +55,11 @@ internal static class Modifies
                     return new GetVariablesByStatementType(accessor).Build(left);
                 }
 
-                throw new InvalidOperationException("Invalid query");
+                throw new DeclarationNotFoundException(select, this);
             }
         }
+
+        protected override QueryDeclaration CloneSelf(IArgument left, IArgument right) => new(left, right, accessor);
     }
 
     #region Queries
@@ -67,6 +72,8 @@ internal static class Modifies
                 IStatementDeclaration.Statement => modifiesAccessor.GetStatements(),
                 IStatementDeclaration.Assign => modifiesAccessor.GetStatements().OfType<Assign>(),
                 IStatementDeclaration.While => modifiesAccessor.GetStatements().OfType<While>(),
+                IStatementDeclaration.If => modifiesAccessor.GetStatements().OfType<If>(),
+                IStatementDeclaration.Call => modifiesAccessor.GetStatements().OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(statementDeclaration))
             };
     }
@@ -79,6 +86,8 @@ internal static class Modifies
                 IStatementDeclaration.Statement => modifiesAccessor.GetVariables<Statement>(),
                 IStatementDeclaration.Assign => modifiesAccessor.GetVariables<Assign>(),
                 IStatementDeclaration.While => modifiesAccessor.GetVariables<While>(),
+                IStatementDeclaration.If => modifiesAccessor.GetVariables<If>(),
+                IStatementDeclaration.Call => modifiesAccessor.GetVariables<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(statementDeclaration))
             };
     }
@@ -99,6 +108,8 @@ internal static class Modifies
                 IStatementDeclaration.Statement => modifiesAccessor.GetStatements(variableName),
                 IStatementDeclaration.Assign => modifiesAccessor.GetStatements(variableName).OfType<Assign>(),
                 IStatementDeclaration.While => modifiesAccessor.GetStatements(variableName).OfType<While>(),
+                IStatementDeclaration.If => modifiesAccessor.GetStatements(variableName).OfType<If>(),
+                IStatementDeclaration.Call => modifiesAccessor.GetStatements(variableName).OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(left))
             };
         }

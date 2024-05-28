@@ -14,5 +14,10 @@ internal interface IVariableDeclaration : IDeclaration
     /// <summary>
     /// Represents a variable declaration in a PQL query.
     /// </summary>
-    public readonly record struct Variable(string Name) : IVariableDeclaration;
+    public readonly record struct Variable(string Name) : IVariableDeclaration
+    {
+#if DEBUG
+        public override string ToString() => Name;
+#endif
+    }
 }

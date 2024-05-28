@@ -1,9 +1,10 @@
 using Parsobober.Pql.Query.Queries.Abstractions;
+using Parsobober.Pql.Query.Tree.Abstraction;
 
 namespace Parsobober.Pql.Query.Tree.Node;
 
 /// <summary>
-/// Returns intersection of query and attribute.
+/// Returns intersection of <see cref="IQueryNode"/> result and <see cref="IAttributeQuery"/>.
 /// </summary>
 internal class AttributeQueryNode : IQueryNode
 {
@@ -19,10 +20,15 @@ internal class AttributeQueryNode : IQueryNode
     public IEnumerable<IComparable> Do()
     {
         // intersection of query and attribute
+        // todo might have to refactor so that attributeQuery use queryNode result as input instead of doing it's own pkb query
         var queryResult = _queryNode.Do();
         var attributeResult = _attributeQuery.Do();
         var intersection = queryResult.Intersect(attributeResult);
 
         return intersection;
     }
+
+#if DEBUG
+    private List<IComparable> Result => Do().ToList();
+#endif
 }

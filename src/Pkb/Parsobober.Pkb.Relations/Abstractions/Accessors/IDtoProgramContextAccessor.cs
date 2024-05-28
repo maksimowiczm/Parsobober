@@ -7,5 +7,7 @@ public interface IDtoProgramContextAccessor
     IEnumerable<Statement> Statements { get; }
     IEnumerable<Assign> Assigns { get; }
     IEnumerable<While> Whiles { get; }
+    IEnumerable<If> Ifs { get; }
+    IEnumerable<Call> Calls { get; }
     IEnumerable<Variable> Variables { get; }
 }

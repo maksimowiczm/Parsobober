@@ -2,17 +2,20 @@ using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
+using Parsobober.Pql.Query.Queries.Core;
+using Parsobober.Pql.Query.Queries.Exceptions;
 
 namespace Parsobober.Pql.Query.Queries;
 
 internal static class Follows
 {
-    public class QueryDeclaration(IArgument followed, IArgument follows, IFollowsAccessor accessor) : IQueryDeclaration
+    public class QueryDeclaration(IArgument followed, IArgument follows, IFollowsAccessor accessor)
+        : ReplaceableArgumentQueryDeclaration<QueryDeclaration>, IQueryDeclaration
     {
-        public IArgument Left { get; } = followed;
-        public IArgument Right { get; } = follows;
+        public override IArgument Left { get; } = followed;
+        public override IArgument Right { get; } = follows;
 
-        public IEnumerable<IComparable> Do(IDeclaration select)
+        public override IEnumerable<IComparable> Do(IDeclaration select)
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
@@ -29,8 +32,8 @@ internal static class Follows
                 (IStatementDeclaration followed, IStatementDeclaration follows) =>
                     BuildFollowsWithSelect(followed, follows),
 
-                // Follows(1, 2) nie wspierane w tej wersji
-                _ => throw new InvalidOperationException("Invalid query")
+                // Follows(1, 2) nie wspierane w tej wersji todo już wspierane
+                _ => throw new QueryNotSupported(this, $"Follows({Left}, {Right}) is not supported.")
             };
 
             return query;
@@ -50,9 +53,11 @@ internal static class Follows
                     return new GetFollowsByFollowedType(accessor).Create(follows).Build(followed);
                 }
 
-                throw new Exception("No chyba coś ci się pomyliło kolego, taka sytuacja nigdy nie mogla zajść");
+                throw new DeclarationNotFoundException(select, this);
             }
         }
+
+        protected override QueryDeclaration CloneSelf(IArgument left, IArgument right) => new(left, right, accessor);
     }
 
     #region Queries
@@ -65,6 +70,8 @@ internal static class Follows
                 IStatementDeclaration.Statement => new GetFollowedByFollowsType<Statement>(followsAccessor),
                 IStatementDeclaration.Assign => new GetFollowedByFollowsType<Assign>(followsAccessor),
                 IStatementDeclaration.While => new GetFollowedByFollowsType<While>(followsAccessor),
+                IStatementDeclaration.If => new GetFollowedByFollowsType<If>(followsAccessor),
+                IStatementDeclaration.Call => new GetFollowedByFollowsType<Call>(followsAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(followedStatementDeclaration))
             };
     }
@@ -83,6 +90,8 @@ internal static class Follows
                 IStatementDeclaration.Statement => followsAccessor.GetFollowed<TFollowed>(),
                 IStatementDeclaration.Assign => followsAccessor.GetFollowed<TFollowed>().OfType<Assign>(),
                 IStatementDeclaration.While => followsAccessor.GetFollowed<TFollowed>().OfType<While>(),
+                IStatementDeclaration.If => followsAccessor.GetFollowed<TFollowed>().OfType<If>(),
+                IStatementDeclaration.Call => followsAccessor.GetFollowed<TFollowed>().OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(followsStatementDeclaration))
             };
     }
@@ -95,6 +104,8 @@ internal static class Follows
                 IStatementDeclaration.Statement => new GetFollowedByFollowedType<Statement>(followsAccessor),
                 IStatementDeclaration.Assign => new GetFollowedByFollowedType<Assign>(followsAccessor),
                 IStatementDeclaration.While => new GetFollowedByFollowedType<While>(followsAccessor),
+                IStatementDeclaration.If => new GetFollowedByFollowedType<If>(followsAccessor),
+                IStatementDeclaration.Call => new GetFollowedByFollowedType<Call>(followsAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(declaration))
             };
     }
@@ -113,6 +124,8 @@ internal static class Follows
                 IStatementDeclaration.Statement => followsAccessor.GetFollowed<TFollows>(),
                 IStatementDeclaration.Assign => followsAccessor.GetFollowed<TFollows>().OfType<Assign>(),
                 IStatementDeclaration.While => followsAccessor.GetFollowed<TFollows>().OfType<While>(),
+                IStatementDeclaration.If => followsAccessor.GetFollowed<TFollows>().OfType<If>(),
+                IStatementDeclaration.Call => followsAccessor.GetFollowed<TFollows>().OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(declaration))
             };
     }
@@ -133,6 +146,8 @@ internal static class Follows
                 IStatementDeclaration.Statement => followsStatement,
                 IStatementDeclaration.Assign => followsStatement as Assign,
                 IStatementDeclaration.While => followsStatement as While,
+                IStatementDeclaration.If => followsStatement as If,
+                IStatementDeclaration.Call => followsStatement as Call,
                 _ => throw new ArgumentOutOfRangeException(nameof(follows))
             };
 
@@ -161,6 +176,8 @@ internal static class Follows
                 IStatementDeclaration.Statement => followsStatement,
                 IStatementDeclaration.Assign => followsStatement as Assign,
                 IStatementDeclaration.While => followsStatement as While,
+                IStatementDeclaration.If => followsStatement as If,
+                IStatementDeclaration.Call => followsStatement as Call,
                 _ => throw new ArgumentOutOfRangeException(nameof(follows))
             };
 
