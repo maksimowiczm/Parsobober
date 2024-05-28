@@ -32,6 +32,18 @@ public class WierdTests() : BaseTestClass(Code.ZadanieDomowe1)
                 stmt s; assign a; while w;
                 Select a such that Parent(w, s) with w.stmt# = 10 and s.stmt# = 11
                 """, "1,2,3,5,7,9,11,12,13,14,16,19,21,22,25,26,27,28")]
+    [InlineData("""
+                stmt s; assign a;
+                Select s such that Parent(s, a) with a.stmt# = 9 and s.stmt# = 8
+                """, "8")]
+    [InlineData("""
+                stmt s; assign a; while w; if i;
+                Select s such that Parent(w, i) and Parent(i, a) with w.stmt# = 23 and i.stmt# = 24 and a.stmt# = 25
+                """, "8")]
+    [InlineData("""
+                stmt s; if i; assign a;
+                Select i such that Parent(s,i) and Parent(i,a) and Uses(a, "t") and Modifies(a, "a") and Parent(8,9)
+                """, "24")]
     public void WierdTest(string query, string expected)
     {
         var result = App.Query(query);
