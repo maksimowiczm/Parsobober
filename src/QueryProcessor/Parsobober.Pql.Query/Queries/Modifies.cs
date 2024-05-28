@@ -15,6 +15,19 @@ internal static class Modifies
         public override IArgument Left { get; } = left;
         public override IArgument Right { get; } = right;
 
+        public override IEnumerable<IComparable> Do()
+        {
+            // pattern matching argumentów
+            var query = (Left, Right) switch
+            {
+                (IArgument.Line line, IArgument.VarName name) =>
+                    new BooleanModifiesQuery(accessor, line.Value, name.Value).Build(),
+                _ => DoDeclaration()
+            };
+
+            return query;
+        }
+
         public override IEnumerable<IComparable> Do(IDeclaration select)
         {
             // pattern matching argumentów
@@ -31,7 +44,6 @@ internal static class Modifies
                 // Modifies(stmt, variable)
                 (IStatementDeclaration left, IVariableDeclaration right) => BuildModifiesWithSelect(left, right),
 
-                // Modifies(1, 'v') nie wspierane w tej wersji todo już wspierane
                 _ => throw new QueryNotSupported(this, $"Modifies({Left}, {Right}) is not supported.")
             };
 
@@ -136,6 +148,19 @@ internal static class Modifies
         /// <param name="declaration"> The declaration to build the query for. </param>
         /// <returns> The query. </returns>
         public abstract IEnumerable<Statement> Build(IStatementDeclaration declaration);
+    }
+
+    private class BooleanModifiesQuery(IModifiesAccessor accessor, int line, string variableName)
+    {
+        public IEnumerable<IComparable> Build()
+        {
+            if (accessor.IsModified(line, variableName))
+            {
+                return Enumerable.Repeat<IComparable>(true, 1);
+            }
+
+            return Enumerable.Empty<Statement>();
+        }
     }
 
     /// <summary>

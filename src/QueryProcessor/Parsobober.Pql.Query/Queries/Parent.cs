@@ -15,6 +15,19 @@ internal static class Parent
         public override IArgument Left { get; } = parent;
         public override IArgument Right { get; } = child;
 
+        public override IEnumerable<IComparable> Do()
+        {
+            var query = (Left, Right) switch
+            {
+                (IArgument.Line parent, IArgument.Line child) =>
+                    new BooleanParentQuery(accessor, parent.Value, child.Value).Build(),
+
+                _ => DoDeclaration()
+            };
+
+            return query;
+        }
+
         public override IEnumerable<IComparable> Do(IDeclaration select)
         {
             // pattern matching argumentów
@@ -31,13 +44,12 @@ internal static class Parent
                 // Parent(stmt, stmt)
                 (IStatementDeclaration parent, IStatementDeclaration child) => BuildParentWithSelect(parent, child),
 
-                // Parent(1, 2) nie wspierane w tej wersji todo już wspierane
                 _ => throw new QueryNotSupported(this, $"Parent({Left}, {Right}) is not supported.")
             };
 
             return query;
 
-            IEnumerable<Statement> BuildParentWithSelect(IStatementDeclaration parent, IStatementDeclaration child)
+            IEnumerable<IComparable> BuildParentWithSelect(IStatementDeclaration parent, IStatementDeclaration child)
             {
                 if (parent == select)
                 {
@@ -163,7 +175,7 @@ internal static class Parent
     /// <param name="line">Line number.</param>
     private class GetChildrenByLineNumber(IParentAccessor parentAccessor, int line) : ParentQuery
     {
-        public override IEnumerable<Statement> Build(IStatementDeclaration child) =>
+        public override IEnumerable<IComparable> Build(IStatementDeclaration child) =>
             child switch
             {
                 IStatementDeclaration.Statement => parentAccessor.GetChildren(line),
@@ -185,7 +197,20 @@ internal static class Parent
         /// </summary>
         /// <param name="declaration"> The declaration to build the query for. </param>
         /// <returns> The query. </returns>
-        public abstract IEnumerable<Statement> Build(IStatementDeclaration declaration);
+        public abstract IEnumerable<IComparable> Build(IStatementDeclaration declaration);
+    }
+
+    private class BooleanParentQuery(IParentAccessor accessor, int parent, int child)
+    {
+        public IEnumerable<IComparable> Build()
+        {
+            if (accessor.IsParent(parent, child))
+            {
+                return Enumerable.Repeat<IComparable>(true, 1);
+            }
+
+            return Enumerable.Empty<Statement>();
+        }
     }
 
     #endregion
