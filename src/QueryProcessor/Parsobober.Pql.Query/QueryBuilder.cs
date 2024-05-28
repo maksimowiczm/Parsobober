@@ -43,6 +43,8 @@ internal partial class QueryBuilder(
 
     private readonly List<QueryDeclaration> _uses = [];
 
+    private readonly List<QueryDeclaration> _calls = [];
+
     private IQueryResultFactory _queryResultFactory = new QueryListResult.Factory();
 
     private void AddQueries<T>(List<QueryDeclaration> relations, Func<IArgument, IArgument, T> queryCreator)
@@ -166,6 +168,12 @@ internal partial class QueryBuilder(
     public IQueryBuilder AddUses(string reference1, string reference2)
     {
         _uses.Add(new QueryDeclaration(reference1, reference2));
+        return this;
+    }
+
+    public IQueryBuilder AddCalls(string reference1, string reference2)
+    {
+        _calls.Add(new QueryDeclaration(reference1, reference2));
         return this;
     }
 

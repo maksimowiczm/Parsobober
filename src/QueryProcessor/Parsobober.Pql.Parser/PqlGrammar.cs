@@ -90,5 +90,12 @@ internal class PqlGrammar(IQueryBuilder queryBuilder)
     public IQueryBuilder UsesExpression(Token<PqlToken> reference1, Token<PqlToken> reference2, Token<PqlToken> _) =>
         queryBuilder.AddUses(reference1.Value, $"\"{reference2.Value}\"");
 
+    [Production("relation : Calls[d] LeftParenthesis[d] Reference Coma[d] Reference RightParenthesis[d]")]
+    [Production("relation : Calls[d] LeftParenthesis[d] Quote[d] Reference Quote[d] Coma[d] Reference RightParenthesis[d]")]
+    [Production("relation : Calls[d] LeftParenthesis[d] Reference Coma[d] Quote[d] Reference Quote[d] RightParenthesis[d]")]
+    [Production("relation : Calls[d] LeftParenthesis[d] Quote[d] Reference Quote[d] Coma[d] Quote[d] Reference Quote[d] RightParenthesis[d]")]
+    public IQueryBuilder CallsExpression(Token<PqlToken> reference1, Token<PqlToken> reference2) =>
+        queryBuilder.AddCalls(reference1.Value, reference2.Value);
+
     #endregion
 }

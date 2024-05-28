@@ -80,5 +80,7 @@ public interface IQueryBuilder
     /// <param name="reference2">The second reference in the Uses relationship.</param>
     IQueryBuilder AddUses(string reference1, string reference2);
 
+    IQueryBuilder AddCalls(string reference1, string reference2);
+
     #endregion
 }

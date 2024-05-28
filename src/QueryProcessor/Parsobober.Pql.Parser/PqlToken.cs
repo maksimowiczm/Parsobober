@@ -74,6 +74,9 @@ internal enum PqlToken
     [Lexeme("Uses")]
     Uses,
 
+    [Lexeme("Calls")]
+    Calls,
+
 
     #endregion
 
