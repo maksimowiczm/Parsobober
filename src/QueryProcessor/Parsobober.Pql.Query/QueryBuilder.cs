@@ -52,7 +52,7 @@ internal partial class QueryBuilder(
         {
             var left = IArgument.Parse(_declarations, l);
             var right = IArgument.Parse(_declarations, r);
-            queryContainerBuilder.Add(queryCreator(left, right));
+            queryContainerBuilder.AddQuery(queryCreator(left, right));
         }
     }
 
@@ -73,10 +73,13 @@ internal partial class QueryBuilder(
             {
                 var (key, (attribute, value)) = a;
                 return factory.Create(_declarations[key], attribute, value);
-            })
-            .ToList<IAttributeQuery>();
+            });
+        foreach (var attribute in attributes)
+        {
+            queryContainerBuilder.AddAttribute(attribute);
+        }
 
-        var organizer = new QueryOrganizer(queryContainerBuilder.Build(), attributes, accessor.ProgramContext);
+        var organizer = new QueryOrganizer(queryContainerBuilder.Build(), accessor.ProgramContext);
 
         var root = Select switch
         {

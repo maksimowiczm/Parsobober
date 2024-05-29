@@ -7,7 +7,9 @@ internal interface IQueryContainer
 {
     interface IQueryContainerBuilder
     {
-        void Add(IQueryDeclaration query);
+        void AddQuery(IQueryDeclaration query);
+
+        void AddAttribute(IAttributeQuery attributeQuery);
 
         IQueryContainer Build();
     }
@@ -15,6 +17,8 @@ internal interface IQueryContainer
     int Count { get; }
 
     IEnumerable<IQueryDeclaration> Declarations { get; }
+
+    IEnumerable<IAttributeQuery> AttributeQueries { get; }
 
     /// <summary>
     /// Get query with given declaration.

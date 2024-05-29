@@ -10,7 +10,7 @@ public static class DependencyInjection
     public static IServiceCollection AddPqlQueries(this IServiceCollection services)
     {
         services.AddTransient<IQueryBuilder, QueryBuilder>();
-        services.AddTransient<IQueryContainer.IQueryContainerBuilder, QueryContainer.QueryContainerBuilder>();
+        services.AddTransient<IQueryContainer.IQueryContainerBuilder, QueryContainerBuilder>();
 
         return services;
     }
