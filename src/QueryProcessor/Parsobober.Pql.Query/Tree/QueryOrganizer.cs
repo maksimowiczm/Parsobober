@@ -8,11 +8,6 @@ using Parsobober.Pql.Query.Tree.Node;
 
 namespace Parsobober.Pql.Query.Tree;
 
-internal class QueryOrganizerFactory(IDtoProgramContextAccessor context) : IQueryOrganizerFactory
-{
-    public IQueryOrganizer Create(IQueryContainer container, List<IAttributeQuery> attributes) => new QueryOrganizer(container, attributes, context);
-}
-
 /// <summary>
 /// Organizes queries and select statement into query tree.
 /// </summary>
@@ -20,7 +15,7 @@ internal class QueryOrganizer(
     IQueryContainer queries,
     List<IAttributeQuery> attributes,
     IDtoProgramContextAccessor context
-) : IQueryOrganizer
+)
 {
     /// <summary>
     /// Organizes queries and select statement into query tree.
@@ -118,13 +113,12 @@ internal class QueryOrganizer(
             // example `Select a such that Parent(a, b) and Parent(b, c)`.
             // It will create DependentQueryNode which will replace `b` in `Parent(a, b)`
             // with result of subquery `Parent(b, c)`.
-            if (anotherNode is not null)
+            // Otherwise create EnumerableQueryNode.
+            return anotherNode switch
             {
-                return new ReplacerQueryNode(rootQuery, anotherDeclaration, anotherNode);
-            }
-
-            // otherwise apply attribute to another declaration
-            return ApplyAttribute(anotherDeclaration, new EnumerableQueryNode(rootQuery.Do(select)));
+                null => new EnumerableQueryNode(rootQuery.Do(select)),
+                not null => new ReplacerQueryNode(rootQuery, anotherDeclaration, anotherNode)
+            };
         }
 
         var rootNode = new EnumerableQueryNode(rootQuery.Do(select));
@@ -141,24 +135,6 @@ internal class QueryOrganizer(
         }
 
         return rootNode;
-
-        IQueryNode ApplyAttribute(IArgument argument, IQueryNode node)
-        {
-            var attribute = attributes.SingleOrDefault(a => a.Declaration == argument);
-
-            if (attribute is not null)
-            {
-                attributes.Remove(attribute);
-                // guaranteed that there are no subqueries with this argument, so we have to use all elements of select type
-                var pkbNode = new PkbQueryNode((IDeclaration)argument, context);
-                // create attribute node
-                var attributeNode = new AttributeQueryNode(attribute, pkbNode);
-                return new ConditionalQueryNode(attributeNode, node);
-            }
-
-            // if there are no attributes, return node
-            return node;
-        }
     }
 
 

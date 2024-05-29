@@ -8,7 +8,6 @@ using Parsobober.Pql.Query.Queries.Abstractions;
 using Parsobober.Pql.Query.Queries.With;
 using Parsobober.Pql.Query.QueryResult;
 using Parsobober.Pql.Query.Tree;
-using Parsobober.Pql.Query.Tree.Abstraction;
 using static Parsobober.Pql.Query.Tree.Abstraction.IQueryContainer;
 
 namespace Parsobober.Pql.Query;
@@ -16,8 +15,7 @@ namespace Parsobober.Pql.Query;
 internal partial class QueryBuilder(
     IPkbAccessors accessor,
     IProgramContextAccessor programContext,
-    IQueryContainerBuilder queryContainerBuilder,
-    IQueryOrganizerFactory queryOrganizerFactory
+    IQueryContainerBuilder queryContainerBuilder
 ) : IQueryBuilder
 {
     private string _select = string.Empty;
@@ -78,7 +76,7 @@ internal partial class QueryBuilder(
             })
             .ToList<IAttributeQuery>();
 
-        var organizer = queryOrganizerFactory.Create(queryContainerBuilder.Build(), attributes);
+        var organizer = new QueryOrganizer(queryContainerBuilder.Build(), attributes, accessor.ProgramContext);
 
         var root = Select switch
         {

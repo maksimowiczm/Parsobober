@@ -11,7 +11,6 @@ public static class DependencyInjection
     {
         services.AddTransient<IQueryBuilder, QueryBuilder>();
         services.AddTransient<IQueryContainer.IQueryContainerBuilder, QueryContainer.QueryContainerBuilder>();
-        services.AddScoped<IQueryOrganizerFactory, QueryOrganizerFactory>();
 
         return services;
     }
