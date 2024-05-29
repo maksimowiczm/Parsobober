@@ -7,23 +7,17 @@ namespace Parsobober.Pql.Query.Tree;
 
 internal class QueryContainer : IQueryContainer
 {
-    internal class QueryContainerBuilder : IQueryContainer.IQueryContainerBuilder
-    {
-        private readonly List<IQueryDeclaration> _queries = [];
-        public void Add(IQueryDeclaration query) => _queries.Add(query);
-
-        public IQueryContainer Build() => new QueryContainer(_queries);
-    }
-
     private readonly List<IQueryDeclaration> _queries;
 
-    private QueryContainer(List<IQueryDeclaration> queries)
+    internal QueryContainer(List<IQueryDeclaration> queries, IEnumerable<IAttributeQuery> attributes)
     {
+        AttributeQueries = attributes;
         _queries = queries;
     }
 
     public int Count => _queries.Count;
     public IEnumerable<IQueryDeclaration> Declarations => _queries;
+    public IEnumerable<IAttributeQuery> AttributeQueries { get; }
 
     public IQueryDeclaration? Get(IDeclaration declaration) =>
         _queries.FirstOrDefault(q => q.Left == declaration || q.Right == declaration);

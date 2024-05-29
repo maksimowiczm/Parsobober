@@ -8,19 +8,13 @@ using Parsobober.Pql.Query.Tree.Node;
 
 namespace Parsobober.Pql.Query.Tree;
 
-internal class QueryOrganizerFactory(IDtoProgramContextAccessor context) : IQueryOrganizerFactory
-{
-    public IQueryOrganizer Create(IQueryContainer container, List<IAttributeQuery> attributes) => new QueryOrganizer(container, attributes, context);
-}
-
 /// <summary>
 /// Organizes queries and select statement into query tree.
 /// </summary>
 internal class QueryOrganizer(
-    IQueryContainer queries,
-    List<IAttributeQuery> attributes,
+    IQueryContainer container,
     IDtoProgramContextAccessor context
-) : IQueryOrganizer
+)
 {
     /// <summary>
     /// Organizes queries and select statement into query tree.
@@ -30,12 +24,7 @@ internal class QueryOrganizer(
     {
         var result = InnerOrganize(select)!;
 
-        if (attributes.Count > 0)
-        {
-            throw new NotAllAttributesUsedException();
-        }
-
-        if (queries.Count > 0)
+        if (container.Count > 0)
         {
             throw new NotAllRelationsUsedException();
         }
@@ -45,7 +34,7 @@ internal class QueryOrganizer(
 
     public IQueryNode OrganizeBoolean()
     {
-        var select = queries.GetDeclaration();
+        var select = container.GetDeclaration();
 
         // if there is select in any query declaration => Organize
         if (select is not null)
@@ -54,7 +43,7 @@ internal class QueryOrganizer(
         }
 
         // otherwise just do every query in place
-        var result = queries.Declarations
+        var result = container.Declarations
             .Select(q => q.Do())
             .All(r => r.Any());
 
@@ -67,14 +56,14 @@ internal class QueryOrganizer(
     private IQueryNode? InnerOrganize(IDeclaration select)
     {
         // break recursion if there are no queries
-        if (queries.Count == 0)
+        if (container.Count == 0)
         {
             return null;
         }
 
         // get query with select
         // var selectQuery = queries.FirstOrDefault(q => q.Left == select || q.Right == select);
-        var selectQuery = queries.Get(select);
+        var selectQuery = container.Get(select);
 
         // create root node
         var selectNode = selectQuery switch
@@ -86,11 +75,10 @@ internal class QueryOrganizer(
         };
 
         // apply attribute 
-        var selectAttribute = attributes.SingleOrDefault(a => a.Declaration == select);
+        var selectAttribute = container.AttributeQueries.SingleOrDefault(a => a.Declaration == select);
         // if there is attribute, create attribute node wrapper
         if (selectAttribute is not null)
         {
-            attributes.Remove(selectAttribute);
             return new AttributeQueryNode(selectAttribute, selectNode);
         }
 
@@ -103,7 +91,7 @@ internal class QueryOrganizer(
     /// </summary>
     private IQueryNode OrganizeSelect(IDeclaration select, IQueryDeclaration rootQuery)
     {
-        queries.Remove(rootQuery);
+        container.Remove(rootQuery);
 
         // get another side of query, example `Parent(a, b)` with `select` = a then `anotherSelect` = b
         var anotherDeclaration = rootQuery.GetAnotherSide(select);
@@ -118,13 +106,12 @@ internal class QueryOrganizer(
             // example `Select a such that Parent(a, b) and Parent(b, c)`.
             // It will create DependentQueryNode which will replace `b` in `Parent(a, b)`
             // with result of subquery `Parent(b, c)`.
-            if (anotherNode is not null)
+            // Otherwise create EnumerableQueryNode.
+            return anotherNode switch
             {
-                return new ReplacerQueryNode(rootQuery, anotherDeclaration, anotherNode);
-            }
-
-            // otherwise apply attribute to another declaration
-            return ApplyAttribute(anotherDeclaration, new EnumerableQueryNode(rootQuery.Do(select)));
+                null => new EnumerableQueryNode(rootQuery.Do(select)),
+                not null => new ReplacerQueryNode(rootQuery, anotherDeclaration, anotherNode)
+            };
         }
 
         var rootNode = new EnumerableQueryNode(rootQuery.Do(select));
@@ -141,24 +128,6 @@ internal class QueryOrganizer(
         }
 
         return rootNode;
-
-        IQueryNode ApplyAttribute(IArgument argument, IQueryNode node)
-        {
-            var attribute = attributes.SingleOrDefault(a => a.Declaration == argument);
-
-            if (attribute is not null)
-            {
-                attributes.Remove(attribute);
-                // guaranteed that there are no subqueries with this argument, so we have to use all elements of select type
-                var pkbNode = new PkbQueryNode((IDeclaration)argument, context);
-                // create attribute node
-                var attributeNode = new AttributeQueryNode(attribute, pkbNode);
-                return new ConditionalQueryNode(attributeNode, node);
-            }
-
-            // if there are no attributes, return node
-            return node;
-        }
     }
 
 
@@ -171,9 +140,9 @@ internal class QueryOrganizer(
         // example `Select a such that Parent(b, c)`.
 
         // get first query, guaranteed that it doesn't have select as any of declarations
-        var query = queries.GetAny();
+        var query = container.GetAny();
 
-        queries.Remove(query);
+        container.Remove(query);
 
         // create node which returns all elements of select type
         IQueryNode selectNode = new PkbQueryNode(select, context);
@@ -185,11 +154,11 @@ internal class QueryOrganizer(
         {
             // if left side of query is a declaration, check if it's used in any other query
             // example `Select a such that Parent(b, c) and Parent(b, d)`
-            { Left: IDeclaration left } when queries.HasQueryWith(left) =>
+            { Left: IDeclaration left } when container.HasQueryWith(left) =>
                 new ReplacerQueryNode(query, left, InnerOrganize(left)!),
             // if right side of query is a declaration, check if it's used in any other query
             // example `Select a such that Parent(b, c) and Parent(c, d)`
-            { Right: IDeclaration right } when queries.HasQueryWith(right) =>
+            { Right: IDeclaration right } when container.HasQueryWith(right) =>
                 new ReplacerQueryNode(query, right, InnerOrganize(right)!),
             // otherwise, split query into subquery
             // example `Select a such that Parent(b, c) and Parent(d, e)`
@@ -235,11 +204,10 @@ internal class QueryOrganizer(
 
         IQueryNode ApplyAttribute(IArgument argument, IQueryNode node)
         {
-            var attribute = attributes.SingleOrDefault(a => a.Declaration == argument);
+            var attribute = container.AttributeQueries.SingleOrDefault(a => a.Declaration == argument);
 
             if (attribute is not null)
             {
-                attributes.Remove(attribute);
                 // guaranteed that there are no subqueries with this argument, so we have to use all elements of select type
                 var pkbNode = new PkbQueryNode((IDeclaration)argument, context);
                 // create attribute node

@@ -29,23 +29,17 @@ internal abstract class ReplaceableArgumentQueryDeclaration<TSelf> : IQueryDecla
 
     public IQueryDeclaration ReplaceArgument(IDeclaration select, IArgument replacement)
     {
-        if (select == Left && Right is IDeclaration right)
+        if (select == Left)
         {
-            return CloneSelf(replacement, right);
+            return CloneSelf(replacement, Right);
         }
 
-        if (select == Right && Left is IDeclaration left)
+        if (select == Right)
         {
-            return CloneSelf(left, replacement);
+            return CloneSelf(Left, replacement);
         }
 
-        if (select != Left && select != Right)
-        {
-            throw new DeclarationNotFoundException(select, this);
-        }
-
-        // I don't know if it is true xD but for now it is todo it's not because boolean queries are now supported
-        throw new QueryNotSupported(this, "You can't create a query without any declaration in it.");
+        throw new DeclarationNotFoundException(select, this);
     }
 
     #region DEBUG

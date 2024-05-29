@@ -39,7 +39,7 @@ public class WierdTests() : BaseTestClass(Code.ZadanieDomowe1)
     [InlineData("""
                 stmt s; assign a; while w; if i;
                 Select s such that Parent(w, i) and Parent(i, a) with w.stmt# = 23 and i.stmt# = 24 and a.stmt# = 25
-                """, "8")]
+                """, "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28")]
     [InlineData("""
                 stmt s; if i; assign a;
                 Select i such that Parent(s,i) and Parent(i,a) and Uses(a, "t") and Modifies(a, "a") and Parent(8,9)
