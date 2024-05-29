@@ -1,6 +1,7 @@
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Utilities;
 using Parsobober.Pql.Query.Arguments;
+using Parsobober.Pql.Query.Queries.Abstractions;
 using Parsobober.Pql.Query.Queries.Exceptions;
 
 namespace Parsobober.Pql.Query.Queries.With;
@@ -30,6 +31,21 @@ internal class WithQueryFactory(IProgramContextAccessor accessor)
             return [];
         }
 
+        public override IQueryDeclaration ApplyAttribute(IQueryDeclaration queryDeclaration)
+        {
+            if (queryDeclaration.Left == Declaration)
+            {
+                return queryDeclaration.ReplaceArgument(Declaration, new IArgument.Line(line));
+            }
+
+            if (queryDeclaration.Right == Declaration)
+            {
+                return queryDeclaration.ReplaceArgument(Declaration, new IArgument.Line(line));
+            }
+
+            return queryDeclaration;
+        }
+
 #if DEBUG
         public override string ToString() => $"{Declaration.Name}.stmt# = {line}";
 #endif
@@ -46,6 +62,21 @@ internal class WithQueryFactory(IProgramContextAccessor accessor)
             }
 
             return [];
+        }
+
+        public override IQueryDeclaration ApplyAttribute(IQueryDeclaration queryDeclaration)
+        {
+            if (queryDeclaration.Left == Declaration)
+            {
+                return queryDeclaration.ReplaceArgument(Declaration, new IArgument.VarName(name));
+            }
+
+            if (queryDeclaration.Right == Declaration)
+            {
+                return queryDeclaration.ReplaceArgument(Declaration, new IArgument.VarName(name));
+            }
+
+            return queryDeclaration;
         }
     }
 }

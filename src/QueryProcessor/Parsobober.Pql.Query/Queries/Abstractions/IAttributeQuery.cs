@@ -7,4 +7,6 @@ internal interface IAttributeQuery
     IDeclaration Declaration { get; }
 
     IEnumerable<IComparable> Do();
+
+    IQueryDeclaration ApplyAttribute(IQueryDeclaration queryDeclaration);
 }
