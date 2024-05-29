@@ -8,9 +8,7 @@ internal static class PqlAuxiliaryTokens
     public const string Ident = @"([a-zA-Z][a-zA-Z\d#]*)";
     public const string Synonym = Ident;
     public const string DesignEntity = "(procedure|stmtLst|stmt|assign|call|while|if|variable|constant|prog_line)";
-    public const string Name = @"([a-zA-Z][a-zA-Z\d]*)";
     public const string StatementReference = $"({Synonym}|_|{Integer})";
-    public const string EntReference = $"({Synonym}|_|\"{Ident}\")";
 }
 
 internal enum PqlToken
@@ -98,9 +96,6 @@ internal enum PqlToken
     // How to differentiate between Reference and EntReference?
     [Lexeme($"{PqlAuxiliaryTokens.StatementReference}")]
     Reference,
-
-    [Lexeme($"{PqlAuxiliaryTokens.EntReference}")]
-    EntReference,
 
     [Lexeme(@"[ \t]+", true)]
     WhiteSpace,

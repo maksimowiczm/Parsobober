@@ -24,7 +24,7 @@ internal interface IArgument
             return new Line(line);
         }
 
-        return new VarName(argument);
+        return new VarName(argument.Replace('\"', ' ').Trim());
     }
 
     static IArgument Parse(object argument)
@@ -50,7 +50,7 @@ internal interface IArgument
     public readonly record struct VarName(string Value) : IArgument
     {
 #if DEBUG
-        public override string ToString() => Value;
+        public override string ToString() => $"\"{Value}\"";
 #endif
     }
 }
