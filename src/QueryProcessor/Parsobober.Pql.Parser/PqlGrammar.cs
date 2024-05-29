@@ -63,11 +63,15 @@ internal class PqlGrammar(IQueryBuilder queryBuilder)
     public IQueryBuilder ParentTransitiveExpression(Token<PqlToken> parent, Token<PqlToken> child) =>
         queryBuilder.AddParentTransitive(parent.Value, child.Value);
 
-    [Production(
-        "relation : Modifies[d] LeftParenthesis[d] Reference Coma[d] Quote[d] Reference Quote[d] RightParenthesis[d]")]
+
     [Production("relation : Modifies[d] LeftParenthesis[d] Reference Coma[d] Reference RightParenthesis[d]")]
     public IQueryBuilder ModifiesExpression(Token<PqlToken> reference1, Token<PqlToken> reference2) =>
         queryBuilder.AddModifies(reference1.Value, reference2.Value);
+
+    [Production(
+        "relation : Modifies[d] LeftParenthesis[d] Reference Coma[d] Quote[d] Reference Quote RightParenthesis[d]")]
+    public IQueryBuilder ModifiesExpression(Token<PqlToken> reference1, Token<PqlToken> reference2, Token<PqlToken> _)
+        => queryBuilder.AddModifies(reference1.Value, $"\"{reference2.Value}\"");
 
     [Production("relation : Follows[d] LeftParenthesis[d] Reference Coma[d] Reference RightParenthesis[d]")]
     public IQueryBuilder FollowsExpression(Token<PqlToken> reference1, Token<PqlToken> reference2) =>
@@ -78,10 +82,13 @@ internal class PqlGrammar(IQueryBuilder queryBuilder)
         queryBuilder.AddFollowsTransitive(reference1.Value, reference2.Value);
 
     [Production("relation : Uses[d] LeftParenthesis[d] Reference Coma[d] Reference RightParenthesis[d]")]
-    [Production(
-        "relation : Uses[d] LeftParenthesis[d] Reference Coma[d] Quote[d] Reference Quote[d] RightParenthesis[d]")]
     public IQueryBuilder UsesExpression(Token<PqlToken> reference1, Token<PqlToken> reference2) =>
         queryBuilder.AddUses(reference1.Value, reference2.Value);
+
+    [Production(
+        "relation : Uses[d] LeftParenthesis[d] Reference Coma[d] Quote[d] Reference Quote RightParenthesis[d]")]
+    public IQueryBuilder UsesExpression(Token<PqlToken> reference1, Token<PqlToken> reference2, Token<PqlToken> _) =>
+        queryBuilder.AddUses(reference1.Value, $"\"{reference2.Value}\"");
 
     #endregion
 }
