@@ -418,4 +418,31 @@ public class PqlParserTests
         builderMock.Verify(b => b.AddCalls(left.Replace("\"", ""), right.Replace("\"", "")));
         builderMock.Verify(b => b.Build(), Times.Once);
     }
+
+    [Theory]
+    [InlineData("\"main\"", "p")]
+    [InlineData("p", "\"main\"")]
+    [InlineData("p", "p1")]
+    [InlineData("\"main\"", "\"main\"")]
+    public void Select_CallsTransitive(string left, string right)
+    {
+        // Arrange
+        var builderMock = new Mock<IQueryBuilder>();
+        var queryMock = new Mock<IQueryResult>();
+        var parser = new PqlParser(builderMock.Object);
+
+        var queryString = $"procedure p, p1; Select p such that Calls*({left}, {right})";
+        builderMock.Setup(b => b.Build()).Returns(queryMock.Object);
+
+        // Act
+        var query = parser.Parse(queryString);
+
+        // Assert
+        query.Should().NotBeNull();
+        query.Should().Be(queryMock.Object);
+        builderMock.Verify(b => b.AddDeclaration("procedure p, p1;"));
+        builderMock.Verify(b => b.AddSelect("p"));
+        builderMock.Verify(b => b.AddCallsTransitive(left.Replace("\"", ""), right.Replace("\"", "")));
+        builderMock.Verify(b => b.Build(), Times.Once);
+    }
 }

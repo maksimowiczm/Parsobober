@@ -82,5 +82,7 @@ public interface IQueryBuilder
 
     IQueryBuilder AddCalls(string reference1, string reference2);
 
+    IQueryBuilder AddCallsTransitive(string reference1, string reference2);
+
     #endregion
 }
