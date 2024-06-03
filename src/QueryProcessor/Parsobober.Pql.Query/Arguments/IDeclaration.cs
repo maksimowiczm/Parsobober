@@ -22,7 +22,8 @@ internal interface IDeclaration : IArgument
         List<Func<string, string, IDeclaration?>> parsers =
         [
             IStatementDeclaration.Parse,
-            IVariableDeclaration.Parse
+            IVariableDeclaration.Parse,
+            IProcedureDeclaration.Parse
         ];
 
         foreach (var parser in parsers)
