@@ -7,6 +7,17 @@ internal class UsesExtractor(IUsesCreator creator) : SimpleExtractor
 {
     private Stack<List<TreeNode>> containerStack = new();
     private List<TreeNode> assignVariables = new();
+    private List<TreeNode> procedureVariables = new();
+
+    public override void Procedure(TreeNode node)
+    {
+        foreach (var variable in procedureVariables.Distinct())
+        {
+            creator.SetUses(node, variable);
+        }
+
+        procedureVariables.Clear();
+    }
 
     public override void StmtLst()
     {
@@ -20,9 +31,11 @@ internal class UsesExtractor(IUsesCreator creator) : SimpleExtractor
         {
             creator.SetUses(result, variable);
         }
+
         containerStack.Peek().AddRange(varList);
 
         creator.SetUses(result, result.Children[0]);
+        procedureVariables.Add(result.Children[0]);
         containerStack.Peek().Add(result.Children[0]);
     }
 
@@ -35,9 +48,11 @@ internal class UsesExtractor(IUsesCreator creator) : SimpleExtractor
         {
             creator.SetUses(result, variable);
         }
+
         containerStack.Peek().AddRange(varList);
 
         creator.SetUses(result, result.Children[0]);
+        procedureVariables.Add(result.Children[0]);
         containerStack.Peek().Add(result.Children[0]);
     }
 
@@ -48,6 +63,7 @@ internal class UsesExtractor(IUsesCreator creator) : SimpleExtractor
         {
             creator.SetUses(result, variable);
         }
+
         containerStack.Peek().AddRange(assignVariables);
         assignVariables.Clear();
     }
@@ -57,6 +73,7 @@ internal class UsesExtractor(IUsesCreator creator) : SimpleExtractor
         if (result.Type == EntityType.Variable)
         {
             assignVariables.Add(result);
+            procedureVariables.Add(result);
         }
     }
 }

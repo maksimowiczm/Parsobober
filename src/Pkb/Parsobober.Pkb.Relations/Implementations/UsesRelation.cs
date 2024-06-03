@@ -17,25 +17,20 @@ public class UsesRelation(
     /// Stores uses relation between statement and variables it uses.
     /// </summary>
     /// <remarks>[statement line number,  list of variable names].</remarks>
-    private readonly Dictionary<int, List<string>> _usesDictionary = new();
+    private readonly Dictionary<int, List<string>> _usesStatementDictionary = new();
+
+    /// <summary>
+    /// Stores usues relation between procedure and variable it uses.
+    /// </summary>
+    /// <remarks>[procedure name, list of variable names].</remarks>
+    private readonly Dictionary<string, List<string>> _usesProcedureDictionary = new();
 
     public void SetUses(TreeNode user, TreeNode variable)
     {
-        // Check types
-        if (!user.Type.IsStatement())
-        {
-            logger.LogError(
-                "Statement uses relation can only be established between statement and variable node. ({user} must be statement)",
-                user);
-
-            throw new ArgumentException(
-                $"User node type {user.Type} is different than any of required: {EntityType.Statement} types.");
-        }
-
         if (!variable.Type.IsVariable())
         {
             logger.LogError(
-                "Statement uses relation can only be established between statement and variable node. ({variable} must be variable)",
+                "Uses relation can only be established between statement and variable node. ({variable} must be variable)",
                 variable);
 
             throw new ArgumentException(
@@ -50,24 +45,68 @@ public class UsesRelation(
             throw new ArgumentNullException(variable.Attribute);
         }
 
-        // Add to dictionary
-        if (_usesDictionary.TryGetValue(user.LineNumber, out var variableList))
+        if (user.Type.IsStatement())
         {
-            if (variableList.Contains(variable.Attribute))
+            AddToStatementDictionary(user.LineNumber, variable.Attribute);
+        }
+        else if (user.Type.IsProcedure())
+        {
+            // Check required procedure attribute
+            if (user.Attribute is null)
+            {
+                logger.LogError("Procedure must have an attribute. ({node})", user);
+
+                throw new ArgumentNullException(user.Attribute);
+            }
+
+            AddToProcedureDictionary(user.Attribute, variable.Attribute);
+        }
+        else
+        {
+            logger.LogError(
+                "Uses relation can only be established between statement/procedure and variable node. ({user} must be statement/procedure)",
+                user);
+
+            throw new ArgumentException(
+                $"User node type {user.Type} is different than any of required: {EntityType.Statement} or {EntityType.Procedure} types.");
+        }
+    }
+
+    private void AddToStatementDictionary(int lineNumber, string variableName)
+    {
+        if (_usesStatementDictionary.TryGetValue(lineNumber, out var variableList))
+        {
+            if (variableList.Contains(variableName))
             {
                 return;
             }
 
-            variableList.Add(variable.Attribute);
+            variableList.Add(variableName);
             return;
         }
 
-        _usesDictionary.Add(user.LineNumber, [variable.Attribute]);
+        _usesStatementDictionary.Add(lineNumber, [variableName]);
+    }
+
+    private void AddToProcedureDictionary(string procedureName, string variableName)
+    {
+        if (_usesProcedureDictionary.TryGetValue(procedureName, out var variableList))
+        {
+            if (variableList.Contains(variableName))
+            {
+                return;
+            }
+
+            variableList.Add(variableName);
+            return;
+        }
+
+        _usesProcedureDictionary.Add(procedureName, [variableName]);
     }
 
     public IEnumerable<Variable> GetVariables<T>() where T : IRequest
     {
-        return _usesDictionary
+        return _usesStatementDictionary
             .Where(statement => programContext.StatementsDictionary[statement.Key].IsType<T>())
             .SelectMany(statement => statement.Value)
             .Distinct()
@@ -76,21 +115,21 @@ public class UsesRelation(
 
     public IEnumerable<Variable> GetVariables(int lineNumber)
     {
-        return _usesDictionary.TryGetValue(lineNumber, out var variableList)
+        return _usesStatementDictionary.TryGetValue(lineNumber, out var variableList)
             ? variableList.Select(variableName => programContext.VariablesDictionary[variableName].ToVariable())
             : Enumerable.Empty<Variable>();
     }
 
     public IEnumerable<Statement> GetStatements()
     {
-        return _usesDictionary.Select(entry =>
+        return _usesStatementDictionary.Select(entry =>
             programContext.StatementsDictionary[entry.Key].ToStatement()
         );
     }
 
     public IEnumerable<Statement> GetStatements(string variableName)
     {
-        return _usesDictionary
+        return _usesStatementDictionary
             .Where(stmt => stmt.Value.Contains(variableName))
             .Select(stmt => programContext.StatementsDictionary[stmt.Key].ToStatement());
     }

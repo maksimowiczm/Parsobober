@@ -18,21 +18,16 @@ public class ModifiesRelation(
     /// Stores modifies relation between statement and variable list
     /// </summary>
     /// <remarks>[statement line number,  list of variable names].</remarks>
-    private readonly Dictionary<int, List<string>> _modifiesDictionary = new();
+    private readonly Dictionary<int, List<string>> _modifiesStatementDictionary = new();
+
+    /// <summary>
+    /// Stores modifies relation between procedure and variable list
+    /// </summary>
+    /// <remarks>[procedure name, list of variable names].</remarks>
+    private readonly Dictionary<string, List<string>> _modifiesProcedureDictionary = new();
 
     public void SetModifies(TreeNode modifier, TreeNode variable)
     {
-        // Check types
-        if (!modifier.Type.IsStatement())
-        {
-            logger.LogError(
-                "Statement modifies relation can only be established between statement and variable node. ({modifier} must be statement)",
-                modifier);
-
-            throw new ArgumentException(
-                $"Modifier node type {modifier.Type} is different than any of required: {EntityType.Statement} types.");
-        }
-
         if (!variable.Type.IsVariable())
         {
             logger.LogError(
@@ -51,25 +46,68 @@ public class ModifiesRelation(
             throw new ArgumentNullException(variable.Attribute);
         }
 
-        if (_modifiesDictionary.TryGetValue(modifier.LineNumber, out var variableList))
+        if (modifier.Type.IsStatement())
         {
-            if (variableList.Contains(variable.Attribute!))
+            AddToStatementDictionary(modifier.LineNumber, variable.Attribute);
+        }
+        else if (modifier.Type.IsProcedure())
+        {
+            // Check required procedure attribute
+            if (modifier.Attribute is null)
+            {
+                logger.LogError("Procedure must have an attribute. ({node})", modifier);
+
+                throw new ArgumentNullException(modifier.Attribute);
+            }
+
+            AddToProcedureDictionary(modifier.Attribute, variable.Attribute);
+        }
+        else
+        {
+            logger.LogError(
+                "Modifies relation can only be established between statement/procedure and variable node. ({user} must be statement/procedure)",
+                modifier);
+
+            throw new ArgumentException(
+                $"User node type {modifier.Type} is different than any of required: {EntityType.Statement} or {EntityType.Procedure} types.");
+        }
+    }
+
+    private void AddToStatementDictionary(int lineNumber, string variableName)
+    {
+        if (_modifiesStatementDictionary.TryGetValue(lineNumber, out var variableList))
+        {
+            if (variableList.Contains(variableName))
             {
                 return;
             }
 
-            variableList.Add(variable.Attribute!);
-
+            variableList.Add(variableName);
             return;
         }
 
-        _modifiesDictionary.Add(modifier.LineNumber, [variable.Attribute!]);
+        _modifiesStatementDictionary.Add(lineNumber, [variableName]);
     }
 
+    private void AddToProcedureDictionary(string procedureName, string variableName)
+    {
+        if (_modifiesProcedureDictionary.TryGetValue(procedureName, out var variableList))
+        {
+            if (variableList.Contains(variableName))
+            {
+                return;
+            }
+
+            variableList.Add(variableName);
+            return;
+        }
+
+        _modifiesProcedureDictionary.Add(procedureName, [variableName]);
+    }
 
     public IEnumerable<Variable> GetVariables<T>() where T : IRequest
     {
-        return _modifiesDictionary
+        return _modifiesStatementDictionary
             .Where(statement => programContext.StatementsDictionary[statement.Key].IsType<T>())
             .SelectMany(statement => statement.Value)
             .Distinct()
@@ -78,21 +116,21 @@ public class ModifiesRelation(
 
     public IEnumerable<Statement> GetStatements()
     {
-        return _modifiesDictionary.Select(entry =>
+        return _modifiesStatementDictionary.Select(entry =>
             programContext.StatementsDictionary[entry.Key].ToStatement()
         );
     }
 
     public IEnumerable<Variable> GetVariables(int lineNumber)
     {
-        return _modifiesDictionary.TryGetValue(lineNumber, out var variableList)
+        return _modifiesStatementDictionary.TryGetValue(lineNumber, out var variableList)
             ? variableList.Select(variableName => programContext.VariablesDictionary[variableName].ToVariable())
             : Enumerable.Empty<Variable>();
     }
 
     public IEnumerable<Statement> GetStatements(string variableName)
     {
-        return _modifiesDictionary
+        return _modifiesStatementDictionary
             .Where(stmt => stmt.Value.Contains(variableName))
             .Select(stmt => programContext.StatementsDictionary[stmt.Key].ToStatement());
     }
