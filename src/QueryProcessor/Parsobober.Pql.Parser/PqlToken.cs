@@ -84,7 +84,7 @@ internal enum PqlToken
 
     #region Declarations
 
-    [Lexeme($"{PqlAuxiliaryTokens.DesignEntity} {PqlAuxiliaryTokens.Synonym}(, {PqlAuxiliaryTokens.Synonym})*;")]
+    [Lexeme($"{PqlAuxiliaryTokens.DesignEntity} {PqlAuxiliaryTokens.Synonym}(, ?{PqlAuxiliaryTokens.Synonym})*;")]
     Declaration,
 
     // Segregate Design entities?
