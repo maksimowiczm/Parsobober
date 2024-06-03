@@ -116,6 +116,14 @@ internal class QueryOrganizer(
 
         var rootNode = new EnumerableQueryNode(rootQuery.Do(select));
 
+        // if there is another query with same select we have to intersect results
+        // example `Select a such that Parent(a, b) and Parent(a, c)`.
+        if (container.HasQueryWith(select))
+        {
+            var intersection = InnerOrganize(select)!;
+            return new IntersectQueryNode(rootNode, intersection);
+        }
+
         // if there is no another declaration, it means that there might be boolean condition,
         // example |             query       |   conditions...
         // `Select a such that Parent(a, b) and Parent(c, d) and Parent(d, e)`.
