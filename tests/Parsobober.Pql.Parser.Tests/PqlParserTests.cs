@@ -50,15 +50,19 @@ public class PqlParserTests
         builderMock.Verify(b => b.Build(), Times.Once);
     }
 
-    [Fact]
-    public void Select_Modifies()
+    [Theory]
+    [InlineData("s1", "s2")]
+    [InlineData("\"s1\"", "s2")]
+    [InlineData("s1", "\"s2\"")]
+    [InlineData("\"s1\"", "\"s2\"")]
+    public void Select_Modifies(string left, string right)
     {
         // Arrange
         var builderMock = new Mock<IQueryBuilder>();
         var queryMock = new Mock<IQueryResult>();
         var parser = new PqlParser(builderMock.Object);
 
-        const string queryString = "stmt s1, s2; Select s1 such that Modifies (s1, s2)";
+        var queryString = $"stmt s1, s2; Select s1 such that Modifies ({left}, {right})";
         builderMock.Setup(b => b.Build()).Returns(queryMock.Object);
 
         // Act
@@ -69,7 +73,7 @@ public class PqlParserTests
         query.Should().Be(queryMock.Object);
         builderMock.Verify(b => b.AddDeclaration("stmt s1, s2;"));
         builderMock.Verify(b => b.AddSelect("s1"));
-        builderMock.Verify(b => b.AddModifies("s1", "s2"));
+        builderMock.Verify(b => b.AddModifies(left, right));
         builderMock.Verify(b => b.Build(), Times.Once);
     }
 
@@ -142,15 +146,19 @@ public class PqlParserTests
         builderMock.Verify(b => b.Build(), Times.Once);
     }
 
-    [Fact]
-    public void Select_Uses()
+    [Theory]
+    [InlineData("s1", "s2")]
+    [InlineData("\"s1\"", "s2")]
+    [InlineData("s1", "\"s2\"")]
+    [InlineData("\"s1\"", "\"s2\"")]
+    public void Select_Uses(string left, string right)
     {
         // Arrange
         var builderMock = new Mock<IQueryBuilder>();
         var queryMock = new Mock<IQueryResult>();
         var parser = new PqlParser(builderMock.Object);
 
-        const string queryString = "stmt s1, s2; Select s1 such that Uses (s1, s2)";
+        var queryString = $"stmt s1, s2; Select s1 such that Uses ({left}, {right})";
         builderMock.Setup(b => b.Build()).Returns(queryMock.Object);
 
         // Act
@@ -161,7 +169,7 @@ public class PqlParserTests
         query.Should().Be(queryMock.Object);
         builderMock.Verify(b => b.AddDeclaration("stmt s1, s2;"));
         builderMock.Verify(b => b.AddSelect("s1"));
-        builderMock.Verify(b => b.AddUses("s1", "s2"));
+        builderMock.Verify(b => b.AddUses(left, right));
         builderMock.Verify(b => b.Build(), Times.Once);
     }
 
@@ -415,7 +423,7 @@ public class PqlParserTests
         query.Should().Be(queryMock.Object);
         builderMock.Verify(b => b.AddDeclaration("procedure p, p1;"));
         builderMock.Verify(b => b.AddSelect("p"));
-        builderMock.Verify(b => b.AddCalls(left.Replace("\"", ""), right.Replace("\"", "")));
+        builderMock.Verify(b => b.AddCalls(left, right));
         builderMock.Verify(b => b.Build(), Times.Once);
     }
 
@@ -442,7 +450,29 @@ public class PqlParserTests
         query.Should().Be(queryMock.Object);
         builderMock.Verify(b => b.AddDeclaration("procedure p, p1;"));
         builderMock.Verify(b => b.AddSelect("p"));
-        builderMock.Verify(b => b.AddCallsTransitive(left.Replace("\"", ""), right.Replace("\"", "")));
+        builderMock.Verify(b => b.AddCallsTransitive(left, right));
         builderMock.Verify(b => b.Build(), Times.Once);
+    }
+
+    [Theory]
+    [InlineData("stmt s, s1, s2;")]
+    [InlineData("stmt s,s1,s2;")]
+    public void Declarations(string declarations)
+    {
+        // Arrange
+        var builderMock = new Mock<IQueryBuilder>();
+        var queryMock = new Mock<IQueryResult>();
+        var parser = new PqlParser(builderMock.Object);
+        var queryString = $"{declarations} Select s such that Parent(s, s1)";
+
+        builderMock.Setup(b => b.Build()).Returns(queryMock.Object);
+
+        // Act
+        var query = parser.Parse(queryString);
+
+        // Assert
+        query.Should().NotBeNull();
+        query.Should().Be(queryMock.Object);
+        builderMock.Verify(b => b.AddDeclaration(declarations));
     }
 }
