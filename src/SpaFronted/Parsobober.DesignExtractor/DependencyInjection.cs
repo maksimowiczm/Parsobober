@@ -14,6 +14,7 @@ public static class DependencyInjection
         services.AddScoped<ISimpleExtractor, ProgramContextExtractor>();
         services.AddScoped<ISimpleExtractor, UsesExtractor>();
         services.AddScoped<ISimpleExtractor, CallsExtractor>();
+        services.AddScoped<ISimpleExtractor, PostParseExtractor>();
 
         return services;
     }

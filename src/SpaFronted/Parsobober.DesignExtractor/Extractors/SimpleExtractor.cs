@@ -5,6 +5,11 @@ namespace Parsobober.DesignExtractor.Extractors;
 
 internal abstract class SimpleExtractor : ISimpleExtractor
 {
+    public virtual void FinishedParsing()
+    {
+        return;
+    }
+    
     public virtual void Assign(TreeNode node)
     {
         return;

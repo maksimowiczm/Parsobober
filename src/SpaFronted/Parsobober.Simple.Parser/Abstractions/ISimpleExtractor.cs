@@ -4,6 +4,7 @@ namespace Parsobober.Simple.Parser.Abstractions;
 
 public interface ISimpleExtractor
 {
+    void FinishedParsing();
     void Stmt(TreeNode node);
     void Assign(TreeNode node);
     void Expr(TreeNode node);
