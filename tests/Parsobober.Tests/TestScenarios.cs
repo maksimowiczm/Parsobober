@@ -18,7 +18,7 @@ public class TestScenarios() : BaseTestClass(Code.Dropbox)
     [InlineData("if i; while w;Select w such that Follows(i, w)", "29, 59, 95, 143, 196")]
     [InlineData("if i; while w;Select w such that Follows(w, i)", "29, 196")]
     [InlineData("stmt s;Select s such that Follows*(1, s)", "2, 3, 4, 5, 6, 119")]
-    public void TestQuerySingle(string query, string expected)
+    public void TestQuerySingleMateusz(string query, string expected)
     {
         var result = App.Query(query);
         result.Should().Be(expected.Replace(" ", ""));
@@ -52,7 +52,32 @@ public class TestScenarios() : BaseTestClass(Code.Dropbox)
     [InlineData(
         "stmt s; if i; while w;\nSelect s such that Parent*(s, i) and Uses(s, \"width\") and Parent(i, w) and Uses(w, \"height\")",
         "6, 12, 14, 15, 79")]
-    public void TestQueryMultiple(string query, string expected)
+    public void TestQueryMultipleMateusz(string query, string expected)
+    {
+        var result = App.Query(query);
+        result.Should().Be(expected.Replace(" ", ""));
+    }
+
+    [Theory]
+    // Piotrek
+    // single
+    [InlineData("stmt s; while w;\nSelect s such that Parent(s, w)",
+        "6, 12, 15, 16, 23, 66, 80, 101, 109, 136, 180, 181, 191, 216, 217, 237, 250, 264, 278")]
+    [InlineData("if i; while w;\nSelect w such that Follows(i, w)", "29, 59, 95, 143, 196")]
+    [InlineData("if i1, i2;\nSelect i2 such that Parent*(i1, i2)",
+        "15, 23, 34, 38, 51, 55, 66, 72, 76, 80, 86, 109, 160, 163, 166, 170, 173, 176, 224, 230, 237, 267")]
+    [InlineData("procedure p;\nSelect p such that Calls(p, \"SS\")", "TT")]
+    [InlineData("procedure p;\nSelect BOOLEAN such that Calls(\"SS\", p)", "TRUE")]
+    [InlineData("assign a;\nSelect a such that Uses(a, \"line\")", "273")]
+    [InlineData("Select BOOLEAN such that Modifies(2, \"width\")", "TRUE")]
+    [InlineData("procedure p;\nSelect p such that Uses(p, \"edge\")",
+        "Enlarge,Main,Rotate,Translate")]
+    [InlineData("variable v;\nSelect v such that Modifies(30, v)", "width")]
+    [InlineData("while w; variable v;\nSelect w such that Modifies(w, v)",
+        "6, 12, 16, 26, 29, 47, 59, 69, 79, 83, 89, 95, 101, 103, 105, 113, 136, 143, 180, 181, 184, 187, 191, 196, 209, 217, 218, 234, 239, 251, 256, 264, 265, 279, 281, 289, 301")]
+    [InlineData("call c; assign a;\nSelect c such that Follows*(c, a)",
+        "1, 18, 22, 45, 63, 84, 114, 221, 222, 227, 259, 307")]
+    public void TestQuerySinglePiotrek(string query, string expected)
     {
         var result = App.Query(query);
         result.Should().Be(expected.Replace(" ", ""));
