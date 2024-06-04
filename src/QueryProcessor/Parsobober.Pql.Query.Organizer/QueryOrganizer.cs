@@ -51,17 +51,7 @@ public class QueryOrganizer : IQueryOrganizer
         }
 
         // add declaration to map
-        _declarationsMap[declaration] = declaration switch
-        {
-            IStatementDeclaration.Statement => _context.Statements,
-            IStatementDeclaration.Assign => _context.Assigns,
-            IStatementDeclaration.While => _context.Whiles,
-            IStatementDeclaration.If => _context.Ifs,
-            IStatementDeclaration.Call => _context.Calls,
-            IVariableDeclaration.Variable => _context.Variables,
-            IProcedureDeclaration.Procedure => _context.Procedures,
-            _ => throw new NotImplementedException()
-        };
+        _declarationsMap[declaration] = declaration.ExtractFromContext(_context);
 
         // Apply attribute
         var attribute = _attributes.FirstOrDefault(a => a.Declaration == declaration);
