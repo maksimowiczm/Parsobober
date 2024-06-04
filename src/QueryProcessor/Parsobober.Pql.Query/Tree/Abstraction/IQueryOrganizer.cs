@@ -8,7 +8,7 @@ public interface IQueryOrganizer
     /// Organizes queries and select statement into query tree.
     /// </summary>
     /// <returns>Query tree</returns>
-    IQueryNode Organize(IDeclaration select);
+    IEnumerable<IComparable> Organize(IDeclaration select);
 
-    IQueryNode OrganizeBoolean();
+    bool OrganizeBoolean();
 }

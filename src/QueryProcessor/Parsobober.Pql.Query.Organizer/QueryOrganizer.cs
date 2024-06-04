@@ -2,7 +2,6 @@
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
 using Parsobober.Pql.Query.Tree.Abstraction;
-using Parsobober.Pql.Query.Tree.Node;
 using Parsobober.Shared;
 using QueryContext =
     System.Collections.Generic.Dictionary<
@@ -74,7 +73,7 @@ public class QueryOrganizer : IQueryOrganizer
         return true;
     }
 
-    public IQueryNode Organize(IDeclaration select)
+    public IEnumerable<IComparable> Organize(IDeclaration select)
     {
         var selectNothing = TryAddDeclarationToMap(select);
 
@@ -86,8 +85,8 @@ public class QueryOrganizer : IQueryOrganizer
 
         return selectNothing switch
         {
-            true when !_declarationsMap.Values.All(v => v.Any()) => new EnumerableQueryNode([]),
-            _ => new EnumerableQueryNode(_declarationsMap[select])
+            true when !_declarationsMap.Values.All(v => v.Any()) => Enumerable.Empty<IComparable>(),
+            _ => _declarationsMap[select]
         };
     }
 
@@ -108,14 +107,14 @@ public class QueryOrganizer : IQueryOrganizer
         }
     }
 
-    public IQueryNode OrganizeBoolean()
+    public bool OrganizeBoolean()
     {
         var select = _declarations.FirstOrDefault();
 
         // if there is select in any query declaration => Organize
         if (select is not null)
         {
-            return Organize(select);
+            return Organize(select).Any();
         }
 
         // otherwise just do every query in place
@@ -123,7 +122,7 @@ public class QueryOrganizer : IQueryOrganizer
             .Select(q => q.Do())
             .All(r => r.Any());
 
-        return new BooleanQueryNode(result);
+        return result;
     }
 
     private void ProcessQuery(IDeclaration currentSelect, IQueryDeclaration query)

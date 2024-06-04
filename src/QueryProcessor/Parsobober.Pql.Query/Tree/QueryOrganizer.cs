@@ -21,7 +21,7 @@ internal class QueryOrganizer(
     /// Organizes queries and select statement into query tree.
     /// </summary>
     /// <returns>Query tree</returns>
-    public IQueryNode Organize(IDeclaration select)
+    public IEnumerable<IComparable> Organize(IDeclaration select)
     {
         var result = InnerOrganize(select)!;
 
@@ -30,17 +30,17 @@ internal class QueryOrganizer(
             throw new NotAllRelationsUsedException();
         }
 
-        return result;
+        return result.Do();
     }
 
-    public IQueryNode OrganizeBoolean()
+    public bool OrganizeBoolean()
     {
         var select = container.GetDeclaration();
 
         // if there is select in any query declaration => Organize
         if (select is not null)
         {
-            return Organize(select);
+            return Organize(select).Any();
         }
 
         // otherwise just do every query in place
@@ -48,7 +48,7 @@ internal class QueryOrganizer(
             .Select(q => q.Do())
             .All(r => r.Any());
 
-        return new BooleanQueryNode(result);
+        return result;
     }
 
     /// <summary>

@@ -86,13 +86,12 @@ internal partial class QueryBuilder(
 
         var organizer = queryContainerBuilder.Build();
 
-        var root = Select switch
+        if (Select is null)
         {
-            not null => organizer.Organize(Select),
-            _ => organizer.OrganizeBoolean()
-        };
+            return _queryResultFactory.Create(organizer.OrganizeBoolean());
+        }
 
-        return _queryResultFactory.Create(root.Do());
+        return _queryResultFactory.Create(organizer.Organize(Select));
     }
 
     public IQueryBuilder AddSelect(string synonym)

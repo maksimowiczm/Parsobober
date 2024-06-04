@@ -2,12 +2,20 @@ using Parsobober.Pql.Query.Abstractions;
 
 namespace Parsobober.Pql.Query.QueryResult;
 
-internal class QueryBooleanResult(IEnumerable<IComparable> query) : IQueryResult
+internal class QueryBooleanResult(bool result) : IQueryResult
 {
     public class Factory : IQueryResultFactory
     {
-        public IQueryResult Create(IEnumerable<IComparable> query) => new QueryBooleanResult(query);
+        public IQueryResult Create(object query)
+        {
+            if (query is not bool result)
+            {
+                throw new IQueryResultFactory.QueryFactoryException("Query must be a boolean");
+            }
+
+            return new QueryBooleanResult(result);
+        }
     }
 
-    public string Execute() => query.Any() ? "TRUE" : "FALSE";
+    public string Execute() => result ? "TRUE" : "FALSE";
 }
