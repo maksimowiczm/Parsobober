@@ -15,23 +15,40 @@ public class CallsRelation(
     /// <summary>
     /// (caller, list of called)
     /// </summary>
-    private readonly Dictionary<string, List<string>> _callersDictionary = new();
+    private readonly Dictionary<string, HashSet<string>> _callersDictionary = new();
 
     /// <summary>
     /// (called, list of callers)
     /// </summary>
-    private readonly Dictionary<string, List<string>> _calledDictionary = new();
+    private readonly Dictionary<string, HashSet<string>> _calledDictionary = new();
+
+    /// <summary>
+    /// (container, list of called procedures)
+    /// </summary>
+    private readonly Dictionary<int, HashSet<string>> _containerCallsDictionary = new();
+
+    #region ICallsCreator
 
     public void SetCalls(TreeNode callerProcedure, TreeNode callStatement)
     {
-        if (!callerProcedure.Type.IsProcedure() || callStatement.Type != EntityType.Call)
+        if (!callerProcedure.Type.IsProcedure())
         {
             logger.LogError(
-                "Calls relation can only be established between two procedure nodes. ({caller} => {called})",
-                callerProcedure, callStatement);
+                "Calls relation can only be established between procedure and call statement. ({caller} should be procedure)",
+                callerProcedure);
 
             throw new ArgumentException(
-                $"At least one of provided nodes type: {callStatement.Type}, {callerProcedure.Type} is different than required: {EntityType.Procedure} type.");
+                $"Type {callerProcedure.Type} is different than required: {EntityType.Procedure} type.");
+        }
+
+        if (!callStatement.Type.IsCallStatement())
+        {
+            logger.LogError(
+                "Calls relation can only be established between procedure and call statement. ({called} should be call statement)",
+                callStatement);
+
+            throw new ArgumentException(
+                $"Type {callStatement.Type} is different than required: {EntityType.Call} type.");
         }
 
         // Check required attributes
@@ -44,7 +61,7 @@ public class CallsRelation(
 
         if (callStatement.Attribute is null)
         {
-            logger.LogError("Called procedure must have an attribute. ({called})", callStatement);
+            logger.LogError("Call statement must have an attribute. ({called})", callStatement);
 
             throw new ArgumentNullException(callStatement.Attribute);
         }
@@ -52,14 +69,51 @@ public class CallsRelation(
         AddCallsToDictionaries(callerProcedure.Attribute, callStatement.Attribute);
     }
 
+    public void SetContainerCalls(TreeNode containerStatement, TreeNode callStatement)
+    {
+        if (!containerStatement.Type.IsContainerStatement())
+        {
+            logger.LogError(
+                "Container calls relation can only be established between container statement and call statement. ({container} should be container statement)",
+                containerStatement);
+
+            throw new ArgumentException(
+                $"Type {containerStatement.Type} is different than any of required: container {EntityType.Statement}.");
+        }
+
+        if (!callStatement.Type.IsCallStatement())
+        {
+            logger.LogError(
+                "Container calls relation can only be established between container statement  and call statement. ({called} should be call statement)",
+                callStatement);
+
+            throw new ArgumentException(
+                $"Type {callStatement.Type} is different than required: {EntityType.Call} type.");
+        }
+
+
+        if (callStatement.Attribute is null)
+        {
+            logger.LogError("Called procedure must have an attribute. ({called})", callStatement);
+
+            throw new ArgumentNullException(callStatement.Attribute);
+        }
+
+        if (_containerCallsDictionary.TryGetValue(containerStatement.LineNumber, out var calledList))
+        {
+            calledList.Add(callStatement.Attribute);
+        }
+        else
+        {
+            _containerCallsDictionary.Add(containerStatement.LineNumber, [callStatement.Attribute]);
+        }
+    }
+
     private void AddCallsToDictionaries(string caller, string called)
     {
         if (_callersDictionary.TryGetValue(caller, out var calledList))
         {
-            if (!calledList.Contains(called))
-            {
-                calledList.Add(called);
-            }
+            calledList.Add(called);
         }
         else
         {
@@ -68,16 +122,15 @@ public class CallsRelation(
 
         if (_calledDictionary.TryGetValue(called, out var callerList))
         {
-            if (!callerList.Contains(caller))
-            {
-                callerList.Add(caller);
-            }
+            callerList.Add(caller);
         }
         else
         {
             _calledDictionary.Add(called, [caller]);
         }
     }
+
+    #endregion
 
     public IEnumerable<Procedure> GetCalled(string callerName)
     {
@@ -174,4 +227,8 @@ public class CallsRelation(
     {
         return GetCalledTransitive(callerName).Any(called => called.ProcName == calledName);
     }
+
+    internal List<string> GetAllCalledProcedures() => _calledDictionary.Keys.ToList();
+
+    internal IReadOnlyDictionary<int, HashSet<string>> GetAllContainerCalls() => _containerCallsDictionary.AsReadOnly();
 }
