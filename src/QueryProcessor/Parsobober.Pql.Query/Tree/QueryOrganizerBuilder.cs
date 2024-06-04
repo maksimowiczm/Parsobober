@@ -4,6 +4,7 @@ using Parsobober.Pql.Query.Tree.Abstraction;
 
 namespace Parsobober.Pql.Query.Tree;
 
+[Obsolete("XD")]
 internal class QueryOrganizerBuilder(IDtoProgramContextAccessor context) : IQueryOrganizerBuilder
 {
     private readonly List<IQueryDeclaration> _queries = [];

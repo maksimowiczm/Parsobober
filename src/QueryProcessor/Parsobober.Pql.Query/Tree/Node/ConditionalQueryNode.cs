@@ -5,6 +5,7 @@ namespace Parsobober.Pql.Query.Tree.Node;
 /// <summary>
 /// Returns result if condition is met.
 /// </summary>
+[Obsolete("XD")]
 internal class ConditionalQueryNode : IQueryNode
 {
     private readonly IQueryNode _condition;

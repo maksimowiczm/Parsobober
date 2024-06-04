@@ -11,6 +11,7 @@ namespace Parsobober.Pql.Query.Tree;
 /// <summary>
 /// Organizes queries and select statement into query tree.
 /// </summary>
+[Obsolete("XD")]
 internal class QueryOrganizer(
     IQueryContainer container,
     IDtoProgramContextAccessor context

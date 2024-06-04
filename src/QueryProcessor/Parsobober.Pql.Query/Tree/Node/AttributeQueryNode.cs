@@ -6,6 +6,7 @@ namespace Parsobober.Pql.Query.Tree.Node;
 /// <summary>
 /// Returns intersection of <see cref="IQueryNode"/> result and <see cref="IAttributeQuery"/>.
 /// </summary>
+[Obsolete("XD")]
 internal class AttributeQueryNode : IQueryNode
 {
     private readonly IAttributeQuery _attributeQuery;

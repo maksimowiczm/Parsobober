@@ -8,6 +8,7 @@ namespace Parsobober.Pql.Query.Tree.Node;
 /// Replaces given <see cref="IDeclaration"/> in <see cref="IQueryDeclaration"/> with results from <see cref="IQueryNode"/>.
 /// Useful in query that depends on another query.
 /// </summary>
+[Obsolete("XD")]
 internal class ReplacerQueryNode : IQueryNode
 {
     private readonly IQueryDeclaration _queryToReplace;
