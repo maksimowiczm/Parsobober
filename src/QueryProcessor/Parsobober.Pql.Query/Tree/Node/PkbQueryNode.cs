@@ -8,7 +8,7 @@ namespace Parsobober.Pql.Query.Tree.Node;
 /// <summary>
 /// Query that returns all elements of select type. 
 /// </summary>
-internal class PkbQueryNode(IDeclaration select, IDtoProgramContextAccessor context) : IQueryNode
+public class PkbQueryNode(IDeclaration select, IDtoProgramContextAccessor context) : IQueryNode
 {
     public IEnumerable<IComparable> Do() => select switch
     {
