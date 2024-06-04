@@ -10,7 +10,8 @@ namespace Parsobober.Pkb.Relations.Implementations;
 
 public class UsesRelation(
     ILogger<ParentRelation> logger,
-    IProgramContextAccessor programContext
+    IProgramContextAccessor programContext,
+    CallsRelation callsRelation
 ) : IUsesCreator, IUsesAccessor
 {
     /// <summary>
@@ -134,11 +135,66 @@ public class UsesRelation(
             .Select(stmt => programContext.StatementsDictionary[stmt.Key].ToStatement());
     }
 
+    public IEnumerable<Procedure> GetProcedures(string variableName)
+    {
+        var visited = new HashSet<string>();
+        var proceduresToVisit = new Stack<string>();
+
+        foreach (var procedure in _usesProcedureDictionary.Where(proc => proc.Value.Contains(variableName)))
+        {
+            proceduresToVisit.Push(procedure.Key);
+        }
+
+        while (proceduresToVisit.Count > 0)
+        {
+            var currentProcedure = proceduresToVisit.Pop();
+
+            if (!visited.Add(currentProcedure))
+            {
+                continue;
+            }
+
+            foreach (var calledProcedure in callsRelation.GetCallers(currentProcedure))
+            {
+                proceduresToVisit.Push(calledProcedure.ProcName);
+            }
+        }
+
+        return visited.Select(procName => programContext.ProceduresDictionary[procName].ToProcedure());
+    }
+
+    public IEnumerable<Variable> GetVariables(string procedureName)
+    {
+        var visitedProcedures = new HashSet<string>();
+        var variables = new HashSet<Variable>();
+
+        var proceduresToVisit = new Stack<string>(new[] { procedureName });
+
+        while (proceduresToVisit.TryPop(out var currentProcedure))
+        {
+            if (!visitedProcedures.Add(currentProcedure))
+            {
+                continue;
+            }
+
+            if (_usesProcedureDictionary.TryGetValue(currentProcedure, out var variableList))
+            {
+                variables.UnionWith(variableList.Select(variable =>
+                    programContext.VariablesDictionary[variable].ToVariable()));
+            }
+
+            foreach (var procedure in callsRelation.GetCalled(currentProcedure))
+            {
+                proceduresToVisit.Push(procedure.ProcName);
+            }
+        }
+
+        return variables;
+    }
+
     public bool IsUsed(int lineNumber, string variableName) =>
         GetVariables(lineNumber).Any(variable => variable.Name == variableName);
 
-    public bool IsUsed(string procedureName, string variableName)
-    {
-        throw new NotImplementedException();
-    }
+    public bool IsUsed(string procedureName, string variableName) =>
+        GetVariables(procedureName).Any(variable => variable.Name == variableName);
 }

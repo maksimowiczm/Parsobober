@@ -32,6 +32,19 @@ public interface IUsesAccessor
     IEnumerable<Statement> GetStatements(string variableName);
 
     /// <summary>
+    /// Returns procedures that use variable with given variableName
+    /// => Uses(returned, provided)
+    /// </summary>
+    /// <param name="variableName">Variable name</param>
+    IEnumerable<Procedure> GetProcedures(string variableName);
+
+    /// <summary>
+    /// Returns variables that are used by procedure with given procedureName
+    /// </summary>
+    /// <param name="procedureName">Procedure name</param>
+    IEnumerable<Variable> GetVariables(string procedureName);
+
+    /// <summary>
     /// Returns true if statement with given line number uses variable with given variableName
     /// </summary>
     bool IsUsed(int lineNumber, string variableName);
