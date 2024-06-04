@@ -3,17 +3,8 @@ using Parsobober.Pql.Query.Queries.Abstractions;
 
 namespace Parsobober.Pql.Query.Tree.Abstraction;
 
-internal interface IQueryContainer
+public interface IQueryContainer
 {
-    interface IQueryContainerBuilder
-    {
-        void AddQuery(IQueryDeclaration query);
-
-        void AddAttribute(IAttributeQuery attributeQuery);
-
-        IQueryContainer Build();
-    }
-
     int Count { get; }
 
     IEnumerable<IQueryDeclaration> Declarations { get; }

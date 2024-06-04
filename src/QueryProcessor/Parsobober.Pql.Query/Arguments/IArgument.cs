@@ -3,7 +3,7 @@ namespace Parsobober.Pql.Query.Arguments;
 /// <summary>
 /// Represents an argument in a PQL query.
 /// </summary>
-internal interface IArgument
+public interface IArgument
 {
     /// <summary>
     /// Parses a string argument into an IArgument instance.

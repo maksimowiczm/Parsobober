@@ -1,6 +1,6 @@
 namespace Parsobober.Pql.Query.Tree.Abstraction;
 
-internal interface IQueryNode
+public interface IQueryNode
 {
     IEnumerable<IComparable> Do();
 }
