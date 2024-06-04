@@ -7,21 +7,19 @@ using Parsobober.Pql.Query.Queries;
 using Parsobober.Pql.Query.Queries.Abstractions;
 using Parsobober.Pql.Query.Queries.With;
 using Parsobober.Pql.Query.QueryResult;
-using Parsobober.Pql.Query.Tree.Abstraction;
 
 namespace Parsobober.Pql.Query;
 
 internal partial class QueryBuilder(
     IPkbAccessors accessor,
     IProgramContextAccessor programContext,
-    IQueryOrganizerBuilder queryContainerBuilder
+    IQueryOrganizerBuilder queryOrganizerBuilder
 ) : IQueryBuilder
 {
     private string _select = string.Empty;
 
     private IDeclaration? Select => _declarations.GetValueOrDefault(_select);
 
-    // trzymanie deklaracji jako konkretne typy IDeclaration
     private readonly Dictionary<string, IDeclaration> _declarations = new();
 
     private record AttributeDeclaration(string Attribute, string Value);
@@ -55,7 +53,7 @@ internal partial class QueryBuilder(
         {
             var left = IArgument.Parse(_declarations, l);
             var right = IArgument.Parse(_declarations, r);
-            queryContainerBuilder.AddQuery(queryCreator(left, right));
+            queryOrganizerBuilder.AddQuery(queryCreator(left, right));
         }
     }
 
@@ -81,10 +79,10 @@ internal partial class QueryBuilder(
             });
         foreach (var attribute in attributes)
         {
-            queryContainerBuilder.AddAttribute(attribute);
+            queryOrganizerBuilder.AddAttribute(attribute);
         }
 
-        var organizer = queryContainerBuilder.Build();
+        var organizer = queryOrganizerBuilder.Build();
 
         if (Select is null)
         {

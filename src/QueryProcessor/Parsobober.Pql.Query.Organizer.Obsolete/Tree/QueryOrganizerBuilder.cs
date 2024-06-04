@@ -1,10 +1,10 @@
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
+using Parsobober.Pql.Query.Abstractions;
 using Parsobober.Pql.Query.Queries.Abstractions;
-using Parsobober.Pql.Query.Tree.Abstraction;
 
-namespace Parsobober.Pql.Query.Tree;
+namespace Parsobober.Pql.Query.Organizer.Obsolete.Tree;
 
-[Obsolete("XD")]
+[Obsolete("Obsolete query organizer. Use Parsobober.Pql.Query.Organizer instead.")]
 internal class QueryOrganizerBuilder(IDtoProgramContextAccessor context) : IQueryOrganizerBuilder
 {
     private readonly List<IQueryDeclaration> _queries = [];

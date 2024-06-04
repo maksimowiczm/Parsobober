@@ -1,7 +1,7 @@
 ﻿using Parsobober.Pkb.Relations.Abstractions.Accessors;
+using Parsobober.Pql.Query.Abstractions;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
-using Parsobober.Pql.Query.Tree.Abstraction;
 using Parsobober.Shared;
 using QueryContext =
     System.Collections.Generic.Dictionary<

@@ -1,8 +1,9 @@
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
 
-namespace Parsobober.Pql.Query.Tree.Abstraction;
+namespace Parsobober.Pql.Query.Organizer.Obsolete.Tree.Abstraction;
 
+[Obsolete("Obsolete query organizer. Use Parsobober.Pql.Query.Organizer instead.")]
 public interface IQueryContainer
 {
     int Count { get; }

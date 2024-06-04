@@ -1,17 +1,18 @@
 using System.Diagnostics.CodeAnalysis;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
+using Parsobober.Pql.Query.Abstractions;
 using Parsobober.Pql.Query.Arguments;
+using Parsobober.Pql.Query.Organizer.Obsolete.Tree.Abstraction;
+using Parsobober.Pql.Query.Organizer.Obsolete.Tree.Exceptions;
+using Parsobober.Pql.Query.Organizer.Obsolete.Tree.Node;
 using Parsobober.Pql.Query.Queries.Abstractions;
-using Parsobober.Pql.Query.Tree.Abstraction;
-using Parsobober.Pql.Query.Tree.Exceptions;
-using Parsobober.Pql.Query.Tree.Node;
 
-namespace Parsobober.Pql.Query.Tree;
+namespace Parsobober.Pql.Query.Organizer.Obsolete.Tree;
 
 /// <summary>
 /// Organizes queries and select statement into query tree.
 /// </summary>
-[Obsolete("XD")]
+[Obsolete("Obsolete query organizer. Use Parsobober.Pql.Query.Organizer instead.")]
 internal class QueryOrganizer(
     IQueryContainer container,
     IDtoProgramContextAccessor context

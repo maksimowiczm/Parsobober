@@ -1,6 +1,6 @@
 using Parsobober.Pql.Query.Abstractions;
 
-namespace Parsobober.Pql.Query.Tree.Exceptions;
+namespace Parsobober.Pql.Query.Organizer.Obsolete.Tree.Exceptions;
 
 public class QueryOrganizerException(string message) : QueryEvaluatorException(message);
 

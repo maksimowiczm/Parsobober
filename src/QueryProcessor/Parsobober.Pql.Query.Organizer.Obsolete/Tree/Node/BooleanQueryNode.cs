@@ -1,7 +1,8 @@
-using Parsobober.Pql.Query.Tree.Abstraction;
+using Parsobober.Pql.Query.Organizer.Obsolete.Tree.Abstraction;
 
-namespace Parsobober.Pql.Query.Tree.Node;
+namespace Parsobober.Pql.Query.Organizer.Obsolete.Tree.Node;
 
+[Obsolete("Obsolete query organizer. Use Parsobober.Pql.Query.Organizer instead.")]
 public class BooleanQueryNode(bool result) : IQueryNode
 {
     public IEnumerable<IComparable> Do() =>

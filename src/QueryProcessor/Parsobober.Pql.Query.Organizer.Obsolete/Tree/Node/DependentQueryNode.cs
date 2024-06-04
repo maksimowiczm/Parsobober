@@ -1,14 +1,14 @@
 using Parsobober.Pql.Query.Arguments;
+using Parsobober.Pql.Query.Organizer.Obsolete.Tree.Abstraction;
 using Parsobober.Pql.Query.Queries.Abstractions;
-using Parsobober.Pql.Query.Tree.Abstraction;
 
-namespace Parsobober.Pql.Query.Tree.Node;
+namespace Parsobober.Pql.Query.Organizer.Obsolete.Tree.Node;
 
 /// <summary>
 /// Replaces given <see cref="IDeclaration"/> in <see cref="IQueryDeclaration"/> with results from <see cref="IQueryNode"/>.
 /// Useful in query that depends on another query.
 /// </summary>
-[Obsolete("XD")]
+[Obsolete("Obsolete query organizer. Use Parsobober.Pql.Query.Organizer instead.")]
 internal class ReplacerQueryNode : IQueryNode
 {
     private readonly IQueryDeclaration _queryToReplace;

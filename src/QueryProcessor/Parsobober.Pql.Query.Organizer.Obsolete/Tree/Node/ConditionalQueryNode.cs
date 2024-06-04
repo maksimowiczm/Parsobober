@@ -1,11 +1,11 @@
-using Parsobober.Pql.Query.Tree.Abstraction;
+using Parsobober.Pql.Query.Organizer.Obsolete.Tree.Abstraction;
 
-namespace Parsobober.Pql.Query.Tree.Node;
+namespace Parsobober.Pql.Query.Organizer.Obsolete.Tree.Node;
 
 /// <summary>
 /// Returns result if condition is met.
 /// </summary>
-[Obsolete("XD")]
+[Obsolete("Obsolete query organizer. Use Parsobober.Pql.Query.Organizer instead.")]
 internal class ConditionalQueryNode : IQueryNode
 {
     private readonly IQueryNode _condition;

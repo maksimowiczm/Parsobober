@@ -1,10 +1,11 @@
 using Parsobober.Pql.Query.Arguments;
+using Parsobober.Pql.Query.Organizer.Obsolete.Tree.Abstraction;
+using Parsobober.Pql.Query.Organizer.Obsolete.Tree.Exceptions;
 using Parsobober.Pql.Query.Queries.Abstractions;
-using Parsobober.Pql.Query.Tree.Abstraction;
-using Parsobober.Pql.Query.Tree.Exceptions;
 
-namespace Parsobober.Pql.Query.Tree;
+namespace Parsobober.Pql.Query.Organizer.Obsolete.Tree;
 
+[Obsolete("Obsolete query organizer. Use Parsobober.Pql.Query.Organizer instead.")]
 internal class QueryContainer : IQueryContainer
 {
     private readonly List<IQueryDeclaration> _queries;

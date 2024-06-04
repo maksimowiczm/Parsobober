@@ -1,6 +1,6 @@
 using Parsobober.Pql.Query.Arguments;
 
-namespace Parsobober.Pql.Query.Tree.Abstraction;
+namespace Parsobober.Pql.Query.Abstractions;
 
 public interface IQueryOrganizer
 {

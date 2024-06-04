@@ -1,12 +1,12 @@
+using Parsobober.Pql.Query.Organizer.Obsolete.Tree.Abstraction;
 using Parsobober.Pql.Query.Queries.Abstractions;
-using Parsobober.Pql.Query.Tree.Abstraction;
 
-namespace Parsobober.Pql.Query.Tree.Node;
+namespace Parsobober.Pql.Query.Organizer.Obsolete.Tree.Node;
 
 /// <summary>
 /// Returns intersection of <see cref="IQueryNode"/> result and <see cref="IAttributeQuery"/>.
 /// </summary>
-[Obsolete("XD")]
+[Obsolete("Obsolete query organizer. Use Parsobober.Pql.Query.Organizer instead.")]
 internal class AttributeQueryNode : IQueryNode
 {
     private readonly IAttributeQuery _attributeQuery;

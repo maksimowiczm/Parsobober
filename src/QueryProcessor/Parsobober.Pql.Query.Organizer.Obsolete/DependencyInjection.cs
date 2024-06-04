@@ -1,14 +1,15 @@
 using Microsoft.Extensions.DependencyInjection;
 using Parsobober.Pql.Query.Abstractions;
+using Parsobober.Pql.Query.Organizer.Obsolete.Tree;
 
-namespace Parsobober.Pql.Query.Organizer;
+namespace Parsobober.Pql.Query.Organizer.Obsolete;
 
 public static class DependencyInjection
 {
+    [Obsolete("Obsolete query organizer. Use Parsobober.Pql.Query.Organizer instead.")]
     public static IServiceCollection AddPqlQueries(this IServiceCollection services)
     {
         services.AddTransient<IQueryOrganizerBuilder, QueryOrganizerBuilder>();
-        Query.DependencyInjection.AddPqlQueries(services);
 
         return services;
     }

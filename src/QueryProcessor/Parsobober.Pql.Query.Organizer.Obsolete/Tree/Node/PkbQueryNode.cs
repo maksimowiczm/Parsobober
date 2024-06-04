@@ -1,13 +1,14 @@
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pql.Query.Arguments;
-using Parsobober.Pql.Query.Tree.Abstraction;
-using Parsobober.Pql.Query.Tree.Exceptions;
+using Parsobober.Pql.Query.Organizer.Obsolete.Tree.Abstraction;
+using Parsobober.Pql.Query.Organizer.Obsolete.Tree.Exceptions;
 
-namespace Parsobober.Pql.Query.Tree.Node;
+namespace Parsobober.Pql.Query.Organizer.Obsolete.Tree.Node;
 
 /// <summary>
 /// Query that returns all elements of select type. 
 /// </summary>
+[Obsolete("Obsolete query organizer. Use Parsobober.Pql.Query.Organizer instead.")]
 public class PkbQueryNode(IDeclaration select, IDtoProgramContextAccessor context) : IQueryNode
 {
     public IEnumerable<IComparable> Do() => select switch
