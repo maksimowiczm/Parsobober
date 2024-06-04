@@ -197,5 +197,5 @@ public class ModifiesRelation(
         GetVariables(lineNumber).Any(variable => variable.Name == variableName);
 
     public bool IsModified(string procedureName, string variableName) =>
-        GetVariables(procedureName).Any();
+        GetVariables(procedureName).Any(variable => variable.Name == variableName);
 }

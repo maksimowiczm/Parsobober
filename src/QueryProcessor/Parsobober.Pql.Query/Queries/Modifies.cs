@@ -41,15 +41,15 @@ internal static class Modifies
 
                 // Modifies(1, variable)
                 (IArgument.Line left, IVariableDeclaration) =>
-                    new GetVariablesByLineNumber(accessor, left.Value).Build(),
+                    accessor.GetVariables(left.Value),
 
                 // Modifies('proc', variable)
                 (IArgument.VarName left, IVariableDeclaration right) =>
-                    new GetVariablesByProcedure(accessor, left.Value).Build(),
+                    accessor.GetVariables(left.Value),
 
                 // Modifies(proc, 'v')
                 (IProcedureDeclaration left, IArgument.VarName right) =>
-                    new GetProceduresByVariable(accessor, right.Value).Build(),
+                    accessor.GetProcedures(right.Value),
 
                 // Modifies(stmt, variable)
                 (IStatementDeclaration left, IVariableDeclaration right) => BuildModifiesWithSelect(left, right),
@@ -137,49 +137,6 @@ internal static class Modifies
         }
     }
 
-    /// <summary>
-    /// Gets variables modified by statement with given line number.
-    /// </summary>
-    /// <param name="modifiesAccessor">Modifies accessor.</param>
-    /// <param name="line">Line number.</param>
-    private class GetVariablesByLineNumber(IModifiesAccessor modifiesAccessor, int line)
-    {
-        public IEnumerable<Variable> Build() => modifiesAccessor.GetVariables(line);
-    }
-
-    /// <summary>
-    /// Gets variables modified by procedure with given name.
-    /// </summary>
-    /// <param name="modifiesAccessor">Modifies accessor.</param>
-    /// <param name="procedureName">Procedure name.</param>
-    private class GetVariablesByProcedure(IModifiesAccessor modifiesAccessor, string procedureName)
-    {
-        public IEnumerable<Variable> Build() => modifiesAccessor.GetVariables(procedureName);
-    }
-
-    /// <summary>
-    /// Gets procedures that modify given variable.
-    /// </summary>
-    /// <param name="modifiesAccessor">Modifies accessor.</param>
-    /// <param name="variableName">Variable name.</param>
-    private class GetProceduresByVariable(IModifiesAccessor modifiesAccessor, string variableName)
-    {
-        public IEnumerable<Procedure> Build() => modifiesAccessor.GetProcedures(variableName);
-    }
-
-    /// <summary>
-    /// Represents a modifies query that returns statements.
-    /// </summary>
-    private abstract class ModifiesQueryStatement
-    {
-        /// <summary>
-        /// Builds a query.
-        /// </summary>
-        /// <param name="declaration"> The declaration to build the query for. </param>
-        /// <returns> The query. </returns>
-        public abstract IEnumerable<Statement> Build(IStatementDeclaration declaration);
-    }
-
     private class BooleanStatementModifiesQuery(IModifiesAccessor accessor, int line, string variableName)
     {
         public IEnumerable<IComparable> Build()
@@ -204,6 +161,19 @@ internal static class Modifies
 
             return Enumerable.Empty<Procedure>();
         }
+    }
+
+    /// <summary>
+    /// Represents a modifies query that returns statements.
+    /// </summary>
+    private abstract class ModifiesQueryStatement
+    {
+        /// <summary>
+        /// Builds a query.
+        /// </summary>
+        /// <param name="declaration"> The declaration to build the query for. </param>
+        /// <returns> The query. </returns>
+        public abstract IEnumerable<Statement> Build(IStatementDeclaration declaration);
     }
 
     /// <summary>

@@ -26,4 +26,17 @@ public class ModifiesTests() : BaseTestClass(Code.ZadanieDomowe1)
         var result = App.Query(query);
         result.Should().Be(expected);
     }
+
+    [Theory]
+    [InlineData("\"Circle\"", "\"a\"", "TRUE")]
+    [InlineData("\"Circle\"", "\"k\"", "TRUE")]
+    [InlineData("\"Rectangle\"", "\"k\"", "FALSE")]
+    [InlineData("\"Triangle\"", "\"a\"", "TRUE")]
+    [InlineData("\"Circle\"", "\"x\"", "FALSE")]
+    public void BooleanModifies_ProcedureName_VariableName(string procedureName, string variableName, string expected)
+    {
+        var query = $"\nSelect BOOLEAN such that Modifies ({procedureName}, {variableName})";
+        var result = App.Query(query);
+        result.Should().Be(expected);
+    }
 }
