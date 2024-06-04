@@ -10,4 +10,5 @@ public interface IDtoProgramContextAccessor
     IEnumerable<If> Ifs { get; }
     IEnumerable<Call> Calls { get; }
     IEnumerable<Variable> Variables { get; }
+    IEnumerable<Procedure> Procedures { get; }
 }

@@ -1,5 +1,4 @@
 ﻿using Parsobober.Pkb.Relations.Abstractions.Accessors;
-using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
 using Parsobober.Pql.Query.Tree.Abstraction;
@@ -40,6 +39,7 @@ public class QueryOrganizer : IQueryOrganizer
                 IStatementDeclaration.If => _context.Ifs,
                 IStatementDeclaration.Call => _context.Calls,
                 IVariableDeclaration.Variable => _context.Variables,
+                IProcedureDeclaration.Procedure => _context.Procedures,
                 _ => throw new NotImplementedException()
             });
 
