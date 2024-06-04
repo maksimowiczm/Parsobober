@@ -4,6 +4,11 @@ using Parsobober.Pql.Query.Queries.Abstractions;
 using Parsobober.Pql.Query.Tree.Abstraction;
 using Parsobober.Pql.Query.Tree.Node;
 using Parsobober.Shared;
+using QueryContext =
+    System.Collections.Generic.Dictionary<
+        Parsobober.Pql.Query.Arguments.IDeclaration,
+        System.Collections.Generic.IEnumerable<System.IComparable>
+    >;
 
 namespace Parsobober.Pql.Query.Organizer;
 
@@ -23,6 +28,7 @@ public class QueryOrganizer : IQueryOrganizer
         _queries = queries;
         _attributes = attributes;
 
+        // map all declarations used in queries
         _declarations = _queries
             .SelectMany<IQueryDeclaration, IDeclaration?>(
                 q => new[] { q.Left as IDeclaration, q.Right as IDeclaration })
@@ -30,47 +36,31 @@ public class QueryOrganizer : IQueryOrganizer
             .WhereNotNull()
             .ToList();
 
-        _declarationsMap = _declarations
-            .ToDictionary(x => x, d => d switch
-            {
-                IStatementDeclaration.Statement => _context.Statements as IEnumerable<IComparable>,
-                IStatementDeclaration.Assign => _context.Assigns,
-                IStatementDeclaration.While => _context.Whiles,
-                IStatementDeclaration.If => _context.Ifs,
-                IStatementDeclaration.Call => _context.Calls,
-                IVariableDeclaration.Variable => _context.Variables,
-                IProcedureDeclaration.Procedure => _context.Procedures,
-                _ => throw new NotImplementedException()
-            });
-
-        // apply attributes
-        foreach (var attribute in _attributes)
-        {
-            if (_declarationsMap.TryGetValue(attribute.Declaration, out var values))
-            {
-                _declarationsMap[attribute.Declaration] = values.Intersect(attribute.Do());
-            }
-        }
+        _declarationsMap = new QueryContext();
+        _declarations.ForEach(d => TryAddDeclarationToMap(d));
     }
 
     private readonly List<IDeclaration> _declarations;
-    private readonly Dictionary<IDeclaration, IEnumerable<IComparable>> _declarationsMap;
+    private readonly QueryContext _declarationsMap;
 
     private bool TryAddDeclarationToMap(IDeclaration declaration)
     {
+        // if declaration is already in map => fail
         if (_declarationsMap.ContainsKey(declaration))
         {
             return false;
         }
 
+        // add declaration to map
         _declarationsMap[declaration] = declaration switch
         {
-            IStatementDeclaration.Statement => _context.Statements as IEnumerable<IComparable>,
+            IStatementDeclaration.Statement => _context.Statements,
             IStatementDeclaration.Assign => _context.Assigns,
             IStatementDeclaration.While => _context.Whiles,
             IStatementDeclaration.If => _context.Ifs,
             IStatementDeclaration.Call => _context.Calls,
             IVariableDeclaration.Variable => _context.Variables,
+            IProcedureDeclaration.Procedure => _context.Procedures,
             _ => throw new NotImplementedException()
         };
 
@@ -88,100 +78,33 @@ public class QueryOrganizer : IQueryOrganizer
     {
         var selectNothing = TryAddDeclarationToMap(select);
 
-        foreach (var _ in _queries)
+        foreach (var optimizer in _queries.Select(_ => new QueryOptimizer(_queries.ToList())))
         {
-            Iterate(_queries.ToList(), _declarations.ToList());
+            // iterate multiple times because I said so
+            Iterate(optimizer);
         }
 
-        if (selectNothing)
+        return selectNothing switch
         {
-            if (_declarationsMap.Values.All(v => v.Any()))
-            {
-                if (_declarationsMap.TryGetValue(select, out var result1))
-                {
-                    return new EnumerableQueryNode(result1);
-                }
-            }
-
-            return new EnumerableQueryNode([]);
-        }
-
-        if (_declarationsMap.TryGetValue(select, out var result))
-        {
-            return new EnumerableQueryNode(result);
-        }
-
-        if (_declarationsMap.Values.All(v => !v.Any()))
-        {
-            return new EnumerableQueryNode([]);
-        }
-
-        return new PkbQueryNode(select, _context);
+            true when !_declarationsMap.Values.All(v => v.Any()) => new EnumerableQueryNode([]),
+            _ => new EnumerableQueryNode(_declarationsMap[select])
+        };
     }
 
-    private void Iterate(List<IQueryDeclaration> queries, List<IDeclaration> declarations)
+    private void Iterate(QueryOptimizer optimizer)
     {
-        while (queries.Count > 0)
+        while (optimizer.Count > 0)
         {
-            IQueryDeclaration? query = null;
-            IDeclaration? currentSelect = null;
-            var breakLoop = false;
-            while (query is null)
-            {
-                currentSelect = declarations.FirstOrDefault();
-                if (currentSelect is null)
-                {
-                    breakLoop = true;
-                    break;
-                }
-
-                query = queries.FirstOrDefault(q => q.Left == currentSelect || q.Right == currentSelect);
-                if (query is null)
-                {
-                    declarations.Remove(currentSelect);
-                }
-            }
-
-            if (breakLoop)
+            if (!optimizer.HasQueries)
             {
                 break;
             }
 
-            var (left, right) = (query!.Left, query.Right);
+            var (query, currentSelect) = optimizer.GetBest();
 
-            if (left == currentSelect || right == currentSelect)
-            {
-                var other = (left == currentSelect) ? right : left;
+            ProcessQuery(currentSelect, query);
 
-                if (other is not IDeclaration otherDeclaration)
-                {
-                    _declarationsMap[currentSelect] = _declarationsMap[currentSelect].Intersect(query.Do());
-                }
-                else if (_declarationsMap.TryGetValue(otherDeclaration, out var values))
-                {
-                    List<IComparable> newValues = [];
-                    foreach (var value in values)
-                    {
-                        var replaced = query.ReplaceArgument(otherDeclaration, IArgument.Parse(value));
-                        newValues.AddRange(replaced.Do(currentSelect));
-                    }
-
-                    newValues = newValues.Distinct().ToList();
-                    _declarationsMap[currentSelect] = _declarationsMap[currentSelect].Intersect(newValues);
-
-                    List<IComparable> updatedValues = [];
-                    foreach (var value in _declarationsMap[currentSelect])
-                    {
-                        var replaced = query.ReplaceArgument(currentSelect, IArgument.Parse(value));
-                        updatedValues.AddRange(replaced.Do(otherDeclaration));
-                    }
-
-                    updatedValues = updatedValues.Distinct().ToList();
-                    _declarationsMap[otherDeclaration] = _declarationsMap[otherDeclaration].Intersect(updatedValues);
-                }
-            }
-
-            queries.Remove(query);
+            optimizer.Consume(query);
         }
     }
 
@@ -201,5 +124,40 @@ public class QueryOrganizer : IQueryOrganizer
             .All(r => r.Any());
 
         return new BooleanQueryNode(result);
+    }
+
+    private void ProcessQuery(IDeclaration currentSelect, IQueryDeclaration query)
+    {
+        var (left, right) = (query.Left, query.Right);
+
+        // if both left and right are not currentSelect => skip
+        if (left != currentSelect && right != currentSelect)
+        {
+            return;
+        }
+
+        var other = left == currentSelect ? right : left;
+
+        // if other is not declaration, it is a constant argument
+        if (other is not IDeclaration otherDeclaration)
+        {
+            _declarationsMap[currentSelect] = _declarationsMap[currentSelect].Intersect(query.Do());
+            return;
+        }
+
+        var newCurrentSelect = _declarationsMap[otherDeclaration]
+            .Select(value => query
+                .ReplaceArgument(otherDeclaration, IArgument.Parse(value))
+                .Do(currentSelect))
+            .SelectMany(x => x)
+            .Distinct();
+        _declarationsMap[currentSelect] = _declarationsMap[currentSelect].Intersect(newCurrentSelect);
+
+        var newOtherSelect = _declarationsMap[currentSelect]
+            .Select(value => query.ReplaceArgument(currentSelect, IArgument.Parse(value))
+                .Do(otherDeclaration))
+            .SelectMany(x => x)
+            .Distinct();
+        _declarationsMap[otherDeclaration] = _declarationsMap[otherDeclaration].Intersect(newOtherSelect);
     }
 }
