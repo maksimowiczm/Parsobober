@@ -18,6 +18,8 @@ public class ProgramContext(ILogger<ProgramContext> logger)
     public IReadOnlyDictionary<int, TreeNode> StatementsDictionary => _statementsDictionary.AsReadOnly();
     public IReadOnlyDictionary<string, TreeNode> ProceduresDictionary => _proceduresDictionary.AsReadOnly();
 
+    public IEnumerable<int> ConstantsEnumerable { get; }
+
     public bool TryAddVariable(TreeNode variable)
     {
         if (variable.Type != EntityType.Variable)

@@ -14,35 +14,57 @@ internal class WithQueryFactory(IProgramContextAccessor accessor)
         {
             "stmt#" => new StatementLine(declaration, int.Parse(value), accessor),
             "varName" => new VariableName(declaration, value, accessor),
-            "value" => new ConstantValue(declaration, int.Parse(value)),
-            "procName" => new ProcedureName(declaration, value),
+            "value" => new ConstantValue(declaration, int.Parse(value), accessor),
+            "procName" => new ProcedureName(declaration, value, accessor),
             _ => throw new AttributeParseException(attribute)
         };
     }
 
-    private class ConstantValue(IDeclaration declaration, int value) : WithQuery(declaration)
+    private class ConstantValue(IDeclaration declaration, int value, IProgramContextAccessor accessor)
+        : WithQuery(declaration)
     {
         public override IEnumerable<IComparable> Do()
         {
-            throw new NotImplementedException();
+            if (accessor.ConstantsEnumerable.Any(c => c == value))
+            {
+                return Enumerable.Repeat(value.ToConstant(), 1);
+            }
+
+            return Enumerable.Empty<IComparable>();
         }
 
         public override IQueryDeclaration ApplyAttribute(IQueryDeclaration queryDeclaration)
         {
-            throw new NotImplementedException();
+            if (queryDeclaration.Left == Declaration || queryDeclaration.Right == Declaration)
+            {
+                return queryDeclaration.ReplaceArgument(Declaration, new IArgument.ConstantValue(value));
+            }
+
+            return queryDeclaration;
         }
     }
 
-    private class ProcedureName(IDeclaration declaration, string name) : WithQuery(declaration)
+    private class ProcedureName(IDeclaration declaration, string name, IProgramContextAccessor accessor)
+        : WithQuery(declaration)
     {
         public override IEnumerable<IComparable> Do()
         {
-            throw new NotImplementedException();
+            if (accessor.ProceduresDictionary.TryGetValue(name, out var procedure))
+            {
+                return Enumerable.Repeat(procedure.ToProcedure(), 1);
+            }
+
+            return Enumerable.Empty<IComparable>();
         }
 
         public override IQueryDeclaration ApplyAttribute(IQueryDeclaration queryDeclaration)
         {
-            throw new NotImplementedException();
+            if (queryDeclaration.Left == Declaration || queryDeclaration.Right == Declaration)
+            {
+                return queryDeclaration.ReplaceArgument(Declaration, new IArgument.Name(name));
+            }
+
+            return queryDeclaration;
         }
     }
 
@@ -56,17 +78,12 @@ internal class WithQueryFactory(IProgramContextAccessor accessor)
                 return Enumerable.Repeat(statement.ToStatement(), 1);
             }
 
-            return [];
+            return Enumerable.Empty<IComparable>();
         }
 
         public override IQueryDeclaration ApplyAttribute(IQueryDeclaration queryDeclaration)
         {
-            if (queryDeclaration.Left == Declaration)
-            {
-                return queryDeclaration.ReplaceArgument(Declaration, new IArgument.Line(line));
-            }
-
-            if (queryDeclaration.Right == Declaration)
+            if (queryDeclaration.Left == Declaration || queryDeclaration.Right == Declaration)
             {
                 return queryDeclaration.ReplaceArgument(Declaration, new IArgument.Line(line));
             }
@@ -89,7 +106,7 @@ internal class WithQueryFactory(IProgramContextAccessor accessor)
                 return Enumerable.Repeat(variable.ToVariable(), 1);
             }
 
-            return [];
+            return Enumerable.Empty<IComparable>();
         }
 
         public override IQueryDeclaration ApplyAttribute(IQueryDeclaration queryDeclaration)

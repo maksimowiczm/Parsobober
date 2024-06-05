@@ -1,3 +1,6 @@
+using Parsobober.Pkb.Relations.Dto;
+using Parsobober.Pql.Query.Queries.Exceptions;
+
 namespace Parsobober.Pql.Query.Arguments;
 
 /// <summary>
@@ -27,15 +30,15 @@ public interface IArgument
         return new Name(argument.Replace('\"', ' ').Trim());
     }
 
-    static IArgument Parse(object argument)
-    {
-        if (int.TryParse(argument.ToString(), out var line))
+    static IArgument Parse(object argument) =>
+        argument switch
         {
-            return new Line(line);
-        }
-
-        return new Name(argument.ToString()!);
-    }
+            Statement { LineNumber: var line } => new Line(line),
+            Variable { Name: var name } => new Name(name),
+            Procedure { ProcName: var procName } => new Name(procName),
+            Constant { Value: var value } => new ConstantValue(value),
+            _ => throw new ArgumentParseException($"Given argument could not be parsed. {argument}")
+        };
 
     /// <summary>
     /// Represents a line in a PQL query.
@@ -52,5 +55,16 @@ public interface IArgument
 #if DEBUG
         public override string ToString() => $"\"{Value}\"";
 #endif
+    }
+
+    public class ConstantValue(int value) : IArgument, IComparable
+    {
+        public int CompareTo(object? obj) =>
+            obj switch
+            {
+                Name name => string.Compare(value.ToString(), name.Value, StringComparison.Ordinal),
+                Line line => value.CompareTo(line.Value),
+                _ => -1
+            };
     }
 }

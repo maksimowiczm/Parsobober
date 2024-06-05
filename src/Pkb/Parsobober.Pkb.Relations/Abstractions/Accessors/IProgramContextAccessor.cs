@@ -18,4 +18,6 @@ public interface IProgramContextAccessor
     /// Returns dictionary that uses procedure name as key and TreeNode as value
     /// </summary>
     public IReadOnlyDictionary<string, TreeNode> ProceduresDictionary { get; }
+
+    public IEnumerable<int> ConstantsEnumerable { get; }
 }
