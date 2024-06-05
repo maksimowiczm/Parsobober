@@ -13,9 +13,24 @@ public interface IOtherDeclaration : IDeclaration
         };
     }
 
-    public readonly record struct StatementList(string Name) : IOtherDeclaration;
-    
-    public readonly record struct Constant(string Name) : IOtherDeclaration;
-    
-    public readonly record struct ProgramLine(string Name) : IOtherDeclaration;
+    public readonly record struct StatementList(string Name) : IOtherDeclaration
+    {
+#if DEBUG
+        public override string ToString() => Name;
+#endif
+    }
+
+    public readonly record struct Constant(string Name) : IOtherDeclaration
+    {
+#if DEBUG
+        public override string ToString() => Name;
+#endif
+    }
+
+    public readonly record struct ProgramLine(string Name) : IOtherDeclaration, IStatementDeclaration
+    {
+#if DEBUG
+        public override string ToString() => Name;
+#endif
+    }
 }
