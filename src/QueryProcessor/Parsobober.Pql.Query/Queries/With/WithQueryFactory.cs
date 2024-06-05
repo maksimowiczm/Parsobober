@@ -14,8 +14,36 @@ internal class WithQueryFactory(IProgramContextAccessor accessor)
         {
             "stmt#" => new StatementLine(declaration, int.Parse(value), accessor),
             "varName" => new VariableName(declaration, value, accessor),
+            "value" => new ConstantValue(declaration, int.Parse(value)),
+            "procName" => new ProcedureName(declaration, value),
             _ => throw new AttributeParseException(attribute)
         };
+    }
+
+    private class ConstantValue(IDeclaration declaration, int value) : WithQuery(declaration)
+    {
+        public override IEnumerable<IComparable> Do()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IQueryDeclaration ApplyAttribute(IQueryDeclaration queryDeclaration)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    private class ProcedureName(IDeclaration declaration, string name) : WithQuery(declaration)
+    {
+        public override IEnumerable<IComparable> Do()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IQueryDeclaration ApplyAttribute(IQueryDeclaration queryDeclaration)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     private class StatementLine(IDeclaration declaration, int line, IProgramContextAccessor accessor)

@@ -24,7 +24,8 @@ public interface IDeclaration : IArgument
         [
             IStatementDeclaration.Parse,
             IVariableDeclaration.Parse,
-            IProcedureDeclaration.Parse
+            IProcedureDeclaration.Parse,
+            IOtherDeclaration.Parse
         ];
 
         foreach (var parser in parsers)
@@ -50,6 +51,9 @@ public interface IDeclaration : IArgument
         IStatementDeclaration.Call => context.Calls,
         IVariableDeclaration.Variable => context.Variables,
         IProcedureDeclaration.Procedure => context.Procedures,
+        IOtherDeclaration.StatementList => context.StatementLists,
+        IOtherDeclaration.Constant => context.Constants,
+        IOtherDeclaration.ProgramLine => context.ProgramLines,
         _ => throw new ArgumentOutOfRangeException(GetType().Name)
     };
 }

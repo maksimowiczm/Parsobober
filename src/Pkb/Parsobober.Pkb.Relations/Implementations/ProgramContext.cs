@@ -97,4 +97,8 @@ public class ProgramContext(ILogger<ProgramContext> logger)
 
     public IEnumerable<Procedure> Procedures => ProceduresDictionary.Values
         .Select(p => p.ToProcedure());
+
+    public IEnumerable<Statement> StatementLists { get; }
+    public IEnumerable<IComparable> Constants { get; }
+    public IEnumerable<IComparable> ProgramLines { get; }
 }
