@@ -128,7 +128,7 @@ internal partial class QueryBuilder(
         var key = groups[1].Value;
         var attributeKey = groups[2].Value;
 
-        _attributes.Add(key, new AttributeDeclaration(attributeKey, value));
+        _attributes.Add(key, new AttributeDeclaration(attributeKey, value.Replace("\"", "")));
 
         return this;
     }
