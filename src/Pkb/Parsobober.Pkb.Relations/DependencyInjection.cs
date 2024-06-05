@@ -32,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<ICallsCreator>(s => s.GetRequiredService<CallsRelation>());
 
         services.AddScoped<IPostParseComputable>(s => s.GetRequiredService<ModifiesRelation>());
+        services.AddScoped<IPostParseComputable>(s => s.GetRequiredService<UsesRelation>());
 
         return services;
     }
