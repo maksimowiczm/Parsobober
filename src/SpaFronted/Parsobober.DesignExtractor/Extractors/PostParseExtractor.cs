@@ -6,7 +6,7 @@ internal class PostParseExtractor(IEnumerable<IPostParseComputable> computableLi
 {
     public override void FinishedParsing()
     {
-        foreach (var computable in computableList)       
+        foreach (var computable in computableList)
         {
             computable.Compute();
         }

@@ -9,7 +9,7 @@ internal abstract class SimpleExtractor : ISimpleExtractor
     {
         return;
     }
-    
+
     public virtual void Assign(TreeNode node)
     {
         return;
