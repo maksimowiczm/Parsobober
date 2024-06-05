@@ -39,4 +39,13 @@ public static class TreeNodeExtensions
             _ => throw new NotSupportedException()
         };
     }
+
+    public static Procedure ToProcedure(this TreeNode treeNode)
+    {
+        return treeNode.Type switch
+        {
+            EntityType.Procedure => new Procedure(treeNode.Attribute!),
+            _ => throw new NotSupportedException()
+        };
+    }
 }

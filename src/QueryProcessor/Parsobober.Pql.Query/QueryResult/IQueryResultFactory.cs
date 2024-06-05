@@ -4,5 +4,7 @@ namespace Parsobober.Pql.Query.QueryResult;
 
 internal interface IQueryResultFactory
 {
-    IQueryResult Create(IEnumerable<IComparable> query);
+    IQueryResult Create(object query);
+
+    public class QueryFactoryException(string message) : QueryEvaluatorException(message);
 }

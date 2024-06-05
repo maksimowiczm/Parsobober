@@ -9,7 +9,8 @@ internal class PkbContext(
     FollowsRelation follows,
     ModifiesRelation modifies,
     ParentRelation parent,
-    UsesRelation uses
+    UsesRelation uses,
+    CallsRelation calls
 ) : IPkbCreators, IPkbAccessors
 {
     IProgramContextCreator IPkbCreators.ProgramContext => programContext;
@@ -17,9 +18,13 @@ internal class PkbContext(
     IModifiesCreator IPkbCreators.Modifies => modifies;
     IParentCreator IPkbCreators.Parent => parent;
     IUsesCreator IPkbCreators.Uses => uses;
+    ICallsCreator IPkbCreators.Calls => calls;
+
+
     IDtoProgramContextAccessor IPkbAccessors.ProgramContext => programContext;
     IFollowsAccessor IPkbAccessors.Follows => follows;
     IParentAccessor IPkbAccessors.Parent => parent;
     IModifiesAccessor IPkbAccessors.Modifies => modifies;
     IUsesAccessor IPkbAccessors.Uses => uses;
+    ICallsAccessor IPkbAccessors.Calls => calls;
 }

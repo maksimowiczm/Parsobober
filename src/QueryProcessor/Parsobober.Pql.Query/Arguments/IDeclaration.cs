@@ -1,3 +1,4 @@
+using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pql.Query.Arguments.Exceptions;
 
 namespace Parsobober.Pql.Query.Arguments;
@@ -5,7 +6,7 @@ namespace Parsobober.Pql.Query.Arguments;
 /// <summary>
 /// Represents a declaration in a PQL query.
 /// </summary>
-internal interface IDeclaration : IArgument
+public interface IDeclaration : IArgument
 {
     string Name { get; }
 
@@ -22,7 +23,8 @@ internal interface IDeclaration : IArgument
         List<Func<string, string, IDeclaration?>> parsers =
         [
             IStatementDeclaration.Parse,
-            IVariableDeclaration.Parse
+            IVariableDeclaration.Parse,
+            IProcedureDeclaration.Parse
         ];
 
         foreach (var parser in parsers)
@@ -36,4 +38,18 @@ internal interface IDeclaration : IArgument
 
         throw new DeclarationParseException(type, name);
     }
+
+    public IEnumerable<IComparable> ExtractFromContext(
+        IDtoProgramContextAccessor context
+    ) => this switch
+    {
+        IStatementDeclaration.Statement => context.Statements,
+        IStatementDeclaration.Assign => context.Assigns,
+        IStatementDeclaration.While => context.Whiles,
+        IStatementDeclaration.If => context.Ifs,
+        IStatementDeclaration.Call => context.Calls,
+        IVariableDeclaration.Variable => context.Variables,
+        IProcedureDeclaration.Procedure => context.Procedures,
+        _ => throw new ArgumentOutOfRangeException(GetType().Name)
+    };
 }

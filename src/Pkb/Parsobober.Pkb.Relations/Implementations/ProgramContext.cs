@@ -94,4 +94,7 @@ public class ProgramContext(ILogger<ProgramContext> logger)
 
     public IEnumerable<Variable> Variables => VariablesDictionary.Values
         .Select(v => v.ToVariable());
+
+    public IEnumerable<Procedure> Procedures => ProceduresDictionary.Values
+        .Select(p => p.ToProcedure());
 }

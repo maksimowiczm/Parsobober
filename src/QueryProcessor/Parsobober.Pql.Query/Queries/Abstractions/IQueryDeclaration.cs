@@ -3,7 +3,7 @@ using Parsobober.Pql.Query.Queries.Exceptions;
 
 namespace Parsobober.Pql.Query.Queries.Abstractions;
 
-internal interface IQueryDeclaration
+public interface IQueryDeclaration
 {
     IArgument Left { get; }
 

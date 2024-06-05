@@ -30,6 +30,7 @@ internal class SimpleParser(
 
         Match(SimpleToken.WhiteSpace);
         ast.SetParenthood(ast.Root, procedureNode);
+        NotifyAll(ex => ex.FinishedParsing());
         logger.LogInformation("Parsing completed successfully");
         return ast;
     }

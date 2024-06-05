@@ -17,17 +17,22 @@ public abstract record Statement(int LineNumber) : IModifiesAccessor.IRequest, I
     }
 };
 
+public abstract record ContainerStatement(int LineNumber) : Statement(LineNumber)
+{
+    public override string ToString() => base.ToString();
+}
+
 public record Assign(int LineNumber) : Statement(LineNumber)
 {
     public override string ToString() => base.ToString();
 }
 
-public record If(int LineNumber) : Statement(LineNumber)
+public record If(int LineNumber) : ContainerStatement(LineNumber)
 {
     public override string ToString() => base.ToString();
 }
 
-public record While(int LineNumber) : Statement(LineNumber)
+public record While(int LineNumber) : ContainerStatement(LineNumber)
 {
     public override string ToString() => base.ToString();
 }

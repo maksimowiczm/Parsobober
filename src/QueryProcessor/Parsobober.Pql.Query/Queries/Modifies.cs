@@ -21,7 +21,9 @@ internal static class Modifies
             var query = (Left, Right) switch
             {
                 (IArgument.Line line, IArgument.VarName name) =>
-                    new BooleanModifiesQuery(accessor, line.Value, name.Value).Build(),
+                    new BooleanStatementModifiesQuery(accessor, line.Value, name.Value).Build(),
+                (IArgument.VarName procName, IArgument.VarName varName) =>
+                    new BooleanProcedureModifiesQuery(accessor, procName.Value, varName.Value).Build(),
                 _ => DoDeclaration()
             };
 
@@ -39,7 +41,15 @@ internal static class Modifies
 
                 // Modifies(1, variable)
                 (IArgument.Line left, IVariableDeclaration) =>
-                    new GetVariablesByLineNumber(accessor, left.Value).Build(),
+                    accessor.GetVariables(left.Value),
+
+                // Modifies('proc', variable)
+                (IArgument.VarName left, IVariableDeclaration right) =>
+                    accessor.GetVariables(left.Value),
+
+                // Modifies(proc, 'v')
+                (IProcedureDeclaration left, IArgument.VarName right) =>
+                    accessor.GetProcedures(right.Value),
 
                 // Modifies(stmt, variable)
                 (IStatementDeclaration left, IVariableDeclaration right) => BuildModifiesWithSelect(left, right),
@@ -127,14 +137,30 @@ internal static class Modifies
         }
     }
 
-    /// <summary>
-    /// Gets variables modified by statement with given line number.
-    /// </summary>
-    /// <param name="modifiesAccessor">Modifies accessor.</param>
-    /// <param name="line">Line number.</param>
-    private class GetVariablesByLineNumber(IModifiesAccessor modifiesAccessor, int line)
+    private class BooleanStatementModifiesQuery(IModifiesAccessor accessor, int line, string variableName)
     {
-        public IEnumerable<Variable> Build() => modifiesAccessor.GetVariables(line);
+        public IEnumerable<IComparable> Build()
+        {
+            if (accessor.IsModified(line, variableName))
+            {
+                return Enumerable.Repeat<IComparable>(true, 1);
+            }
+
+            return Enumerable.Empty<Statement>();
+        }
+    }
+
+    private class BooleanProcedureModifiesQuery(IModifiesAccessor accessor, string procedureName, string variableName)
+    {
+        public IEnumerable<IComparable> Build()
+        {
+            if (accessor.IsModified(procedureName, variableName))
+            {
+                return Enumerable.Repeat<IComparable>(true, 1);
+            }
+
+            return Enumerable.Empty<Procedure>();
+        }
     }
 
     /// <summary>
@@ -148,19 +174,6 @@ internal static class Modifies
         /// <param name="declaration"> The declaration to build the query for. </param>
         /// <returns> The query. </returns>
         public abstract IEnumerable<Statement> Build(IStatementDeclaration declaration);
-    }
-
-    private class BooleanModifiesQuery(IModifiesAccessor accessor, int line, string variableName)
-    {
-        public IEnumerable<IComparable> Build()
-        {
-            if (accessor.IsModified(line, variableName))
-            {
-                return Enumerable.Repeat<IComparable>(true, 1);
-            }
-
-            return Enumerable.Empty<Statement>();
-        }
     }
 
     /// <summary>

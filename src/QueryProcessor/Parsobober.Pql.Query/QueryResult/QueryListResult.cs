@@ -7,7 +7,15 @@ internal class QueryListResult(IEnumerable<IComparable> query) : IQueryResult
 {
     public class Factory : IQueryResultFactory
     {
-        public IQueryResult Create(IEnumerable<IComparable> query) => new QueryListResult(query);
+        public IQueryResult Create(object query)
+        {
+            if (query is not IEnumerable<IComparable> queryList)
+            {
+                throw new IQueryResultFactory.QueryFactoryException("Query must be a list of IComparable");
+            }
+
+            return new QueryListResult(queryList);
+        }
     }
 
     public string Execute()

@@ -32,6 +32,19 @@ public interface IModifiesAccessor
     IEnumerable<Statement> GetStatements(string variableName);
 
     /// <summary>
+    /// Returns procedures that modify variable with given variableName
+    /// => Modifies(returned, provided)
+    /// </summary>
+    /// <param name="variableName">Variable name</param>
+    IEnumerable<Procedure> GetProcedures(string variableName);
+
+    /// <summary>
+    /// Returns variables that are modified by procedure with given procedureName
+    /// </summary>
+    /// <param name="procedureName">Procedure name</param>
+    IEnumerable<Variable> GetVariables(string procedureName);
+
+    /// <summary>
     /// Returns true if statement with given line number modifies variable with given variableName
     /// </summary>
     bool IsModified(int lineNumber, string variableName);

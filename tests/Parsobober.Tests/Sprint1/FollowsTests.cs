@@ -63,17 +63,17 @@ public class FollowsTests() : BaseTestClass(Code.ShortStatementsOnly)
 
     [Theory]
     // stmt
-    [InlineData("stmt s1, s2;", "s1", "s2", "3,4,6")]
-    [InlineData("stmt s; assign a;", "s", "a", "3,6")]
-    [InlineData("stmt s; while w;", "s", "w", "4")]
+    [InlineData("stmt s1, s2;", "s1", "s2", "2,3,4")]
+    [InlineData("stmt s; assign a;", "s", "a", "2,4")]
+    [InlineData("stmt s; while w;", "s", "w", "3")]
     // while
     [InlineData("while w1, w2;", "w1", "w2", "None")]
-    [InlineData("while w; assign a;", "w", "a", "6")]
-    [InlineData("while w; stmt s;", "w", "s", "6")]
+    [InlineData("while w; assign a;", "w", "a", "4")]
+    [InlineData("while w; stmt s;", "w", "s", "4")]
     // assign
-    [InlineData("assign a1, a2;", "a1", "a2", "3")]
-    [InlineData("assign a; stmt s;", "a", "s", "3,4")]
-    [InlineData("assign a; while w;", "a", "w", "4")]
+    [InlineData("assign a1, a2;", "a1", "a2", "2")]
+    [InlineData("assign a; stmt s;", "a", "s", "2,3")]
+    [InlineData("assign a; while w;", "a", "w", "3")]
     public void Follows_Statement_Statement_Select_Left(string declaration, string left, string right, string expected)
     {
         var query = $"{declaration}\nSelect {left} such that Follows ({left}, {right})";
@@ -84,16 +84,16 @@ public class FollowsTests() : BaseTestClass(Code.ShortStatementsOnly)
     [Theory]
     // stmt
     [InlineData("stmt s1, s2;", "s2", "s1", "3,4,6")]
-    [InlineData("stmt s; assign a;", "a", "s", "3,6")]
-    [InlineData("stmt s; while w;", "w", "s", "4")]
+    [InlineData("stmt s; assign a;", "a", "s", "3,4")]
+    [InlineData("stmt s; while w;", "w", "s", "6")]
     // while
     [InlineData("while w1, w2;", "w2", "w1", "None")]
-    [InlineData("while w; assign a;", "a", "w", "6")]
-    [InlineData("while w; stmt s;", "s", "w", "6")]
+    [InlineData("while w; assign a;", "a", "w", "4")]
+    [InlineData("while w; stmt s;", "s", "w", "4")]
     // assign
     [InlineData("assign a1, a2;", "a2", "a1", "3")]
-    [InlineData("assign a; stmt s;", "s", "a", "3,4")]
-    [InlineData("assign a; while w;", "w", "a", "4")]
+    [InlineData("assign a; stmt s;", "s", "a", "3,6")]
+    [InlineData("assign a; while w;", "w", "a", "6")]
     public void Follows_Statement_Statement_Select_Right(string declaration, string left, string right, string expected)
     {
         var query = $"{declaration}\nSelect {right} such that Follows ({left}, {right})";

@@ -2,7 +2,7 @@ using Parsobober.Pql.Query.Arguments;
 
 namespace Parsobober.Pql.Query.Queries.Abstractions;
 
-internal interface IAttributeQuery
+public interface IAttributeQuery
 {
     IDeclaration Declaration { get; }
 

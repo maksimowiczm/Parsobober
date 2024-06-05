@@ -1,6 +1,6 @@
 namespace Parsobober.Pql.Query.Arguments;
 
-internal interface IVariableDeclaration : IDeclaration
+public interface IVariableDeclaration : IDeclaration
 {
     new static IDeclaration? Parse(string type, string name)
     {

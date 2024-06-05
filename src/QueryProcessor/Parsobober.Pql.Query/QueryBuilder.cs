@@ -7,22 +7,19 @@ using Parsobober.Pql.Query.Queries;
 using Parsobober.Pql.Query.Queries.Abstractions;
 using Parsobober.Pql.Query.Queries.With;
 using Parsobober.Pql.Query.QueryResult;
-using Parsobober.Pql.Query.Tree;
-using static Parsobober.Pql.Query.Tree.Abstraction.IQueryContainer;
 
 namespace Parsobober.Pql.Query;
 
 internal partial class QueryBuilder(
     IPkbAccessors accessor,
     IProgramContextAccessor programContext,
-    IQueryContainerBuilder queryContainerBuilder
+    IQueryOrganizerBuilder queryOrganizerBuilder
 ) : IQueryBuilder
 {
     private string _select = string.Empty;
 
     private IDeclaration? Select => _declarations.GetValueOrDefault(_select);
 
-    // trzymanie deklaracji jako konkretne typy IDeclaration
     private readonly Dictionary<string, IDeclaration> _declarations = new();
 
     private record AttributeDeclaration(string Attribute, string Value);
@@ -43,6 +40,10 @@ internal partial class QueryBuilder(
 
     private readonly List<QueryDeclaration> _uses = [];
 
+    private readonly List<QueryDeclaration> _calls = [];
+
+    private readonly List<QueryDeclaration> _callsTransitive = [];
+
     private IQueryResultFactory _queryResultFactory = new QueryListResult.Factory();
 
     private void AddQueries<T>(List<QueryDeclaration> relations, Func<IArgument, IArgument, T> queryCreator)
@@ -52,7 +53,7 @@ internal partial class QueryBuilder(
         {
             var left = IArgument.Parse(_declarations, l);
             var right = IArgument.Parse(_declarations, r);
-            queryContainerBuilder.AddQuery(queryCreator(left, right));
+            queryOrganizerBuilder.AddQuery(queryCreator(left, right));
         }
     }
 
@@ -65,6 +66,8 @@ internal partial class QueryBuilder(
             (l, r) => new FollowsTransitive.QueryDeclaration(l, r, accessor.Follows));
         AddQueries(_modifies, (l, r) => new Modifies.QueryDeclaration(l, r, accessor.Modifies));
         AddQueries(_uses, (l, r) => new Uses.QueryDeclaration(l, r, accessor.Uses));
+        AddQueries(_calls, (l, r) => new Calls.QueryDeclaration(l, r, accessor.Calls));
+        AddQueries(_callsTransitive, (l, r) => new CallsTransitive.QueryDeclaration(l, r, accessor.Calls));
 
         var factory = new WithQueryFactory(programContext);
         var attributes = _attributes
@@ -76,18 +79,17 @@ internal partial class QueryBuilder(
             });
         foreach (var attribute in attributes)
         {
-            queryContainerBuilder.AddAttribute(attribute);
+            queryOrganizerBuilder.AddAttribute(attribute);
         }
 
-        var organizer = new QueryOrganizer(queryContainerBuilder.Build(), accessor.ProgramContext);
+        var organizer = queryOrganizerBuilder.Build();
 
-        var root = Select switch
+        if (Select is null)
         {
-            not null => organizer.Organize(Select),
-            _ => organizer.OrganizeBoolean()
-        };
+            return _queryResultFactory.Create(organizer.OrganizeBoolean());
+        }
 
-        return _queryResultFactory.Create(root.Do());
+        return _queryResultFactory.Create(organizer.Organize(Select));
     }
 
     public IQueryBuilder AddSelect(string synonym)
@@ -166,6 +168,18 @@ internal partial class QueryBuilder(
     public IQueryBuilder AddUses(string reference1, string reference2)
     {
         _uses.Add(new QueryDeclaration(reference1, reference2));
+        return this;
+    }
+
+    public IQueryBuilder AddCalls(string reference1, string reference2)
+    {
+        _calls.Add(new QueryDeclaration(reference1, reference2));
+        return this;
+    }
+
+    public IQueryBuilder AddCallsTransitive(string reference1, string reference2)
+    {
+        _callsTransitive.Add(new QueryDeclaration(reference1, reference2));
         return this;
     }
 

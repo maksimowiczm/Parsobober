@@ -154,4 +154,50 @@ public static class Code
                                          """;
 
     #endregion
+
+    #region CallCode
+
+    public const string CallCode = """
+                                   procedure Circle {
+                                       t = 1;
+                                       call Triangle;
+                                       b = t + a;
+                                       call Rectangle;
+                                       if t then {
+                                           while c {
+                                               if t then {
+                                                   call Triangle;
+                                               } 
+                                               else {
+                                                   call Rectangle;
+                                               }
+                                           }
+                                           a = d + t; 
+                                       }
+                                       else {
+                                           a = d + t;
+                                       }
+                                   }
+
+                                   procedure Rectangle {
+                                       while c {
+                                           call Triangle;
+                                           c = c + 20; 
+                                       }
+                                   }
+
+                                   procedure Triangle {
+                                       while d {
+                                           if t then {
+                                               d = t + 2; 
+                                           }
+                                           else {
+                                               a = t * a + d + k * b; 
+                                           }
+                                       }
+                                       c = t + k + d;
+                                   }
+                                   """;
+
+    #endregion
 }

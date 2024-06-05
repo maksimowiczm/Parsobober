@@ -43,4 +43,8 @@ public static class EntityTypeExtensions
     }
 
     public static bool IsVariable(this EntityType entityType) => entityType == EntityType.Variable;
+
+    public static bool IsProcedure(this EntityType entityType) => entityType == EntityType.Procedure;
+
+    public static bool IsCallStatement(this EntityType entityType) => entityType == EntityType.Call;
 }

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using Parsobober.DesignExtractor.Extractors;
 using Parsobober.Simple.Parser.Abstractions;
-using Parsobober.Simple.Parser.Extractor;
 
 namespace Parsobober.DesignExtractor;
 
@@ -13,6 +13,8 @@ public static class DependencyInjection
         services.AddScoped<ISimpleExtractor, ParentExtractor>();
         services.AddScoped<ISimpleExtractor, ProgramContextExtractor>();
         services.AddScoped<ISimpleExtractor, UsesExtractor>();
+        services.AddScoped<ISimpleExtractor, CallsExtractor>();
+        services.AddScoped<ISimpleExtractor, PostParseExtractor>();
 
         return services;
     }

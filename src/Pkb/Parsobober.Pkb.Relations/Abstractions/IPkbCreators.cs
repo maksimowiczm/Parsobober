@@ -9,4 +9,5 @@ public interface IPkbCreators
     IModifiesCreator Modifies { get; }
     IParentCreator Parent { get; }
     IUsesCreator Uses { get; }
+    ICallsCreator Calls { get; }
 }

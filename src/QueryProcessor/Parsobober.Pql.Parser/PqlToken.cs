@@ -9,6 +9,7 @@ internal static class PqlAuxiliaryTokens
     public const string Synonym = Ident;
     public const string DesignEntity = "(procedure|stmtLst|stmt|assign|call|while|if|variable|constant|prog_line)";
     public const string StatementReference = $"({Synonym}|_|{Integer})";
+    public const string QuoteReference = $"\"{StatementReference}\"";
 }
 
 internal enum PqlToken
@@ -26,9 +27,6 @@ internal enum PqlToken
 
     [Lexeme(";")]
     SemiColon,
-
-    [Lexeme("\"")]
-    Quote,
 
     #endregion
 
@@ -74,6 +72,11 @@ internal enum PqlToken
     [Lexeme("Uses")]
     Uses,
 
+    [Lexeme(@"Calls\*")]
+    CallsTransitive,
+
+    [Lexeme("Calls")]
+    Calls,
 
     #endregion
 
@@ -93,7 +96,9 @@ internal enum PqlToken
 
     #endregion
 
-    // How to differentiate between Reference and EntReference?
+    [Lexeme(PqlAuxiliaryTokens.QuoteReference)]
+    QuoteReference,
+
     [Lexeme($"{PqlAuxiliaryTokens.StatementReference}")]
     Reference,
 

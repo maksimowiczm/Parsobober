@@ -22,6 +22,8 @@ internal static class Uses
             {
                 (IArgument.Line line, IArgument.VarName name) =>
                     new BooleanUsesQuery(accessor, line.Value, name.Value).Build(),
+                (IArgument.VarName procName, IArgument.VarName varName) =>
+                    new BooleanProcedureUsesQuery(accessor, procName.Value, varName.Value).Build(),
                 _ => DoDeclaration()
             };
 
@@ -39,7 +41,15 @@ internal static class Uses
 
                 // Uses(1, variable)
                 (IArgument.Line left, IVariableDeclaration) =>
-                    new GetVariablesByLineNumber(accessor, left.Value).Build(),
+                    accessor.GetVariables(left.Value),
+
+                // Uses('proc', variable)
+                (IArgument.VarName left, IVariableDeclaration right) =>
+                    accessor.GetVariables(left.Value),
+
+                // Uses(proc, 'v')
+                (IProcedureDeclaration left, IArgument.VarName right) =>
+                    accessor.GetProcedures(right.Value),
 
                 // Uses(stmt, variable)
                 (IStatementDeclaration left, IVariableDeclaration right) => BuildUsesWithSelect(left, right),
@@ -125,14 +135,30 @@ internal static class Uses
         }
     }
 
-    /// <summary>
-    /// Gets variables used by statement with given line number.
-    /// </summary>
-    /// <param name="usesAccessor">Uses accessor.</param>
-    /// <param name="line">Line number.</param>
-    private class GetVariablesByLineNumber(IUsesAccessor usesAccessor, int line)
+    private class BooleanUsesQuery(IUsesAccessor accessor, int line, string variableName)
     {
-        public IEnumerable<Variable> Build() => usesAccessor.GetVariables(line);
+        public IEnumerable<IComparable> Build()
+        {
+            if (accessor.IsUsed(line, variableName))
+            {
+                return Enumerable.Repeat<IComparable>(true, 1);
+            }
+
+            return Enumerable.Empty<Statement>();
+        }
+    }
+
+    private class BooleanProcedureUsesQuery(IUsesAccessor accessor, string procedureName, string variableName)
+    {
+        public IEnumerable<IComparable> Build()
+        {
+            if (accessor.IsUsed(procedureName, variableName))
+            {
+                return Enumerable.Repeat<IComparable>(true, 1);
+            }
+
+            return Enumerable.Empty<Procedure>();
+        }
     }
 
     /// <summary>
@@ -159,19 +185,6 @@ internal static class Uses
         /// <param name="declaration"> The declaration to build the query for. </param>
         /// <returns> The query. </returns>
         public abstract IEnumerable<Variable> Build(IStatementDeclaration declaration);
-    }
-
-    private class BooleanUsesQuery(IUsesAccessor accessor, int line, string variableName)
-    {
-        public IEnumerable<IComparable> Build()
-        {
-            if (accessor.IsUsed(line, variableName))
-            {
-                return Enumerable.Repeat<IComparable>(true, 1);
-            }
-
-            return Enumerable.Empty<Statement>();
-        }
     }
 
     #endregion
