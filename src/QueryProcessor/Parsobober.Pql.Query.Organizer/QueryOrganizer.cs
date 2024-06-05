@@ -16,6 +16,7 @@ public class QueryOrganizer : IQueryOrganizer
 {
     private readonly List<IQueryDeclaration> _queries;
     private readonly List<IAttributeQuery> _attributes;
+    private readonly IComparer<IQueryDeclaration> _comparer;
     private readonly IDtoProgramContextAccessor _context;
     private readonly List<(IDeclaration, IDeclaration)> _aliases;
 
@@ -23,13 +24,15 @@ public class QueryOrganizer : IQueryOrganizer
         List<IQueryDeclaration> queries,
         List<IAttributeQuery> attributes,
         IDtoProgramContextAccessor context,
-        List<(IDeclaration, IDeclaration)> aliases
+        List<(IDeclaration, IDeclaration)> aliases,
+        IComparer<IQueryDeclaration> comparer
     )
     {
         _context = context;
         _aliases = aliases;
         _queries = queries;
         _attributes = attributes;
+        _comparer = comparer;
 
         // map all declarations used in queries
         _declarations = _queries
@@ -50,6 +53,15 @@ public class QueryOrganizer : IQueryOrganizer
 
         // apply aliases
         ApplyAliases();
+
+        // replace arguments with attributes
+        _queries = _queries
+            .Select(q =>
+            {
+                var attribute = _attributes.Where(a => a.Declaration == q.Left || a.Declaration == q.Right);
+                return attribute.Aggregate(q, (current, a) => a.ApplyAttribute(current));
+            })
+            .ToList();
     }
 
     private void ApplyAliases()
@@ -96,7 +108,34 @@ public class QueryOrganizer : IQueryOrganizer
     {
         var selectNothing = TryAddDeclarationToMap(select);
 
-        foreach (var optimizer in _queries.Select(_ => new QueryOptimizer(_queries.ToList())))
+        // check if it is not boolean query
+        var booleans = _queries
+            .Where(q => q is { Left: not IDeclaration, Right: not IDeclaration })
+            .ToList();
+
+        // optimize boolean queries
+        if (booleans.Count > 0)
+        {
+            var result = _queries
+                .Select(q => q.Do())
+                .All(r => r.Any());
+
+            if (!result)
+            {
+                return [];
+            }
+
+            if (booleans.Count == _queries.Count)
+            {
+                return _declarationsMap[select];
+            }
+
+            _queries.RemoveAll(b => booleans.Contains(b));
+        }
+
+        var factory = new QueryOptimizerFactory(_queries, _comparer);
+
+        foreach (var optimizer in _queries.Select(_ => factory.Create()))
         {
             // iterate multiple times because I said so
             Iterate(optimizer);
