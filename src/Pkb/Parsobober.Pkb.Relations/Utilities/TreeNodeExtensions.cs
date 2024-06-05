@@ -50,4 +50,6 @@ public static class TreeNodeExtensions
     }
 
     public static Constant ToConstant(this int value) => new(value);
+    public static ProgramLine ToProgramLine(this int value) => new(value);
+    public static StatementList ToStatementList(this int value) => new(value);
 }

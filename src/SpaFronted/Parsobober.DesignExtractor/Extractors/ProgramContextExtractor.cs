@@ -19,4 +19,14 @@ internal class ProgramContextExtractor(IProgramContextCreator creator) : SimpleE
     {
         creator.TryAddVariable(result);
     }
+
+    public override void StmtLst(TreeNode node)
+    {
+        creator.TryAddStatementList(node);
+    }
+
+    public override void Constant(TreeNode node)
+    {
+        creator.TryAddConstant(node);
+    }
 }
