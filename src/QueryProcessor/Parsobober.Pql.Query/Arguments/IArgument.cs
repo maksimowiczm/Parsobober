@@ -24,7 +24,7 @@ public interface IArgument
             return new Line(line);
         }
 
-        return new VarName(argument.Replace('\"', ' ').Trim());
+        return new Name(argument.Replace('\"', ' ').Trim());
     }
 
     static IArgument Parse(object argument)
@@ -34,7 +34,7 @@ public interface IArgument
             return new Line(line);
         }
 
-        return new VarName(argument.ToString()!);
+        return new Name(argument.ToString()!);
     }
 
     /// <summary>
@@ -47,7 +47,7 @@ public interface IArgument
 #endif
     }
 
-    public readonly record struct VarName(string Value) : IArgument
+    public readonly record struct Name(string Value) : IArgument
     {
 #if DEBUG
         public override string ToString() => $"\"{Value}\"";

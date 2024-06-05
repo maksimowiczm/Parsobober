@@ -94,14 +94,9 @@ internal class WithQueryFactory(IProgramContextAccessor accessor)
 
         public override IQueryDeclaration ApplyAttribute(IQueryDeclaration queryDeclaration)
         {
-            if (queryDeclaration.Left == Declaration)
+            if (queryDeclaration.Left == Declaration || queryDeclaration.Right == Declaration)
             {
-                return queryDeclaration.ReplaceArgument(Declaration, new IArgument.VarName(name));
-            }
-
-            if (queryDeclaration.Right == Declaration)
-            {
-                return queryDeclaration.ReplaceArgument(Declaration, new IArgument.VarName(name));
+                return queryDeclaration.ReplaceArgument(Declaration, new IArgument.Name(name));
             }
 
             return queryDeclaration;
