@@ -58,7 +58,7 @@ public class QueryOrganizer : IQueryOrganizer
         var attribute = _attributes.FirstOrDefault(a => a.Declaration == declaration);
         if (attribute is not null)
         {
-            _declarationsMap[declaration] = _declarationsMap[declaration].Intersect(attribute.Do());
+            _declarationsMap[declaration] = _declarationsMap[declaration].Intersect(attribute.Do(), new PkbDtoComparer());
         }
 
         return true;
@@ -131,7 +131,8 @@ public class QueryOrganizer : IQueryOrganizer
         // if other is not declaration, it is a constant argument
         if (other is not IDeclaration otherDeclaration)
         {
-            _declarationsMap[currentSelect] = _declarationsMap[currentSelect].Intersect(query.Do());
+            _declarationsMap[currentSelect] =
+                _declarationsMap[currentSelect].Intersect(query.Do(), new PkbDtoComparer());
             return;
         }
 
@@ -140,14 +141,16 @@ public class QueryOrganizer : IQueryOrganizer
                 .ReplaceArgument(otherDeclaration, IArgument.Parse(value))
                 .Do(currentSelect))
             .SelectMany(x => x)
-            .Distinct();
-        _declarationsMap[currentSelect] = _declarationsMap[currentSelect].Intersect(newCurrentSelect);
+            .Distinct(new PkbDtoComparer());
+        _declarationsMap[currentSelect] =
+            _declarationsMap[currentSelect].Intersect(newCurrentSelect, new PkbDtoComparer());
 
         var newOtherSelect = _declarationsMap[currentSelect]
             .Select(value => query.ReplaceArgument(currentSelect, IArgument.Parse(value))
                 .Do(otherDeclaration))
             .SelectMany(x => x)
-            .Distinct();
-        _declarationsMap[otherDeclaration] = _declarationsMap[otherDeclaration].Intersect(newOtherSelect);
+            .Distinct(new PkbDtoComparer());
+        _declarationsMap[otherDeclaration] =
+            _declarationsMap[otherDeclaration].Intersect(newOtherSelect, new PkbDtoComparer());
     }
 }

@@ -2,18 +2,32 @@
 
 namespace Parsobober.Pkb.Relations.Dto;
 
-public abstract class Statement(int line) : IModifiesAccessor.IRequest, IUsesAccessor.IRequest, IPkbDto
+public abstract record Statement(int Line) : IModifiesAccessor.IRequest, IUsesAccessor.IRequest, IPkbDto
 {
-    public int Line { get; } = line;
     public override string ToString() => Line.ToString();
 }
 
-public abstract class ContainerStatement(int line) : Statement(line);
+public abstract record ContainerStatement(int Line) : Statement(Line)
+{
+    public override string ToString() => base.ToString();
+}
 
-public class Assign(int line) : Statement(line);
+public record Assign(int Line) : Statement(Line)
+{
+    public override string ToString() => base.ToString();
+}
 
-public class If(int line) : ContainerStatement(line);
+public record If(int Line) : ContainerStatement(Line)
+{
+    public override string ToString() => base.ToString();
+}
 
-public class While(int line) : ContainerStatement(line);
+public record While(int Line) : ContainerStatement(Line)
+{
+    public override string ToString() => base.ToString();
+}
 
-public class Call(int line) : Statement(line);
+public record Call(int Line) : Statement(Line)
+{
+    public override string ToString() => base.ToString();
+}

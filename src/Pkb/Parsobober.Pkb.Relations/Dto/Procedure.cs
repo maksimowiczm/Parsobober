@@ -1,8 +1,6 @@
 ﻿namespace Parsobober.Pkb.Relations.Dto;
 
-public class Procedure(string name) : IPkbDto
+public record Procedure(string Name) : IPkbDto
 {
-    public string Name { get; } = name;
-
     public override string ToString() => Name;
 }

@@ -28,7 +28,7 @@ internal class QueryListResult(IEnumerable<IPkbDto> query) : IQueryResult
 
         var stringBuilder = new StringBuilder();
 
-        stringBuilder.AppendJoin(',', query.OrderBy(s => s));
+        stringBuilder.AppendJoin(',', query.OrderBy(s => s, new PkbDtoComparer()));
 
         return stringBuilder.ToString();
     }

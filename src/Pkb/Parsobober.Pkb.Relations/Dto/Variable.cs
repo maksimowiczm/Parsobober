@@ -1,7 +1,6 @@
 ﻿namespace Parsobober.Pkb.Relations.Dto;
 
-public class Variable(string name) : IPkbDto
+public record Variable(string Name) : IPkbDto
 {
-    public string Name { get; } = name;
     public override string ToString() => Name;
 }
