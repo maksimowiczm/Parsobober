@@ -57,14 +57,5 @@ public interface IArgument
 #endif
     }
 
-    public class ConstantValue(int value) : IArgument, IComparable
-    {
-        public int CompareTo(object? obj) =>
-            obj switch
-            {
-                Name name => string.Compare(value.ToString(), name.Value, StringComparison.Ordinal),
-                Line line => value.CompareTo(line.Value),
-                _ => -1
-            };
-    }
+    public record ConstantValue(int Value) : IArgument;
 }
