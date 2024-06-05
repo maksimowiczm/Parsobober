@@ -1,4 +1,5 @@
 ﻿using Parsobober.Pkb.Relations.Abstractions.Accessors;
+using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Abstractions;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
@@ -6,7 +7,7 @@ using Parsobober.Shared;
 using QueryContext =
     System.Collections.Generic.Dictionary<
         Parsobober.Pql.Query.Arguments.IDeclaration,
-        System.Collections.Generic.IEnumerable<System.IComparable>
+        System.Collections.Generic.IEnumerable<Parsobober.Pkb.Relations.Dto.IPkbDto>
     >;
 
 namespace Parsobober.Pql.Query.Organizer;
@@ -63,7 +64,7 @@ public class QueryOrganizer : IQueryOrganizer
         return true;
     }
 
-    public IEnumerable<IComparable> Organize(IDeclaration select)
+    public IEnumerable<IPkbDto> Organize(IDeclaration select)
     {
         var selectNothing = TryAddDeclarationToMap(select);
 
@@ -75,7 +76,7 @@ public class QueryOrganizer : IQueryOrganizer
 
         return selectNothing switch
         {
-            true when !_declarationsMap.Values.All(v => v.Any()) => Enumerable.Empty<IComparable>(),
+            true when !_declarationsMap.Values.All(v => v.Any()) => Enumerable.Empty<IPkbDto>(),
             _ => _declarationsMap[select]
         };
     }

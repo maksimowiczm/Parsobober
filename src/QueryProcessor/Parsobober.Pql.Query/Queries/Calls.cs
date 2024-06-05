@@ -1,4 +1,5 @@
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
+using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
 using Parsobober.Pql.Query.Queries.Core;
@@ -14,7 +15,7 @@ internal static class Calls
         public override IArgument Left { get; } = caller;
         public override IArgument Right { get; } = called;
 
-        public override IEnumerable<IComparable> Do()
+        public override IEnumerable<IPkbDto> Do()
         {
             var query = (Left, Right) switch
             {
@@ -28,7 +29,7 @@ internal static class Calls
             return query;
         }
 
-        public override IEnumerable<IComparable> Do(IDeclaration select)
+        public override IEnumerable<IPkbDto> Do(IDeclaration select)
         {
             var query = (Left, Right) switch
             {
@@ -48,7 +49,7 @@ internal static class Calls
 
             return query;
 
-            IEnumerable<IComparable> BuildCallsWithSelect(IProcedureDeclaration caller, IProcedureDeclaration called)
+            IEnumerable<IPkbDto> BuildCallsWithSelect(IProcedureDeclaration caller, IProcedureDeclaration called)
             {
                 if (caller == select)
                 {
@@ -76,7 +77,7 @@ internal static class Calls
     /// <param name="callerName">Caller procedure name.</param>
     private class GetCalledByCallerName(ICallsAccessor callsAccessor, string callerName) : CallsQuery
     {
-        public override IEnumerable<IComparable> Build() =>
+        public override IEnumerable<IPkbDto> Build() =>
             callsAccessor.GetCalled(callerName);
     }
 
@@ -87,7 +88,7 @@ internal static class Calls
     /// <param name="calledName">Called procedure name.</param>
     private class GetCallersByCalledName(ICallsAccessor callsAccessor, string calledName) : CallsQuery
     {
-        public override IEnumerable<IComparable> Build() =>
+        public override IEnumerable<IPkbDto> Build() =>
             callsAccessor.GetCallers(calledName);
     }
 
@@ -97,7 +98,7 @@ internal static class Calls
     /// <param name="callsAccessor">Calls accessor.</param>
     private class GetCallers(ICallsAccessor callsAccessor) : CallsQuery
     {
-        public override IEnumerable<IComparable> Build() =>
+        public override IEnumerable<IPkbDto> Build() =>
             callsAccessor.GetCallers();
     }
 
@@ -107,7 +108,7 @@ internal static class Calls
     /// <param name="callsAccessor">Calls accessor.</param>
     private class GetCalled(ICallsAccessor callsAccessor) : CallsQuery
     {
-        public override IEnumerable<IComparable> Build() =>
+        public override IEnumerable<IPkbDto> Build() =>
             callsAccessor.GetCalled();
     }
 
@@ -119,10 +120,7 @@ internal static class Calls
     /// <param name="calledName">Called procedure name.</param>
     private class BooleanCallsQuery(ICallsAccessor callsAccessor, string callerName, string calledName) : CallsQuery
     {
-        public override IEnumerable<IComparable> Build() =>
-            callsAccessor.IsCalled(callerName, calledName)
-                ? Enumerable.Repeat<IComparable>(true, 1)
-                : Enumerable.Empty<IComparable>();
+        public override IEnumerable<IPkbDto> Build() => IPkbDto.Boolean(callsAccessor.IsCalled(callerName, calledName));
     }
 
     /// <summary>
@@ -134,7 +132,7 @@ internal static class Calls
         /// Builds a query.
         /// </summary>
         /// <returns> The query. </returns>
-        public abstract IEnumerable<IComparable> Build();
+        public abstract IEnumerable<IPkbDto> Build();
     }
 
     #endregion

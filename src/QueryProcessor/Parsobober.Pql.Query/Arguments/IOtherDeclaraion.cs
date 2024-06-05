@@ -27,7 +27,7 @@ public interface IOtherDeclaration : IDeclaration
 #endif
     }
 
-    public readonly record struct ProgramLine(string Name) : IOtherDeclaration, IStatementDeclaration
+    public record ProgramLine(string Name) : IStatementDeclaration.Statement(Name), IOtherDeclaration
     {
 #if DEBUG
         public override string ToString() => Name;

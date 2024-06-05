@@ -15,7 +15,7 @@ internal static class Parent
         public override IArgument Left { get; } = parent;
         public override IArgument Right { get; } = child;
 
-        public override IEnumerable<IComparable> Do()
+        public override IEnumerable<IPkbDto> Do()
         {
             var query = (Left, Right) switch
             {
@@ -28,7 +28,7 @@ internal static class Parent
             return query;
         }
 
-        public override IEnumerable<IComparable> Do(IDeclaration select)
+        public override IEnumerable<IPkbDto> Do(IDeclaration select)
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
@@ -49,7 +49,7 @@ internal static class Parent
 
             return query;
 
-            IEnumerable<IComparable> BuildParentWithSelect(IStatementDeclaration parent, IStatementDeclaration child)
+            IEnumerable<IPkbDto> BuildParentWithSelect(IStatementDeclaration parent, IStatementDeclaration child)
             {
                 if (parent == select)
                 {
@@ -175,7 +175,7 @@ internal static class Parent
     /// <param name="line">Line number.</param>
     private class GetChildrenByLineNumber(IParentAccessor parentAccessor, int line) : ParentQuery
     {
-        public override IEnumerable<IComparable> Build(IStatementDeclaration child) =>
+        public override IEnumerable<IPkbDto> Build(IStatementDeclaration child) =>
             child switch
             {
                 IStatementDeclaration.Statement => parentAccessor.GetChildren(line),
@@ -197,20 +197,12 @@ internal static class Parent
         /// </summary>
         /// <param name="declaration"> The declaration to build the query for. </param>
         /// <returns> The query. </returns>
-        public abstract IEnumerable<IComparable> Build(IStatementDeclaration declaration);
+        public abstract IEnumerable<IPkbDto> Build(IStatementDeclaration declaration);
     }
 
     private class BooleanParentQuery(IParentAccessor accessor, int parent, int child)
     {
-        public IEnumerable<IComparable> Build()
-        {
-            if (accessor.IsParent(parent, child))
-            {
-                return Enumerable.Repeat<IComparable>(true, 1);
-            }
-
-            return Enumerable.Empty<Statement>();
-        }
+        public IEnumerable<IPkbDto> Build() => IPkbDto.Boolean(accessor.IsParent(parent, child));
     }
 
     #endregion

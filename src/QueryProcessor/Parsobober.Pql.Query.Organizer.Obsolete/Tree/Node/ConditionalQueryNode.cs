@@ -1,3 +1,4 @@
+using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Organizer.Obsolete.Tree.Abstraction;
 
 namespace Parsobober.Pql.Query.Organizer.Obsolete.Tree.Node;
@@ -17,7 +18,7 @@ internal class ConditionalQueryNode : IQueryNode
         _result = result;
     }
 
-    public IEnumerable<IComparable> Do()
+    public IEnumerable<IPkbDto> Do()
     {
         if (_condition.Do().Any())
         {
@@ -28,6 +29,6 @@ internal class ConditionalQueryNode : IQueryNode
     }
 
 #if DEBUG
-    private List<IComparable> Result => Do().ToList();
+    private List<IPkbDto> Result => Do().ToList();
 #endif
 }

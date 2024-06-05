@@ -33,10 +33,12 @@ public interface IArgument
     static IArgument Parse(object argument) =>
         argument switch
         {
-            Statement { LineNumber: var line } => new Line(line),
+            Statement { Line: var line } => new Line(line),
             Variable { Name: var name } => new Name(name),
-            Procedure { ProcName: var procName } => new Name(procName),
+            Procedure { Name: var procName } => new Name(procName),
             Constant { Value: var value } => new ConstantValue(value),
+            ProgramLine { Line: var line } => new Line(line),
+            StatementList { Line: var line } => new Line(line),
             _ => throw new ArgumentParseException($"Given argument could not be parsed. {argument}")
         };
 
@@ -57,5 +59,10 @@ public interface IArgument
 #endif
     }
 
-    public record ConstantValue(int Value) : IArgument;
+    public record ConstantValue(int Value) : IArgument
+    {
+#if DEBUG
+        public override string ToString() => $"Constant = {Value.ToString()}";
+#endif
+    };
 }

@@ -1,3 +1,4 @@
+using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Organizer.Obsolete.Tree.Abstraction;
 using Parsobober.Pql.Query.Queries.Abstractions;
 
@@ -18,7 +19,7 @@ internal class AttributeQueryNode : IQueryNode
         _queryNode = queryNode;
     }
 
-    public IEnumerable<IComparable> Do()
+    public IEnumerable<IPkbDto> Do()
     {
         // intersection of query and attribute
         // todo might have to refactor so that attributeQuery use queryNode result as input instead of doing it's own pkb query
@@ -30,6 +31,6 @@ internal class AttributeQueryNode : IQueryNode
     }
 
 #if DEBUG
-    private List<IComparable> Result => Do().ToList();
+    private List<IPkbDto> Result => Do().ToList();
 #endif
 }

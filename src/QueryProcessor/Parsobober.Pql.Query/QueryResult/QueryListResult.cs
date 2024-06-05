@@ -1,15 +1,16 @@
 ﻿using System.Text;
+using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Abstractions;
 
 namespace Parsobober.Pql.Query.QueryResult;
 
-internal class QueryListResult(IEnumerable<IComparable> query) : IQueryResult
+internal class QueryListResult(IEnumerable<IPkbDto> query) : IQueryResult
 {
     public class Factory : IQueryResultFactory
     {
         public IQueryResult Create(object query)
         {
-            if (query is not IEnumerable<IComparable> queryList)
+            if (query is not IEnumerable<IPkbDto> queryList)
             {
                 throw new IQueryResultFactory.QueryFactoryException("Query must be a list of IComparable");
             }

@@ -1,13 +1,8 @@
 ﻿namespace Parsobober.Pkb.Relations.Dto;
 
-public record StatementList(int Value) : IComparable
+public class StatementList(int line) : IPkbDto
 {
-    public override string ToString() => Value.ToString();
+    public int Line { get; } = line;
 
-    public int CompareTo(object? obj) =>
-        obj switch
-        {
-            StatementList statementList => Value.CompareTo(statementList.Value),
-            _ => -1
-        };
+    public override string ToString() => Line.ToString();
 }

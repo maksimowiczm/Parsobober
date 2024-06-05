@@ -143,7 +143,7 @@ public class ModifiesRelation(
 
             foreach (var procedure in callsRelation.GetCalled(currentProcedure))
             {
-                proceduresToVisit.Push(procedure.ProcName);
+                proceduresToVisit.Push(procedure.Name);
             }
         }
     }

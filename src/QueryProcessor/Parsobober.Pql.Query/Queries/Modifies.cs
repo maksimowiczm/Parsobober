@@ -15,7 +15,7 @@ internal static class Modifies
         public override IArgument Left { get; } = left;
         public override IArgument Right { get; } = right;
 
-        public override IEnumerable<IComparable> Do()
+        public override IEnumerable<IPkbDto> Do()
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
@@ -30,7 +30,7 @@ internal static class Modifies
             return query;
         }
 
-        public override IEnumerable<IComparable> Do(IDeclaration select)
+        public override IEnumerable<IPkbDto> Do(IDeclaration select)
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
@@ -59,7 +59,7 @@ internal static class Modifies
 
             return query;
 
-            IEnumerable<IComparable> BuildModifiesWithSelect(
+            IEnumerable<IPkbDto> BuildModifiesWithSelect(
                 IStatementDeclaration left,
                 IVariableDeclaration right
             )
@@ -139,28 +139,12 @@ internal static class Modifies
 
     private class BooleanStatementModifiesQuery(IModifiesAccessor accessor, int line, string variableName)
     {
-        public IEnumerable<IComparable> Build()
-        {
-            if (accessor.IsModified(line, variableName))
-            {
-                return Enumerable.Repeat<IComparable>(true, 1);
-            }
-
-            return Enumerable.Empty<Statement>();
-        }
+        public IEnumerable<IPkbDto> Build() => IPkbDto.Boolean(accessor.IsModified(line, variableName));
     }
 
     private class BooleanProcedureModifiesQuery(IModifiesAccessor accessor, string procedureName, string variableName)
     {
-        public IEnumerable<IComparable> Build()
-        {
-            if (accessor.IsModified(procedureName, variableName))
-            {
-                return Enumerable.Repeat<IComparable>(true, 1);
-            }
-
-            return Enumerable.Empty<Procedure>();
-        }
+        public IEnumerable<IPkbDto> Build() => IPkbDto.Boolean(accessor.IsModified(procedureName, variableName));
     }
 
     /// <summary>

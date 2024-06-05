@@ -1,4 +1,5 @@
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
+using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
 using Parsobober.Pql.Query.Queries.Core;
@@ -14,7 +15,7 @@ internal static class CallsTransitive
         public override IArgument Left { get; } = caller;
         public override IArgument Right { get; } = called;
 
-        public override IEnumerable<IComparable> Do()
+        public override IEnumerable<IPkbDto> Do()
         {
             var query = (Left, Right) switch
             {
@@ -28,7 +29,7 @@ internal static class CallsTransitive
             return query;
         }
 
-        public override IEnumerable<IComparable> Do(IDeclaration select)
+        public override IEnumerable<IPkbDto> Do(IDeclaration select)
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
@@ -51,7 +52,7 @@ internal static class CallsTransitive
 
             return query;
 
-            IEnumerable<IComparable> BuildCallsTransitiveWithSelect(IProcedureDeclaration caller,
+            IEnumerable<IPkbDto> BuildCallsTransitiveWithSelect(IProcedureDeclaration caller,
                 IProcedureDeclaration called)
             {
                 if (caller == select)
@@ -81,7 +82,7 @@ internal static class CallsTransitive
     private class GetCalledTransitiveByCallerName(ICallsAccessor callsAccessor, string callerName)
         : CallsTransitiveQuery
     {
-        public override IEnumerable<IComparable> Build() =>
+        public override IEnumerable<IPkbDto> Build() =>
             callsAccessor.GetCalledTransitive(callerName);
     }
 
@@ -93,7 +94,7 @@ internal static class CallsTransitive
     private class GetCallersTransitiveByCalledName(ICallsAccessor callsAccessor, string calledName)
         : CallsTransitiveQuery
     {
-        public override IEnumerable<IComparable> Build() =>
+        public override IEnumerable<IPkbDto> Build() =>
             callsAccessor.GetCallersTransitive(calledName);
     }
 
@@ -103,7 +104,7 @@ internal static class CallsTransitive
     /// <param name="callsAccessor">Calls accessor.</param>
     private class GetCallers(ICallsAccessor callsAccessor) : CallsTransitiveQuery
     {
-        public override IEnumerable<IComparable> Build() =>
+        public override IEnumerable<IPkbDto> Build() =>
             callsAccessor.GetCallers();
     }
 
@@ -113,7 +114,7 @@ internal static class CallsTransitive
     /// <param name="callsAccessor">Calls accessor.</param>
     private class GetCalled(ICallsAccessor callsAccessor) : CallsTransitiveQuery
     {
-        public override IEnumerable<IComparable> Build() =>
+        public override IEnumerable<IPkbDto> Build() =>
             callsAccessor.GetCalled();
     }
 
@@ -126,10 +127,8 @@ internal static class CallsTransitive
     private class BooleanCallsTransitiveQuery(ICallsAccessor callsAccessor, string callerName, string calledName)
         : CallsTransitiveQuery
     {
-        public override IEnumerable<IComparable> Build() =>
-            callsAccessor.IsCalledTransitive(callerName, calledName)
-                ? Enumerable.Repeat<IComparable>(true, 1)
-                : Enumerable.Empty<IComparable>();
+        public override IEnumerable<IPkbDto> Build() =>
+            IPkbDto.Boolean(callsAccessor.IsCalledTransitive(callerName, calledName));
     }
 
     /// <summary>
@@ -141,7 +140,7 @@ internal static class CallsTransitive
         /// Builds a query.
         /// </summary>
         /// <returns> The query. </returns>
-        public abstract IEnumerable<IComparable> Build();
+        public abstract IEnumerable<IPkbDto> Build();
     }
 
     #endregion

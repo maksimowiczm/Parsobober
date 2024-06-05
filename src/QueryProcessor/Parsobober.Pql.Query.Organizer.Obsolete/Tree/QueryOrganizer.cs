@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
+using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Abstractions;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Organizer.Obsolete.Tree.Abstraction;
@@ -22,7 +23,7 @@ internal class QueryOrganizer(
     /// Organizes queries and select statement into query tree.
     /// </summary>
     /// <returns>Query tree</returns>
-    public IEnumerable<IComparable> Organize(IDeclaration select)
+    public IEnumerable<IPkbDto> Organize(IDeclaration select)
     {
         var result = InnerOrganize(select)!;
 

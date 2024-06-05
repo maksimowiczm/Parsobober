@@ -15,7 +15,7 @@ internal static class Follows
         public override IArgument Left { get; } = followed;
         public override IArgument Right { get; } = follows;
 
-        public override IEnumerable<IComparable> Do()
+        public override IEnumerable<IPkbDto> Do()
         {
             var query = (Left, Right) switch
             {
@@ -28,7 +28,7 @@ internal static class Follows
             return query;
         }
 
-        public override IEnumerable<IComparable> Do(IDeclaration select)
+        public override IEnumerable<IPkbDto> Do(IDeclaration select)
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
@@ -51,7 +51,7 @@ internal static class Follows
 
             return query;
 
-            IEnumerable<IComparable> BuildFollowsWithSelect(
+            IEnumerable<IPkbDto> BuildFollowsWithSelect(
                 IStatementDeclaration followed,
                 IStatementDeclaration follows
             )
@@ -205,15 +205,7 @@ internal static class Follows
 
     private class BooleanFollowsQuery(IFollowsAccessor accessor, int left, int right)
     {
-        public IEnumerable<IComparable> Build()
-        {
-            if (accessor.IsFollowed(left, right))
-            {
-                return Enumerable.Repeat<IComparable>(true, 1);
-            }
-
-            return Enumerable.Empty<Statement>();
-        }
+        public IEnumerable<IPkbDto> Build() => IPkbDto.Boolean(accessor.IsFollowed(left, right));
     }
 
     /// <summary>
@@ -226,7 +218,7 @@ internal static class Follows
         /// </summary>
         /// <param name="declaration"> The declaration to build the query for. </param>
         /// <returns> The query. </returns>
-        public abstract IEnumerable<IComparable> Build(IStatementDeclaration declaration);
+        public abstract IEnumerable<IPkbDto> Build(IStatementDeclaration declaration);
     }
 
     #endregion

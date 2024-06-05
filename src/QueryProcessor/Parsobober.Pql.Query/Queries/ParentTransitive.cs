@@ -15,7 +15,7 @@ internal static class ParentTransitive
         public override IArgument Left { get; } = parent;
         public override IArgument Right { get; } = child;
 
-        public override IEnumerable<IComparable> Do()
+        public override IEnumerable<IPkbDto> Do()
         {
             var query = (Left, Right) switch
             {
@@ -28,7 +28,7 @@ internal static class ParentTransitive
             return query;
         }
 
-        public override IEnumerable<IComparable> Do(IDeclaration select)
+        public override IEnumerable<IPkbDto> Do(IDeclaration select)
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
@@ -195,15 +195,7 @@ internal static class ParentTransitive
 
     private class BooleanParentQuery(IParentAccessor accessor, int parent, int child)
     {
-        public IEnumerable<IComparable> Build()
-        {
-            if (accessor.IsParentTransitive(parent, child))
-            {
-                return Enumerable.Repeat<IComparable>(true, 1);
-            }
-
-            return Enumerable.Empty<Statement>();
-        }
+        public IEnumerable<IPkbDto> Build() => IPkbDto.Boolean(accessor.IsParentTransitive(parent, child));
     }
 
     #endregion

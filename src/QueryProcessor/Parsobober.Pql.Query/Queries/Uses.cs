@@ -15,7 +15,7 @@ internal static class Uses
         public override IArgument Left { get; } = left;
         public override IArgument Right { get; } = right;
 
-        public override IEnumerable<IComparable> Do()
+        public override IEnumerable<IPkbDto> Do()
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
@@ -30,7 +30,7 @@ internal static class Uses
             return query;
         }
 
-        public override IEnumerable<IComparable> Do(IDeclaration select)
+        public override IEnumerable<IPkbDto> Do(IDeclaration select)
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
@@ -60,7 +60,7 @@ internal static class Uses
 
             return query;
 
-            IEnumerable<IComparable> BuildUsesWithSelect(IStatementDeclaration left, IVariableDeclaration right)
+            IEnumerable<IPkbDto> BuildUsesWithSelect(IStatementDeclaration left, IVariableDeclaration right)
             {
                 // tu nastąpi samowywrotka przy zapytaniach, w których nie ma wartości z selecta
                 // przykład: Select x such that uses(s, v)
@@ -137,28 +137,12 @@ internal static class Uses
 
     private class BooleanUsesQuery(IUsesAccessor accessor, int line, string variableName)
     {
-        public IEnumerable<IComparable> Build()
-        {
-            if (accessor.IsUsed(line, variableName))
-            {
-                return Enumerable.Repeat<IComparable>(true, 1);
-            }
-
-            return Enumerable.Empty<Statement>();
-        }
+        public IEnumerable<IPkbDto> Build() => IPkbDto.Boolean(accessor.IsUsed(line, variableName));
     }
 
     private class BooleanProcedureUsesQuery(IUsesAccessor accessor, string procedureName, string variableName)
     {
-        public IEnumerable<IComparable> Build()
-        {
-            if (accessor.IsUsed(procedureName, variableName))
-            {
-                return Enumerable.Repeat<IComparable>(true, 1);
-            }
-
-            return Enumerable.Empty<Procedure>();
-        }
+        public IEnumerable<IPkbDto> Build() => IPkbDto.Boolean(accessor.IsUsed(procedureName, variableName));
     }
 
     /// <summary>

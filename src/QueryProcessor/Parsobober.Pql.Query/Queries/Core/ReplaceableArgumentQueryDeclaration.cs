@@ -1,3 +1,4 @@
+using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
 using Parsobober.Pql.Query.Queries.Exceptions;
@@ -9,14 +10,14 @@ internal abstract class ReplaceableArgumentQueryDeclaration<TSelf> : IQueryDecla
 {
     public abstract IArgument Left { get; }
     public abstract IArgument Right { get; }
-    public abstract IEnumerable<IComparable> Do();
-    public abstract IEnumerable<IComparable> Do(IDeclaration select);
+    public abstract IEnumerable<IPkbDto> Do();
+    public abstract IEnumerable<IPkbDto> Do(IDeclaration select);
 
     /// <summary>
     /// If able do the query using left side. If not try to do it using right side.
     /// If both sides are not able to do the query, return empty list.
     /// </summary>
-    protected IEnumerable<IComparable> DoDeclaration() =>
+    protected IEnumerable<IPkbDto> DoDeclaration() =>
         (Left, Right) switch
         {
             (Left: IDeclaration left, Right: IDeclaration) => Do(left),
@@ -47,7 +48,7 @@ internal abstract class ReplaceableArgumentQueryDeclaration<TSelf> : IQueryDecla
 #if DEBUG
     public override string ToString() => $"{GetType().DeclaringType!.Name}({Left}, {Right})";
 
-    public List<IComparable> LeftResult
+    public List<IPkbDto> LeftResult
     {
         get
         {
@@ -60,7 +61,7 @@ internal abstract class ReplaceableArgumentQueryDeclaration<TSelf> : IQueryDecla
         }
     }
 
-    public List<IComparable> RightResult
+    public List<IPkbDto> RightResult
     {
         get
         {

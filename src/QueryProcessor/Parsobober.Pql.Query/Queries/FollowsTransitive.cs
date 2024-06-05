@@ -15,7 +15,7 @@ internal static class FollowsTransitive
         public override IArgument Left { get; } = followed;
         public override IArgument Right { get; } = follows;
 
-        public override IEnumerable<IComparable> Do()
+        public override IEnumerable<IPkbDto> Do()
         {
             var query = (Left, Right) switch
             {
@@ -28,7 +28,7 @@ internal static class FollowsTransitive
             return query;
         }
 
-        public override IEnumerable<IComparable> Do(IDeclaration select)
+        public override IEnumerable<IPkbDto> Do(IDeclaration select)
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
@@ -199,15 +199,7 @@ internal static class FollowsTransitive
 
     private class BooleanFollowsQuery(IFollowsAccessor accessor, int left, int right)
     {
-        public IEnumerable<IComparable> Build()
-        {
-            if (accessor.IsFollowedTransitive(left, right))
-            {
-                return Enumerable.Repeat<IComparable>(true, 1);
-            }
-
-            return Enumerable.Empty<Statement>();
-        }
+        public IEnumerable<IPkbDto> Build() => IPkbDto.Boolean(accessor.IsFollowedTransitive(left, right));
     }
 
     #endregion

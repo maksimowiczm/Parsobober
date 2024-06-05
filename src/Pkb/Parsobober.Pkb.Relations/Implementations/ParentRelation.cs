@@ -173,10 +173,10 @@ public class ParentRelation(
     public bool IsParent(int parentLineNumber, int childLineNumber) =>
         GetParent(childLineNumber) switch
         {
-            { LineNumber: var line } => line == parentLineNumber,
+            { Line: var line } => line == parentLineNumber,
             _ => false
         };
 
     public bool IsParentTransitive(int parentLineNumber, int childLineNumber) =>
-        GetParentsTransitive(childLineNumber).Any(p => p.LineNumber == parentLineNumber);
+        GetParentsTransitive(childLineNumber).Any(p => p.Line == parentLineNumber);
 }
