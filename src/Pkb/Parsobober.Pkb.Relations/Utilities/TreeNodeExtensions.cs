@@ -48,4 +48,6 @@ public static class TreeNodeExtensions
             _ => throw new NotSupportedException()
         };
     }
+
+    public static Constant ToConstant(this int value) => new(value);
 }
