@@ -13,10 +13,13 @@ public class ProgramContext(ILogger<ProgramContext> logger)
     private readonly Dictionary<string, TreeNode> _variablesDictionary = new();
     private readonly Dictionary<int, TreeNode> _statementsDictionary = new();
     private readonly Dictionary<string, TreeNode> _proceduresDictionary = new();
+    private readonly Dictionary<int, TreeNode> _statementListsDictionary = new();
+    private readonly HashSet<int> _constantSet = new();
 
     public IReadOnlyDictionary<string, TreeNode> VariablesDictionary => _variablesDictionary.AsReadOnly();
     public IReadOnlyDictionary<int, TreeNode> StatementsDictionary => _statementsDictionary.AsReadOnly();
     public IReadOnlyDictionary<string, TreeNode> ProceduresDictionary => _proceduresDictionary.AsReadOnly();
+    public IEnumerable<int> ConstantsEnumerable => _constantSet;
 
     public bool TryAddVariable(TreeNode variable)
     {
@@ -92,9 +95,47 @@ public class ProgramContext(ILogger<ProgramContext> logger)
             .Where(s => s.IsType<T>())
             .Select(s => s.ToStatement() as T)!;
 
+    public bool TryAddStatementList(TreeNode statementList)
+    {
+        if (statementList.Type.IsStatementList() == false)
+        {
+            logger.LogError(
+                "Cannot add node with type different that {type} or its subtypes to statement dictionary. ({node})",
+                EntityType.StatementsList, statementList);
+
+            throw new ArgumentException(
+                $"Provided node type {statementList.Type} is different than any of required {EntityType.StatementsList} types.");
+        }
+
+        return _statementListsDictionary.TryAdd(statementList.LineNumber, statementList);
+    }
+
+    public bool TryAddConstant(TreeNode constant)
+    {
+        if (constant.Type.IsConstant() == false)
+        {
+            logger.LogError(
+                "Cannot add node with type different that {type} or its subtypes to statement dictionary. ({node})",
+                EntityType.Constant, constant);
+
+            throw new ArgumentException(
+                $"Provided node type {constant.Type} is different than any of required {EntityType.Constant} types.");
+        }
+
+        return _constantSet.Add(Int32.Parse(constant.Attribute));
+    }
+
     public IEnumerable<Variable> Variables => VariablesDictionary.Values
         .Select(v => v.ToVariable());
 
     public IEnumerable<Procedure> Procedures => ProceduresDictionary.Values
         .Select(p => p.ToProcedure());
+
+    public IEnumerable<StatementList> StatementLists => _statementListsDictionary.Values
+        .Select(s => s.LineNumber.ToStatementList());
+
+    public IEnumerable<Constant> Constants => ConstantsEnumerable
+        .Select(c => c.ToConstant());
+
+    public IEnumerable<ProgramLine> ProgramLines => StatementsDictionary.Keys.Select(p => p.ToProgramLine());
 }

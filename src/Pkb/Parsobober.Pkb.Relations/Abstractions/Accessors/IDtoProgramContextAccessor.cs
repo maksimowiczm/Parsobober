@@ -11,4 +11,7 @@ public interface IDtoProgramContextAccessor
     IEnumerable<Call> Calls { get; }
     IEnumerable<Variable> Variables { get; }
     IEnumerable<Procedure> Procedures { get; }
+    IEnumerable<StatementList> StatementLists { get; }
+    IEnumerable<Constant> Constants { get; }
+    IEnumerable<ProgramLine> ProgramLines { get; }
 }

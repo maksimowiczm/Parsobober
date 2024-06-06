@@ -15,14 +15,14 @@ internal static class Uses
         public override IArgument Left { get; } = left;
         public override IArgument Right { get; } = right;
 
-        public override IEnumerable<IComparable> Do()
+        public override IEnumerable<IPkbDto> Do()
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
             {
-                (IArgument.Line line, IArgument.VarName name) =>
+                (Line line, Name name) =>
                     new BooleanUsesQuery(accessor, line.Value, name.Value).Build(),
-                (IArgument.VarName procName, IArgument.VarName varName) =>
+                (Name procName, Name varName) =>
                     new BooleanProcedureUsesQuery(accessor, procName.Value, varName.Value).Build(),
                 _ => DoDeclaration()
             };
@@ -30,25 +30,25 @@ internal static class Uses
             return query;
         }
 
-        public override IEnumerable<IComparable> Do(IDeclaration select)
+        public override IEnumerable<IPkbDto> Do(IDeclaration select)
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
             {
                 // Uses(stmt, 'v')
-                (IStatementDeclaration declaration, IArgument.VarName right) =>
+                (IStatementDeclaration declaration, Name right) =>
                     new GetStatementsByVariable(accessor, right.Value).Build(declaration),
 
                 // Uses(1, variable)
-                (IArgument.Line left, IVariableDeclaration) =>
+                (Line left, IVariableDeclaration) =>
                     accessor.GetVariables(left.Value),
 
                 // Uses('proc', variable)
-                (IArgument.VarName left, IVariableDeclaration right) =>
+                (Name left, IVariableDeclaration right) =>
                     accessor.GetVariables(left.Value),
 
                 // Uses(proc, 'v')
-                (IProcedureDeclaration left, IArgument.VarName right) =>
+                (IProcedureDeclaration left, Name right) =>
                     accessor.GetProcedures(right.Value),
 
                 // Uses(stmt, variable)
@@ -60,7 +60,7 @@ internal static class Uses
 
             return query;
 
-            IEnumerable<IComparable> BuildUsesWithSelect(IStatementDeclaration left, IVariableDeclaration right)
+            IEnumerable<IPkbDto> BuildUsesWithSelect(IStatementDeclaration left, IVariableDeclaration right)
             {
                 // tu nastąpi samowywrotka przy zapytaniach, w których nie ma wartości z selecta
                 // przykład: Select x such that uses(s, v)
@@ -137,28 +137,12 @@ internal static class Uses
 
     private class BooleanUsesQuery(IUsesAccessor accessor, int line, string variableName)
     {
-        public IEnumerable<IComparable> Build()
-        {
-            if (accessor.IsUsed(line, variableName))
-            {
-                return Enumerable.Repeat<IComparable>(true, 1);
-            }
-
-            return Enumerable.Empty<Statement>();
-        }
+        public IEnumerable<IPkbDto> Build() => IPkbDto.Boolean(accessor.IsUsed(line, variableName));
     }
 
     private class BooleanProcedureUsesQuery(IUsesAccessor accessor, string procedureName, string variableName)
     {
-        public IEnumerable<IComparable> Build()
-        {
-            if (accessor.IsUsed(procedureName, variableName))
-            {
-                return Enumerable.Repeat<IComparable>(true, 1);
-            }
-
-            return Enumerable.Empty<Procedure>();
-        }
+        public IEnumerable<IPkbDto> Build() => IPkbDto.Boolean(accessor.IsUsed(procedureName, variableName));
     }
 
     /// <summary>

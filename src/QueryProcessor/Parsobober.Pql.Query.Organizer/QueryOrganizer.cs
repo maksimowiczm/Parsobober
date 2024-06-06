@@ -1,4 +1,5 @@
 ﻿using Parsobober.Pkb.Relations.Abstractions.Accessors;
+using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Abstractions;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
@@ -6,7 +7,7 @@ using Parsobober.Shared;
 using QueryContext =
     System.Collections.Generic.Dictionary<
         Parsobober.Pql.Query.Arguments.IDeclaration,
-        System.Collections.Generic.IEnumerable<System.IComparable>
+        System.Collections.Generic.IEnumerable<Parsobober.Pkb.Relations.Dto.IPkbDto>
     >;
 
 namespace Parsobober.Pql.Query.Organizer;
@@ -57,13 +58,13 @@ public class QueryOrganizer : IQueryOrganizer
         var attribute = _attributes.FirstOrDefault(a => a.Declaration == declaration);
         if (attribute is not null)
         {
-            _declarationsMap[declaration] = _declarationsMap[declaration].Intersect(attribute.Do());
+            _declarationsMap[declaration] = _declarationsMap[declaration].Intersect(attribute.Do(), new PkbDtoComparer());
         }
 
         return true;
     }
 
-    public IEnumerable<IComparable> Organize(IDeclaration select)
+    public IEnumerable<IPkbDto> Organize(IDeclaration select)
     {
         var selectNothing = TryAddDeclarationToMap(select);
 
@@ -75,7 +76,7 @@ public class QueryOrganizer : IQueryOrganizer
 
         return selectNothing switch
         {
-            true when !_declarationsMap.Values.All(v => v.Any()) => Enumerable.Empty<IComparable>(),
+            true when !_declarationsMap.Values.All(v => v.Any()) => Enumerable.Empty<IPkbDto>(),
             _ => _declarationsMap[select]
         };
     }
@@ -130,7 +131,8 @@ public class QueryOrganizer : IQueryOrganizer
         // if other is not declaration, it is a constant argument
         if (other is not IDeclaration otherDeclaration)
         {
-            _declarationsMap[currentSelect] = _declarationsMap[currentSelect].Intersect(query.Do());
+            _declarationsMap[currentSelect] =
+                _declarationsMap[currentSelect].Intersect(query.Do(), new PkbDtoComparer());
             return;
         }
 
@@ -139,14 +141,16 @@ public class QueryOrganizer : IQueryOrganizer
                 .ReplaceArgument(otherDeclaration, IArgument.Parse(value))
                 .Do(currentSelect))
             .SelectMany(x => x)
-            .Distinct();
-        _declarationsMap[currentSelect] = _declarationsMap[currentSelect].Intersect(newCurrentSelect);
+            .Distinct(new PkbDtoComparer());
+        _declarationsMap[currentSelect] =
+            _declarationsMap[currentSelect].Intersect(newCurrentSelect, new PkbDtoComparer());
 
         var newOtherSelect = _declarationsMap[currentSelect]
             .Select(value => query.ReplaceArgument(currentSelect, IArgument.Parse(value))
                 .Do(otherDeclaration))
             .SelectMany(x => x)
-            .Distinct();
-        _declarationsMap[otherDeclaration] = _declarationsMap[otherDeclaration].Intersect(newOtherSelect);
+            .Distinct(new PkbDtoComparer());
+        _declarationsMap[otherDeclaration] =
+            _declarationsMap[otherDeclaration].Intersect(newOtherSelect, new PkbDtoComparer());
     }
 }

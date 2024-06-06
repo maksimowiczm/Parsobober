@@ -123,15 +123,19 @@ public class PqlParserTests
         builderMock.Verify(b => b.Build(), Times.Once);
     }
 
-    [Fact]
-    public void Select_With()
+    [Theory]
+    [InlineData("stmt s; variable v;Select s with v.varName = \"test\"", "v.varName", "\"test\"")]
+    [InlineData("stmt s; procedure p;Select s with p.procName = \"test\"", "p.procName", "\"test\"")]
+    [InlineData("stmt s1, s2;Select s1 with s1.stmt# = 1", "s1.stmt#", "1")]
+    [InlineData("stmt s; constant c;Select s with c.value = 1", "c.value", "1")]
+    [InlineData("stmt s; call c;Select s with c.procName = \"main\"", "c.procName", "\"main\"")]
+    public void Select_With(string queryString, string attribute, string value)
     {
         // Arrange
         var builderMock = new Mock<IQueryBuilder>();
         var queryMock = new Mock<IQueryResult>();
         var parser = new PqlParser(builderMock.Object);
 
-        const string queryString = "stmt s1, s2; Select s1 with s1.stmt# = 1";
         builderMock.Setup(b => b.Build()).Returns(queryMock.Object);
 
         // Act
@@ -140,9 +144,7 @@ public class PqlParserTests
         // Assert
         query.Should().NotBeNull();
         query.Should().Be(queryMock.Object);
-        builderMock.Verify(b => b.AddDeclaration("stmt s1, s2;"));
-        builderMock.Verify(b => b.AddSelect("s1"));
-        builderMock.Verify(b => b.With("s1.stmt#", "1"));
+        builderMock.Verify(b => b.With(attribute, value));
         builderMock.Verify(b => b.Build(), Times.Once);
     }
 
@@ -457,6 +459,15 @@ public class PqlParserTests
     [Theory]
     [InlineData("stmt s, s1, s2;")]
     [InlineData("stmt s,s1,s2;")]
+    [InlineData("procedure p, p1, p2;")]
+    [InlineData("assign a, a1, a2;")]
+    [InlineData("while w, w1, w2;")]
+    [InlineData("if i, i1, i2;")]
+    [InlineData("call c, c1, c2;")]
+    [InlineData("variable v, v1, v2;")]
+    [InlineData("constant c, c1, c2;")]
+    [InlineData("stmtLst sl, sl1, sl2;")]
+    [InlineData("prog_line n, n1, n2;")]
     public void Declarations(string declarations)
     {
         // Arrange

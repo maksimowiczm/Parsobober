@@ -220,12 +220,12 @@ public class CallsRelation(
 
     public bool IsCalled(string callerName, string calledName)
     {
-        return GetCalled(callerName).Any(called => called.ProcName == calledName);
+        return GetCalled(callerName).Any(called => called.Name == calledName);
     }
 
     public bool IsCalledTransitive(string callerName, string calledName)
     {
-        return GetCalledTransitive(callerName).Any(called => called.ProcName == calledName);
+        return GetCalledTransitive(callerName).Any(called => called.Name == calledName);
     }
 
     internal List<string> GetAllCalledProcedures() => _calledDictionary.Keys.ToList();

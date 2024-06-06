@@ -1,3 +1,4 @@
+using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Organizer.Obsolete.Tree.Abstraction;
 using Parsobober.Pql.Query.Queries.Abstractions;
@@ -39,7 +40,7 @@ internal class ReplacerQueryNode : IQueryNode
         _replacerQueryNode = replacerQueryNode;
     }
 
-    public IEnumerable<IComparable> Do()
+    public IEnumerable<IPkbDto> Do()
     {
         // god forgive me
         // I am doing this only to pass my studies
@@ -60,6 +61,6 @@ internal class ReplacerQueryNode : IQueryNode
     }
 
 #if DEBUG
-    private List<IComparable> Result => Do().ToList();
+    private List<IPkbDto> Result => Do().ToList();
 #endif
 }

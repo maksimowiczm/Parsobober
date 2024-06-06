@@ -2,42 +2,32 @@
 
 namespace Parsobober.Pkb.Relations.Dto;
 
-public abstract record Statement(int LineNumber) : IModifiesAccessor.IRequest, IUsesAccessor.IRequest, IComparable
+public abstract record Statement(int Line) : IModifiesAccessor.IRequest, IUsesAccessor.IRequest, IPkbDto
 {
-    public override string ToString() => LineNumber.ToString();
+    public override string ToString() => Line.ToString();
+}
 
-    public int CompareTo(object? obj)
-    {
-        if (obj is Statement statement)
-        {
-            return LineNumber.CompareTo(statement.LineNumber);
-        }
-
-        return -1;
-    }
-};
-
-public abstract record ContainerStatement(int LineNumber) : Statement(LineNumber)
+public abstract record ContainerStatement(int Line) : Statement(Line)
 {
     public override string ToString() => base.ToString();
 }
 
-public record Assign(int LineNumber) : Statement(LineNumber)
+public record Assign(int Line) : Statement(Line)
 {
     public override string ToString() => base.ToString();
 }
 
-public record If(int LineNumber) : ContainerStatement(LineNumber)
+public record If(int Line) : ContainerStatement(Line)
 {
     public override string ToString() => base.ToString();
 }
 
-public record While(int LineNumber) : ContainerStatement(LineNumber)
+public record While(int Line) : ContainerStatement(Line)
 {
     public override string ToString() => base.ToString();
 }
 
-public record Call(int LineNumber) : Statement(LineNumber)
+public record Call(int Line) : Statement(Line)
 {
     public override string ToString() => base.ToString();
 }

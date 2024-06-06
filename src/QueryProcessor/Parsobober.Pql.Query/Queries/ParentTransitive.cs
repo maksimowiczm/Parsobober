@@ -15,11 +15,11 @@ internal static class ParentTransitive
         public override IArgument Left { get; } = parent;
         public override IArgument Right { get; } = child;
 
-        public override IEnumerable<IComparable> Do()
+        public override IEnumerable<IPkbDto> Do()
         {
             var query = (Left, Right) switch
             {
-                (IArgument.Line parent, IArgument.Line child) =>
+                (Line parent, Line child) =>
                     new BooleanParentQuery(accessor, parent.Value, child.Value).Build(),
 
                 _ => DoDeclaration()
@@ -28,17 +28,17 @@ internal static class ParentTransitive
             return query;
         }
 
-        public override IEnumerable<IComparable> Do(IDeclaration select)
+        public override IEnumerable<IPkbDto> Do(IDeclaration select)
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
             {
                 // Parent*(stmt, 1)
-                (IStatementDeclaration declaration, IArgument.Line child) =>
+                (IStatementDeclaration declaration, Line child) =>
                     new GetTransitiveParentByLineNumber(accessor, child.Value).Build(declaration),
 
                 // Parent*(1, stmt)
-                (IArgument.Line parent, IStatementDeclaration child) =>
+                (Line parent, IStatementDeclaration child) =>
                     new GetTransitiveChildrenByLineNumber(accessor, parent.Value).Build(child),
 
                 // Parent*(stmt, stmt)
@@ -195,15 +195,7 @@ internal static class ParentTransitive
 
     private class BooleanParentQuery(IParentAccessor accessor, int parent, int child)
     {
-        public IEnumerable<IComparable> Build()
-        {
-            if (accessor.IsParentTransitive(parent, child))
-            {
-                return Enumerable.Repeat<IComparable>(true, 1);
-            }
-
-            return Enumerable.Empty<Statement>();
-        }
+        public IEnumerable<IPkbDto> Build() => IPkbDto.Boolean(accessor.IsParentTransitive(parent, child));
     }
 
     #endregion

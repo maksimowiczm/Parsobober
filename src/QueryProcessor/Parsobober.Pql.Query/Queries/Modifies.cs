@@ -15,14 +15,14 @@ internal static class Modifies
         public override IArgument Left { get; } = left;
         public override IArgument Right { get; } = right;
 
-        public override IEnumerable<IComparable> Do()
+        public override IEnumerable<IPkbDto> Do()
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
             {
-                (IArgument.Line line, IArgument.VarName name) =>
+                (Line line, Name name) =>
                     new BooleanStatementModifiesQuery(accessor, line.Value, name.Value).Build(),
-                (IArgument.VarName procName, IArgument.VarName varName) =>
+                (Name procName, Name varName) =>
                     new BooleanProcedureModifiesQuery(accessor, procName.Value, varName.Value).Build(),
                 _ => DoDeclaration()
             };
@@ -30,25 +30,25 @@ internal static class Modifies
             return query;
         }
 
-        public override IEnumerable<IComparable> Do(IDeclaration select)
+        public override IEnumerable<IPkbDto> Do(IDeclaration select)
         {
             // pattern matching argumentów
             var query = (Left, Right) switch
             {
                 // Modifies(stmt, 'v')
-                (IStatementDeclaration declaration, IArgument.VarName right) =>
+                (IStatementDeclaration declaration, Name right) =>
                     new GetStatementsByVariable(accessor, right.Value).Build(declaration),
 
                 // Modifies(1, variable)
-                (IArgument.Line left, IVariableDeclaration) =>
+                (Line left, IVariableDeclaration) =>
                     accessor.GetVariables(left.Value),
 
                 // Modifies('proc', variable)
-                (IArgument.VarName left, IVariableDeclaration right) =>
+                (Name left, IVariableDeclaration right) =>
                     accessor.GetVariables(left.Value),
 
                 // Modifies(proc, 'v')
-                (IProcedureDeclaration left, IArgument.VarName right) =>
+                (IProcedureDeclaration left, Name right) =>
                     accessor.GetProcedures(right.Value),
 
                 // Modifies(stmt, variable)
@@ -59,7 +59,7 @@ internal static class Modifies
 
             return query;
 
-            IEnumerable<IComparable> BuildModifiesWithSelect(
+            IEnumerable<IPkbDto> BuildModifiesWithSelect(
                 IStatementDeclaration left,
                 IVariableDeclaration right
             )
@@ -139,28 +139,12 @@ internal static class Modifies
 
     private class BooleanStatementModifiesQuery(IModifiesAccessor accessor, int line, string variableName)
     {
-        public IEnumerable<IComparable> Build()
-        {
-            if (accessor.IsModified(line, variableName))
-            {
-                return Enumerable.Repeat<IComparable>(true, 1);
-            }
-
-            return Enumerable.Empty<Statement>();
-        }
+        public IEnumerable<IPkbDto> Build() => IPkbDto.Boolean(accessor.IsModified(line, variableName));
     }
 
     private class BooleanProcedureModifiesQuery(IModifiesAccessor accessor, string procedureName, string variableName)
     {
-        public IEnumerable<IComparable> Build()
-        {
-            if (accessor.IsModified(procedureName, variableName))
-            {
-                return Enumerable.Repeat<IComparable>(true, 1);
-            }
-
-            return Enumerable.Empty<Procedure>();
-        }
+        public IEnumerable<IPkbDto> Build() => IPkbDto.Boolean(accessor.IsModified(procedureName, variableName));
     }
 
     /// <summary>

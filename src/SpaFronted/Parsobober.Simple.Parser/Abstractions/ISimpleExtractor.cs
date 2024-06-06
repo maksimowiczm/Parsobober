@@ -14,5 +14,7 @@ public interface ISimpleExtractor
     void Call(TreeNode node);
     void Variable(TreeNode node);
     void Factor(TreeNode node);
+    void StmtLst(TreeNode node);
+    void Constant(TreeNode node);
     void StmtLst();
 }

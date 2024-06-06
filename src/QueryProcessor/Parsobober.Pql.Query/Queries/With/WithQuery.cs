@@ -1,3 +1,4 @@
+using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
 
@@ -6,10 +7,10 @@ namespace Parsobober.Pql.Query.Queries.With;
 internal abstract class WithQuery(IDeclaration declaration) : IAttributeQuery
 {
     public IDeclaration Declaration => declaration;
-    public abstract IEnumerable<IComparable> Do();
+    public abstract IEnumerable<IPkbDto> Do();
     public abstract IQueryDeclaration ApplyAttribute(IQueryDeclaration queryDeclaration);
 
 #if DEBUG
-    private IEnumerable<IComparable> Result => Do();
+    private IEnumerable<IPkbDto> Result => Do();
 #endif
 }

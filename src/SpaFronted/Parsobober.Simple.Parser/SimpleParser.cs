@@ -99,9 +99,11 @@ internal class SimpleParser(
 
     private TreeNode StmtLst()
     {
-        NotifyAll(ex => ex.StmtLst());
         TreeNode node = CreateTreeNode(EntityType.StatementsList, _currentLineNumber);
-        StmtLstElement(node);
+        NotifyAll(ex => ex.StmtLst());
+        var firstNode = StmtLstElement(node);
+        node.LineNumber = firstNode.LineNumber;
+        NotifyAll(ex => ex.StmtLst(node));
         return node;
     }
 
@@ -277,10 +279,12 @@ internal class SimpleParser(
     {
         if (_currentToken.Type == SimpleToken.Integer)
         {
-            var factorValue = _currentToken.Value;
+            var constatValue = _currentToken.Value;
 
             Match(SimpleToken.Integer);
-            return CreateTreeNode(EntityType.Constant, _currentLineNumber, factorValue);
+            var constantNode = CreateTreeNode(EntityType.Constant, _currentLineNumber, constatValue);
+            NotifyAll(ex => ex.Constant(constantNode));
+            return constantNode;
         }
         else if (_currentToken.Type == SimpleToken.Name)
         {

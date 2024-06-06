@@ -41,6 +41,7 @@ internal class PqlGrammar(IQueryBuilder queryBuilder)
     public IQueryBuilder AndAttributeCompare(IQueryBuilder compare) => compare;
 
     [Production("attribute-compare : Attribute Equal[d] Reference")]
+    [Production("attribute-compare : Attribute Equal[d] QuoteReference")]
     public IQueryBuilder AttributeCompare(Token<PqlToken> attribute, Token<PqlToken> reference) =>
         queryBuilder.With(attribute.Value, reference.Value);
 

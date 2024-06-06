@@ -2,7 +2,7 @@ namespace Parsobober.Pkb.Ast;
 
 public class TreeNode(int lineNumber, EntityType type)
 {
-    public int LineNumber { get; } = lineNumber;
+    public int LineNumber { get; set; } = lineNumber;
     public EntityType Type { get; } = type;
     public string? Attribute { get; internal set; }
     public TreeNode? LeftSibling { get; internal set; }

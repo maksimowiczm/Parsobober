@@ -1,19 +1,6 @@
 ﻿namespace Parsobober.Pkb.Relations.Dto;
 
-public record Procedure(string ProcName) : IComparable
+public record Procedure(string Name) : IPkbDto
 {
-    public override string ToString()
-    {
-        return ProcName;
-    }
-
-    public int CompareTo(object? obj)
-    {
-        if (obj is Procedure procedure)
-        {
-            return string.Compare(ProcName, procedure.ProcName, StringComparison.Ordinal);
-        }
-
-        return -1;
-    }
+    public override string ToString() => Name;
 }

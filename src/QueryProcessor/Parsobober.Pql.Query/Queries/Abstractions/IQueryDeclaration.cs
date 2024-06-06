@@ -1,3 +1,4 @@
+using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Exceptions;
 
@@ -12,12 +13,12 @@ public interface IQueryDeclaration
     /// <summary>
     /// Do the query without specifying left or right side.
     /// </summary>
-    IEnumerable<IComparable> Do();
+    IEnumerable<IPkbDto> Do();
 
     /// <summary>
     /// Do the query using select.
     /// </summary>
-    IEnumerable<IComparable> Do(IDeclaration select);
+    IEnumerable<IPkbDto> Do(IDeclaration select);
 
     /// <summary>
     /// Replace the argument in the query.

@@ -1,3 +1,6 @@
+using Parsobober.Pkb.Relations.Dto;
+using Parsobober.Pql.Query.Queries.Exceptions;
+
 namespace Parsobober.Pql.Query.Arguments;
 
 /// <summary>
@@ -24,33 +27,42 @@ public interface IArgument
             return new Line(line);
         }
 
-        return new VarName(argument.Replace('\"', ' ').Trim());
+        return new Name(argument.Replace('\"', ' ').Trim());
     }
 
-    static IArgument Parse(object argument)
-    {
-        if (int.TryParse(argument.ToString(), out var line))
+    static IArgument Parse(object argument) =>
+        argument switch
         {
-            return new Line(line);
-        }
+            Statement { Line: var line } => new Line(line),
+            Variable { Name: var name } => new Name(name),
+            Procedure { Name: var procName } => new Name(procName),
+            Constant { Value: var value } => new ConstantValue(value),
+            ProgramLine { Line: var line } => new Line(line),
+            StatementList { Line: var line } => new Line(line),
+            _ => throw new ArgumentParseException($"Given argument could not be parsed. {argument}")
+        };
+}
 
-        return new VarName(argument.ToString()!);
-    }
-
-    /// <summary>
-    /// Represents a line in a PQL query.
-    /// </summary>
-    public readonly record struct Line(int Value) : IArgument
-    {
+public record ConstantValue(int Value) : IArgument
+{
 #if DEBUG
-        public override string ToString() => Value.ToString();
+    public override string ToString() => $"Constant = {Value.ToString()}";
 #endif
-    }
+};
 
-    public readonly record struct VarName(string Value) : IArgument
-    {
+public readonly record struct Name(string Value) : IArgument
+{
 #if DEBUG
-        public override string ToString() => $"\"{Value}\"";
+    public override string ToString() => $"\"{Value}\"";
 #endif
-    }
+}
+
+/// <summary>
+/// Represents a line in a PQL query.
+/// </summary>
+public readonly record struct Line(int Value) : IArgument
+{
+#if DEBUG
+    public override string ToString() => Value.ToString();
+#endif
 }

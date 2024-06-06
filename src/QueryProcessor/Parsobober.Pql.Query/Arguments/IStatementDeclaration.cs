@@ -18,7 +18,7 @@ public interface IStatementDeclaration : IDeclaration
     /// <summary>
     /// Represents a statement declaration in a PQL query.
     /// </summary>
-    public readonly record struct Statement(string Name) : IStatementDeclaration
+    public record Statement(string Name) : IStatementDeclaration
     {
 #if DEBUG
         public override string ToString() => Name;

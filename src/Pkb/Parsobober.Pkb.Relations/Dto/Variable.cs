@@ -1,19 +1,6 @@
 ﻿namespace Parsobober.Pkb.Relations.Dto;
 
-public record Variable(string Name) : IComparable
+public record Variable(string Name) : IPkbDto
 {
-    public override string ToString()
-    {
-        return Name;
-    }
-
-    public int CompareTo(object? obj)
-    {
-        if (obj is Variable variable)
-        {
-            return string.Compare(Name, variable.Name, StringComparison.Ordinal);
-        }
-
-        return -1;
-    }
+    public override string ToString() => Name;
 }

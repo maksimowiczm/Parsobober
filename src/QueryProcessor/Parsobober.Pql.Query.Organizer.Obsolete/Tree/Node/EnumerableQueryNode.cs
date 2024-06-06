@@ -1,3 +1,4 @@
+using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pql.Query.Organizer.Obsolete.Tree.Abstraction;
 
 namespace Parsobober.Pql.Query.Organizer.Obsolete.Tree.Node;
@@ -8,16 +9,16 @@ namespace Parsobober.Pql.Query.Organizer.Obsolete.Tree.Node;
 [Obsolete("Obsolete query organizer. Use Parsobober.Pql.Query.Organizer instead.")]
 public class EnumerableQueryNode : IQueryNode
 {
-    private readonly IEnumerable<IComparable> _queryResult;
+    private readonly IEnumerable<IPkbDto> _queryResult;
 
-    public EnumerableQueryNode(IEnumerable<IComparable> queryResult)
+    public EnumerableQueryNode(IEnumerable<IPkbDto> queryResult)
     {
         _queryResult = queryResult;
     }
 
-    public IEnumerable<IComparable> Do() => _queryResult;
+    public IEnumerable<IPkbDto> Do() => _queryResult;
 
 #if DEBUG
-    private List<IComparable> Result => Do().ToList();
+    private List<IPkbDto> Result => Do().ToList();
 #endif
 }
