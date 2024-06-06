@@ -19,7 +19,7 @@ internal static class Parent
         {
             var query = (Left, Right) switch
             {
-                (IArgument.Line parent, IArgument.Line child) =>
+                (Line parent, Line child) =>
                     new BooleanParentQuery(accessor, parent.Value, child.Value).Build(),
 
                 _ => DoDeclaration()
@@ -34,11 +34,11 @@ internal static class Parent
             var query = (Left, Right) switch
             {
                 // Parent(stmt, 1)
-                (IStatementDeclaration declaration, IArgument.Line child) =>
+                (IStatementDeclaration declaration, Line child) =>
                     new GetParentByLineNumber(accessor, child.Value).Build(declaration),
 
                 // Parent(1, stmt)
-                (IArgument.Line parent, IStatementDeclaration child) =>
+                (Line parent, IStatementDeclaration child) =>
                     new GetChildrenByLineNumber(accessor, parent.Value).Build(child),
 
                 // Parent(stmt, stmt)

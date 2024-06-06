@@ -41,28 +41,28 @@ public interface IArgument
             StatementList { Line: var line } => new Line(line),
             _ => throw new ArgumentParseException($"Given argument could not be parsed. {argument}")
         };
+}
 
-    /// <summary>
-    /// Represents a line in a PQL query.
-    /// </summary>
-    public readonly record struct Line(int Value) : IArgument
-    {
+public record ConstantValue(int Value) : IArgument
+{
 #if DEBUG
-        public override string ToString() => Value.ToString();
+    public override string ToString() => $"Constant = {Value.ToString()}";
 #endif
-    }
+};
 
-    public readonly record struct Name(string Value) : IArgument
-    {
+public readonly record struct Name(string Value) : IArgument
+{
 #if DEBUG
-        public override string ToString() => $"\"{Value}\"";
+    public override string ToString() => $"\"{Value}\"";
 #endif
-    }
+}
 
-    public record ConstantValue(int Value) : IArgument
-    {
+/// <summary>
+/// Represents a line in a PQL query.
+/// </summary>
+public readonly record struct Line(int Value) : IArgument
+{
 #if DEBUG
-        public override string ToString() => $"Constant = {Value.ToString()}";
+    public override string ToString() => Value.ToString();
 #endif
-    };
 }

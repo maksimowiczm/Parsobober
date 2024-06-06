@@ -20,7 +20,7 @@ internal static class Calls
             var query = (Left, Right) switch
             {
                 // Calls('name', 'name')
-                (IArgument.Name left, IArgument.Name right) =>
+                (Name left, Name right) =>
                     new BooleanCallsQuery(accessor, left.Value, right.Value).Build(),
 
                 _ => DoDeclaration()
@@ -34,11 +34,11 @@ internal static class Calls
             var query = (Left, Right) switch
             {
                 // Calls(proc, 'name')
-                (IProcedureDeclaration declaration, IArgument.Name called) =>
+                (IProcedureDeclaration declaration, Name called) =>
                     new GetCallersByCalledName(accessor, called.Value).Build(),
 
                 // Calls('name', proc)
-                (IArgument.Name caller, IProcedureDeclaration declaration) =>
+                (Name caller, IProcedureDeclaration declaration) =>
                     new GetCalledByCallerName(accessor, caller.Value).Build(),
 
                 // Calls(proc, proc)

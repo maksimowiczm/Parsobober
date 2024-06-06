@@ -19,7 +19,7 @@ internal static class Follows
         {
             var query = (Left, Right) switch
             {
-                (IArgument.Line left, IArgument.Line right) =>
+                (Line left, Line right) =>
                     new BooleanFollowsQuery(accessor, left.Value, right.Value).Build(),
 
                 _ => DoDeclaration()
@@ -34,11 +34,11 @@ internal static class Follows
             var query = (Left, Right) switch
             {
                 // Follows(stmt, 1)
-                (IStatementDeclaration declaration, IArgument.Line follows) =>
+                (IStatementDeclaration declaration, Line follows) =>
                     new GetFollowsByLineNumber(accessor, follows.Value).Build(declaration),
 
                 //Follows(1, stmt) 
-                (IArgument.Line followed, IStatementDeclaration follows) =>
+                (Line followed, IStatementDeclaration follows) =>
                     new GetFollowedByLineNumber(accessor, followed.Value).Build(follows),
 
                 // Follows(stmt, stmt)

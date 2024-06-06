@@ -20,9 +20,9 @@ internal static class Modifies
             // pattern matching argumentów
             var query = (Left, Right) switch
             {
-                (IArgument.Line line, IArgument.Name name) =>
+                (Line line, Name name) =>
                     new BooleanStatementModifiesQuery(accessor, line.Value, name.Value).Build(),
-                (IArgument.Name procName, IArgument.Name varName) =>
+                (Name procName, Name varName) =>
                     new BooleanProcedureModifiesQuery(accessor, procName.Value, varName.Value).Build(),
                 _ => DoDeclaration()
             };
@@ -36,19 +36,19 @@ internal static class Modifies
             var query = (Left, Right) switch
             {
                 // Modifies(stmt, 'v')
-                (IStatementDeclaration declaration, IArgument.Name right) =>
+                (IStatementDeclaration declaration, Name right) =>
                     new GetStatementsByVariable(accessor, right.Value).Build(declaration),
 
                 // Modifies(1, variable)
-                (IArgument.Line left, IVariableDeclaration) =>
+                (Line left, IVariableDeclaration) =>
                     accessor.GetVariables(left.Value),
 
                 // Modifies('proc', variable)
-                (IArgument.Name left, IVariableDeclaration right) =>
+                (Name left, IVariableDeclaration right) =>
                     accessor.GetVariables(left.Value),
 
                 // Modifies(proc, 'v')
-                (IProcedureDeclaration left, IArgument.Name right) =>
+                (IProcedureDeclaration left, Name right) =>
                     accessor.GetProcedures(right.Value),
 
                 // Modifies(stmt, variable)

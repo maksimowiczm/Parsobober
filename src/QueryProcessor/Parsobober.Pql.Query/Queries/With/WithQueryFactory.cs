@@ -38,7 +38,7 @@ internal class WithQueryFactory(IProgramContextAccessor accessor)
         {
             if (queryDeclaration.Left == Declaration || queryDeclaration.Right == Declaration)
             {
-                return queryDeclaration.ReplaceArgument(Declaration, new IArgument.ConstantValue(value));
+                return queryDeclaration.ReplaceArgument(Declaration, new Arguments.ConstantValue(value));
             }
 
             return queryDeclaration;
@@ -62,7 +62,7 @@ internal class WithQueryFactory(IProgramContextAccessor accessor)
         {
             if (queryDeclaration.Left == Declaration || queryDeclaration.Right == Declaration)
             {
-                return queryDeclaration.ReplaceArgument(Declaration, new IArgument.Name(name));
+                return queryDeclaration.ReplaceArgument(Declaration, new Name(name));
             }
 
             return queryDeclaration;
@@ -86,7 +86,7 @@ internal class WithQueryFactory(IProgramContextAccessor accessor)
         {
             if (queryDeclaration.Left == Declaration || queryDeclaration.Right == Declaration)
             {
-                return queryDeclaration.ReplaceArgument(Declaration, new IArgument.Line(line));
+                return queryDeclaration.ReplaceArgument(Declaration, new Line(line));
             }
 
             return queryDeclaration;
@@ -114,7 +114,7 @@ internal class WithQueryFactory(IProgramContextAccessor accessor)
         {
             if (queryDeclaration.Left == Declaration || queryDeclaration.Right == Declaration)
             {
-                return queryDeclaration.ReplaceArgument(Declaration, new IArgument.Name(name));
+                return queryDeclaration.ReplaceArgument(Declaration, new Name(name));
             }
 
             return queryDeclaration;

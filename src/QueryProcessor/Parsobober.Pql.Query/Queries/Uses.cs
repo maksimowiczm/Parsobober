@@ -20,9 +20,9 @@ internal static class Uses
             // pattern matching argumentów
             var query = (Left, Right) switch
             {
-                (IArgument.Line line, IArgument.Name name) =>
+                (Line line, Name name) =>
                     new BooleanUsesQuery(accessor, line.Value, name.Value).Build(),
-                (IArgument.Name procName, IArgument.Name varName) =>
+                (Name procName, Name varName) =>
                     new BooleanProcedureUsesQuery(accessor, procName.Value, varName.Value).Build(),
                 _ => DoDeclaration()
             };
@@ -36,19 +36,19 @@ internal static class Uses
             var query = (Left, Right) switch
             {
                 // Uses(stmt, 'v')
-                (IStatementDeclaration declaration, IArgument.Name right) =>
+                (IStatementDeclaration declaration, Name right) =>
                     new GetStatementsByVariable(accessor, right.Value).Build(declaration),
 
                 // Uses(1, variable)
-                (IArgument.Line left, IVariableDeclaration) =>
+                (Line left, IVariableDeclaration) =>
                     accessor.GetVariables(left.Value),
 
                 // Uses('proc', variable)
-                (IArgument.Name left, IVariableDeclaration right) =>
+                (Name left, IVariableDeclaration right) =>
                     accessor.GetVariables(left.Value),
 
                 // Uses(proc, 'v')
-                (IProcedureDeclaration left, IArgument.Name right) =>
+                (IProcedureDeclaration left, Name right) =>
                     accessor.GetProcedures(right.Value),
 
                 // Uses(stmt, variable)
