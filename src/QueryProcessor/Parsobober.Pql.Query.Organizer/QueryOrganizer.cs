@@ -71,11 +71,10 @@ public class QueryOrganizer : IQueryOrganizer
             _declarationsMap[from] = _declarationsMap[from]
                 .Intersect(_declarationsMap[to], new PkbDtoComparer())
                 .ToList();
-            ;
+
             _declarationsMap[to] = _declarationsMap[to]
                 .Intersect(_declarationsMap[from], new PkbDtoComparer())
                 .ToList();
-            ;
         }
     }
 
@@ -109,9 +108,7 @@ public class QueryOrganizer : IQueryOrganizer
         var selectNothing = TryAddDeclarationToMap(select);
 
         // check if it is not boolean query
-        var booleans = _queries
-            .Where(q => q is { Left: not IDeclaration, Right: not IDeclaration })
-            .ToList();
+        var booleans = _queries.Where(QueryDeclarationExtensions.IsBooleanQuery).ToList();
 
         // optimize boolean queries
         if (booleans.Count > 0)
@@ -133,7 +130,10 @@ public class QueryOrganizer : IQueryOrganizer
             _queries.RemoveAll(b => booleans.Contains(b));
         }
 
+
         var factory = new QueryOptimizerFactory(_queries, _comparer);
+
+        Prepare(factory.Create());
 
         foreach (var optimizer in _queries.Select(_ => factory.Create()))
         {
@@ -146,6 +146,21 @@ public class QueryOrganizer : IQueryOrganizer
             true when !_declarationsMap.Values.All(v => v.Any()) => Enumerable.Empty<IPkbDto>(),
             _ => _declarationsMap[select]
         };
+    }
+
+    private void Prepare(QueryOptimizer optimizer)
+    {
+        var easy = _declarations
+            .Select(optimizer.GetBest)
+            .WhereNotNull();
+
+        foreach (var (select, query) in easy)
+        {
+            var result = query.Do(select);
+            _declarationsMap[select] = result;
+        }
+
+        ApplyAliases();
     }
 
     private void Iterate(QueryOptimizer optimizer)
