@@ -24,10 +24,6 @@ internal class FollowsExtractor(IFollowsCreator creator) : SimpleExtractor
     private void ContainerStmt(TreeNode stmtList)
     {
         var stmtListElem = stmtList.Children[0];
-        if (stmtListElem is null)
-        {
-            return;
-        }
 
         var nextStmtListElem = stmtListElem.RightSibling;
         while (nextStmtListElem is not null)

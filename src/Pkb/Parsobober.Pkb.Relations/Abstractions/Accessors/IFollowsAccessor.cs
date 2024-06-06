@@ -22,13 +22,13 @@ public interface IFollowsAccessor
     /// => Follows(returned, providedType)
     /// </summary>
     /// <typeparam name="TStatement">Statement type <see cref="Statement"/></typeparam>
-    IEnumerable<Statement> GetFollowed<TStatement>() where TStatement : Statement;
+    IEnumerable<Statement> GetPreceding<TStatement>() where TStatement : Statement;
 
     /// <summary>
     /// Returns the statement which are FOLLOWED BY statement with given line number
     /// => Follows(returned, <paramref name="lineNumber"/>)
     /// </summary>
-    Statement? GetFollowed(int lineNumber);
+    Statement? GetPreceding(int lineNumber);
 
     /// <summary>
     /// Returns the statements that FOLLOW TRANSITIVELY statement with given type <typeparamref name="TStatement"/>
@@ -48,21 +48,21 @@ public interface IFollowsAccessor
     /// => Follows*(returned, providedType)
     /// </summary>
     /// <typeparam name="TStatement">Statement type <see cref="Statement"/></typeparam>
-    IEnumerable<Statement> GetFollowedTransitive<TStatement>() where TStatement : Statement;
+    IEnumerable<Statement> GetPrecedingTransitive<TStatement>() where TStatement : Statement;
 
     /// <summary>
     /// Returns the statements that are FOLLOWED BY TRANSITIVELY statement with given line number
     /// => Follows*(returned, <paramref name="lineNumber"/>)
     /// </summary>
-    IEnumerable<Statement> GetFollowedTransitive(int lineNumber);
+    IEnumerable<Statement> GetPrecedingTransitive(int lineNumber);
 
     /// <summary>
     /// Returns true if statement with given line number follows statement with given line number
     /// </summary>
-    bool IsFollowed(int lineNumber, int followerLineNumber);
+    bool IsFollows(int predecessor, int follower);
 
     /// <summary>
     /// Returns true if statement with given line number follows transitive statement with given line number
     /// </summary>
-    bool IsFollowedTransitive(int lineNumber, int followerLineNumber);
+    bool IsFollowsTransitive(int predecessor, int follower);
 }

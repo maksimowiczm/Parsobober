@@ -8,9 +8,7 @@ namespace Parsobober.Pkb.Relations.Abstractions.Creators;
 public interface IFollowsCreator
 {
     /// <summary>
-    /// Sets the follows relationship between the specified node and its parent.
+    /// Sets the follows relationship between the given nodes.
     /// </summary>
-    /// <param name="node">The node to establish the follows relationship with.</param>
-    /// <param name="parent">The parent node of the specified node.</param>
-    void SetFollows(TreeNode node, TreeNode parent);
+    void SetFollows(TreeNode preceding, TreeNode following);
 }

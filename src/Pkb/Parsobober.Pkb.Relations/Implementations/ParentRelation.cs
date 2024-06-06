@@ -17,11 +17,14 @@ public class ParentRelation(
 ) : IParentCreator, IParentAccessor
 {
     /// <summary>
-    /// Stores parent relation between two statements using their line numbers.
-    /// Key is a line number of a CHILD node, value is a line number of a PARENT node (child can have only one parent).
+    /// [child node line number, parent node line number]
     /// </summary>
-    /// <remarks>[child node line number, parent node line number].</remarks>
     private readonly Dictionary<int, int> _childParentDictionary = new();
+
+    /// <summary>
+    /// [parent node line number, set of children node line numbers]
+    /// </summary>
+    private readonly Dictionary<int, HashSet<int>> _parentChildrenDictionary = new();
 
     public void SetParent(TreeNode parentNode, TreeNode childNode)
     {
@@ -45,11 +48,14 @@ public class ParentRelation(
                 $"Child node type {parentNode.Type} is different than any of required {EntityType.Statement} types.");
         }
 
-        if (!_childParentDictionary.TryAdd(childNode.LineNumber, parentNode.LineNumber))
+        _childParentDictionary.TryAdd(childNode.LineNumber, parentNode.LineNumber);
+        if (_parentChildrenDictionary.TryGetValue(parentNode.LineNumber, out var children))
         {
-            logger.LogError("Relation {parent} parents {child} already exists",
-                parentNode.LineNumber, childNode.LineNumber);
+            children.Add(childNode.LineNumber);
+            return;
         }
+
+        _parentChildrenDictionary.Add(parentNode.LineNumber, [childNode.LineNumber]);
     }
 
     public IEnumerable<Statement> GetChildren<TParentStatement>() where TParentStatement : Statement
@@ -62,9 +68,9 @@ public class ParentRelation(
 
     public IEnumerable<Statement> GetChildren(int lineNumber)
     {
-        return _childParentDictionary
-            .Where(stmt => stmt.Value == lineNumber)
-            .Select(stmt => programContext.StatementsDictionary[stmt.Key].ToStatement());
+        return _parentChildrenDictionary.TryGetValue(lineNumber, out var children)
+            ? children.Select(statement => programContext.StatementsDictionary[statement].ToStatement())
+            : Enumerable.Empty<Statement>();
     }
 
     public IEnumerable<Statement> GetParents<TChildStatement>() where TChildStatement : Statement

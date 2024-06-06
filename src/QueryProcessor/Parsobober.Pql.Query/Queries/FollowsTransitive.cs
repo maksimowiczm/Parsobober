@@ -34,39 +34,35 @@ internal static class FollowsTransitive
             var query = (Left, Right) switch
             {
                 // followed*(stmt, 1)
-                (IStatementDeclaration declaration, Line follows) =>
-                    new GetTransitiveFollowedByLineNumber(accessor, follows.Value).Build(declaration),
+                (IStatementDeclaration preceding, Line follower) =>
+                    new GetTransitivePrecedingByLineNumber(accessor, follower.Value).Build(preceding),
 
                 // followed*(1, stmt)
-                (Line followed, IStatementDeclaration follows) =>
-                    new GetTransitiveFollowsByLineNumber(accessor, followed.Value).Build(follows),
+                (Line preceding, IStatementDeclaration follower) =>
+                    new GetTransitiveFollowerByLineNumber(accessor, preceding.Value).Build(follower),
 
                 // followed*(stmt, stmt)
-                (IStatementDeclaration followed, IStatementDeclaration follows) =>
-                    BuildFollowedWithSelect(followed, follows),
+                (IStatementDeclaration preceding, IStatementDeclaration follower) =>
+                    BuildFollowedWithSelect(preceding, follower),
 
-                // followed*(1, 2) niewspierane w tej wersji todo już wspierane
                 _ => throw new QueryNotSupported(this, $"Followed*({Left}, {Right}) is not supported.")
             };
 
             return query;
 
             IEnumerable<Statement> BuildFollowedWithSelect(
-                IStatementDeclaration followed,
+                IStatementDeclaration preceding,
                 IStatementDeclaration follows
             )
             {
-                // tu nastąpi samowywrotka przy zapytaniach, w których nie ma wartości z selecta
-                // przykład: Select x such that followed(a, b)
-
-                if (followed == select)
+                if (preceding == select)
                 {
-                    return new GetTransitiveFollowedByFollowsType(accessor).Create(follows).Build(followed);
+                    return new GetTransitivePrecedingByFollowsType(accessor).Create(follows).Build(preceding);
                 }
 
                 if (follows == select)
                 {
-                    return new GetTransitiveFollowsByFollowedType(accessor).Create(followed).Build(follows);
+                    return new GetTransitiveFollowerByFollowedType(accessor).Create(preceding).Build(follows);
                 }
 
                 throw new DeclarationNotFoundException(select, this);
@@ -78,60 +74,50 @@ internal static class FollowsTransitive
 
     #region Queries
 
-    private class GetTransitiveFollowedByFollowsType(IFollowsAccessor followedAccessor)
+    private class GetTransitivePrecedingByFollowsType(IFollowsAccessor followedAccessor)
     {
         public FollowedQuery Create(IStatementDeclaration followsStatementDeclaration) =>
             followsStatementDeclaration switch
             {
-                IStatementDeclaration.Statement => new GetTransitiveFollowedByFollowsType<Statement>(followedAccessor),
-                IStatementDeclaration.Assign => new GetTransitiveFollowedByFollowsType<Assign>(followedAccessor),
-                IStatementDeclaration.While => new GetTransitiveFollowedByFollowsType<While>(followedAccessor),
-                IStatementDeclaration.If => new GetTransitiveFollowedByFollowsType<If>(followedAccessor),
-                IStatementDeclaration.Call => new GetTransitiveFollowedByFollowsType<Call>(followedAccessor),
+                IStatementDeclaration.Statement => new GetTransitivePrecedingByFollowsType<Statement>(followedAccessor),
+                IStatementDeclaration.Assign => new GetTransitivePrecedingByFollowsType<Assign>(followedAccessor),
+                IStatementDeclaration.While => new GetTransitivePrecedingByFollowsType<While>(followedAccessor),
+                IStatementDeclaration.If => new GetTransitivePrecedingByFollowsType<If>(followedAccessor),
+                IStatementDeclaration.Call => new GetTransitivePrecedingByFollowsType<Call>(followedAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(followsStatementDeclaration))
             };
     }
 
-    /// <summary>
-    /// Gets transitive followeds of given type by follows type.
-    /// </summary>
-    /// <param name="followedAccessor">followed accessor.</param>
-    /// <typeparam name="TFollows">follows type.</typeparam>
-    private class GetTransitiveFollowedByFollowsType<TFollows>(IFollowsAccessor followedAccessor) : FollowedQuery
+    private class GetTransitivePrecedingByFollowsType<TFollows>(IFollowsAccessor followedAccessor) : FollowedQuery
         where TFollows : Statement
     {
-        public override IEnumerable<Statement> Build(IStatementDeclaration followsStatementDeclaration) =>
-            followsStatementDeclaration switch
+        public override IEnumerable<Statement> Build(IStatementDeclaration precedingStatementDeclaration) =>
+            precedingStatementDeclaration switch
             {
-                IStatementDeclaration.Statement => followedAccessor.GetFollowedTransitive<TFollows>(),
-                IStatementDeclaration.Assign => followedAccessor.GetFollowedTransitive<TFollows>().OfType<Assign>(),
-                IStatementDeclaration.While => followedAccessor.GetFollowedTransitive<TFollows>().OfType<While>(),
-                IStatementDeclaration.If => followedAccessor.GetFollowedTransitive<TFollows>().OfType<If>(),
-                IStatementDeclaration.Call => followedAccessor.GetFollowedTransitive<TFollows>().OfType<Call>(),
-                _ => throw new ArgumentOutOfRangeException(nameof(followsStatementDeclaration))
+                IStatementDeclaration.Statement => followedAccessor.GetPrecedingTransitive<TFollows>(),
+                IStatementDeclaration.Assign => followedAccessor.GetPrecedingTransitive<TFollows>().OfType<Assign>(),
+                IStatementDeclaration.While => followedAccessor.GetPrecedingTransitive<TFollows>().OfType<While>(),
+                IStatementDeclaration.If => followedAccessor.GetPrecedingTransitive<TFollows>().OfType<If>(),
+                IStatementDeclaration.Call => followedAccessor.GetPrecedingTransitive<TFollows>().OfType<Call>(),
+                _ => throw new ArgumentOutOfRangeException(nameof(precedingStatementDeclaration))
             };
     }
 
-    private class GetTransitiveFollowsByFollowedType(IFollowsAccessor followedAccessor)
+    private class GetTransitiveFollowerByFollowedType(IFollowsAccessor followedAccessor)
     {
-        public FollowedQuery Create(IStatementDeclaration followedStatementDeclaration) =>
-            followedStatementDeclaration switch
+        public FollowedQuery Create(IStatementDeclaration precedingStatementDeclaration) =>
+            precedingStatementDeclaration switch
             {
-                IStatementDeclaration.Statement => new GetTransitiveFollowsByFollowedType<Statement>(followedAccessor),
-                IStatementDeclaration.Assign => new GetTransitiveFollowsByFollowedType<Assign>(followedAccessor),
-                IStatementDeclaration.While => new GetTransitiveFollowsByFollowedType<While>(followedAccessor),
-                IStatementDeclaration.If => new GetTransitiveFollowsByFollowedType<If>(followedAccessor),
-                IStatementDeclaration.Call => new GetTransitiveFollowsByFollowedType<Call>(followedAccessor),
-                _ => throw new ArgumentOutOfRangeException(nameof(followedStatementDeclaration))
+                IStatementDeclaration.Statement => new GetTransitiveFollowerByFollowedType<Statement>(followedAccessor),
+                IStatementDeclaration.Assign => new GetTransitiveFollowerByFollowedType<Assign>(followedAccessor),
+                IStatementDeclaration.While => new GetTransitiveFollowerByFollowedType<While>(followedAccessor),
+                IStatementDeclaration.If => new GetTransitiveFollowerByFollowedType<If>(followedAccessor),
+                IStatementDeclaration.Call => new GetTransitiveFollowerByFollowedType<Call>(followedAccessor),
+                _ => throw new ArgumentOutOfRangeException(nameof(precedingStatementDeclaration))
             };
     }
 
-    /// <summary>
-    /// Gets transitive followsren of given type by followed type.
-    /// </summary>
-    /// <param name="followedAccessor">followed accessor.</param>
-    /// <typeparam name="TFollowed">followed type.</typeparam>
-    private class GetTransitiveFollowsByFollowedType<TFollowed>(IFollowsAccessor followedAccessor) : FollowedQuery
+    private class GetTransitiveFollowerByFollowedType<TFollowed>(IFollowsAccessor followedAccessor) : FollowedQuery
         where TFollowed : Statement
     {
         public override IEnumerable<Statement> Build(IStatementDeclaration followsStatementDeclaration) =>
@@ -146,31 +132,21 @@ internal static class FollowsTransitive
             };
     }
 
-    /// <summary>
-    /// Get transitive followed of given type by follows line number.
-    /// </summary>
-    /// <param name="followedAccessor">followed accessor.</param>
-    /// <param name="line">Line number.</param>
-    private class GetTransitiveFollowedByLineNumber(IFollowsAccessor followedAccessor, int line) : FollowedQuery
+    private class GetTransitivePrecedingByLineNumber(IFollowsAccessor followedAccessor, int line) : FollowedQuery
     {
         public override IEnumerable<Statement> Build(IStatementDeclaration followsStatementDeclaration) =>
             followsStatementDeclaration switch
             {
-                IStatementDeclaration.Statement => followedAccessor.GetFollowedTransitive(line),
-                IStatementDeclaration.Assign => followedAccessor.GetFollowedTransitive(line).OfType<Assign>(),
-                IStatementDeclaration.While => followedAccessor.GetFollowedTransitive(line).OfType<While>(),
-                IStatementDeclaration.If => followedAccessor.GetFollowedTransitive(line).OfType<If>(),
-                IStatementDeclaration.Call => followedAccessor.GetFollowedTransitive(line).OfType<Call>(),
+                IStatementDeclaration.Statement => followedAccessor.GetPrecedingTransitive(line),
+                IStatementDeclaration.Assign => followedAccessor.GetPrecedingTransitive(line).OfType<Assign>(),
+                IStatementDeclaration.While => followedAccessor.GetPrecedingTransitive(line).OfType<While>(),
+                IStatementDeclaration.If => followedAccessor.GetPrecedingTransitive(line).OfType<If>(),
+                IStatementDeclaration.Call => followedAccessor.GetPrecedingTransitive(line).OfType<Call>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(followsStatementDeclaration))
             };
     }
 
-    /// <summary>
-    /// Gets transitive followsren of given type by followed line number.
-    /// </summary>
-    /// <param name="followedAccessor">followed accessor.</param>
-    /// <param name="line">Line number.</param>
-    private class GetTransitiveFollowsByLineNumber(IFollowsAccessor followedAccessor, int line) : FollowedQuery
+    private class GetTransitiveFollowerByLineNumber(IFollowsAccessor followedAccessor, int line) : FollowedQuery
     {
         public override IEnumerable<Statement> Build(IStatementDeclaration followsStatementDeclaration) =>
             followsStatementDeclaration switch
@@ -184,22 +160,14 @@ internal static class FollowsTransitive
             };
     }
 
-    /// <summary>
-    /// Represents a followed query.
-    /// </summary>
     private abstract class FollowedQuery
     {
-        /// <summary>
-        /// Builds a query.
-        /// </summary>
-        /// <param name="followsStatementDeclaration"> The declaration to build the query for. </param>
-        /// <returns> The query. </returns>
         public abstract IEnumerable<Statement> Build(IStatementDeclaration followsStatementDeclaration);
     }
 
     private class BooleanFollowsQuery(IFollowsAccessor accessor, int left, int right)
     {
-        public IEnumerable<IPkbDto> Build() => IPkbDto.Boolean(accessor.IsFollowedTransitive(left, right));
+        public IEnumerable<IPkbDto> Build() => IPkbDto.Boolean(accessor.IsFollowsTransitive(left, right));
     }
 
     #endregion
