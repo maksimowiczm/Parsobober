@@ -13,7 +13,7 @@ public static class TreeNodeExtensions
             EntityType.Assign => new Assign(treeNode.LineNumber),
             EntityType.If => new If(treeNode.LineNumber),
             EntityType.While => new While(treeNode.LineNumber),
-            EntityType.Call => new Call(treeNode.LineNumber),
+            EntityType.Call => new Call(treeNode.LineNumber, treeNode.Attribute!),
             _ => throw new NotSupportedException()
         };
     }

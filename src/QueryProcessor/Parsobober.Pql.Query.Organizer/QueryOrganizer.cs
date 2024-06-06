@@ -41,6 +41,30 @@ public class QueryOrganizer : IQueryOrganizer
 
         _declarationsMap = new QueryContext();
         _declarations.ForEach(d => TryAddDeclarationToMap(d));
+
+        foreach (var (a1, a2) in _aliases)
+        {
+            TryAddDeclarationToMap(a1);
+            TryAddDeclarationToMap(a2);
+        }
+
+        // apply aliases
+        ApplyAliases();
+    }
+
+    private void ApplyAliases()
+    {
+        foreach (var (from, to) in _aliases)
+        {
+            _declarationsMap[from] = _declarationsMap[from]
+                .Intersect(_declarationsMap[to], new PkbDtoComparer())
+                .ToList();
+            ;
+            _declarationsMap[to] = _declarationsMap[to]
+                .Intersect(_declarationsMap[from], new PkbDtoComparer())
+                .ToList();
+            ;
+        }
     }
 
     private readonly List<IDeclaration> _declarations;
@@ -149,6 +173,8 @@ public class QueryOrganizer : IQueryOrganizer
         _declarationsMap[currentSelect] =
             _declarationsMap[currentSelect].Intersect(newCurrentSelect, new PkbDtoComparer());
 
+        ApplyAliases();
+
         var newOtherSelect = _declarationsMap[currentSelect]
             .Select(value => query.ReplaceArgument(currentSelect, IArgument.Parse(value))
                 .Do(otherDeclaration))
@@ -156,5 +182,7 @@ public class QueryOrganizer : IQueryOrganizer
             .Distinct(new PkbDtoComparer());
         _declarationsMap[otherDeclaration] =
             _declarationsMap[otherDeclaration].Intersect(newOtherSelect, new PkbDtoComparer());
+
+        ApplyAliases();
     }
 }

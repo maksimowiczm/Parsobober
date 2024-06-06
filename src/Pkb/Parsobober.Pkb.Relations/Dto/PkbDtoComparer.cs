@@ -1,5 +1,3 @@
-using System.Collections;
-
 namespace Parsobober.Pkb.Relations.Dto;
 
 public class PkbDtoComparer : IEqualityComparer<IPkbDto>, IComparer<IPkbDto>
@@ -17,6 +15,15 @@ public class PkbDtoComparer : IEqualityComparer<IPkbDto>, IComparer<IPkbDto>
             (ProgramLine x, Statement y) => x.Line == y.Line,
             (Variable x, Variable y) => x.Name == y.Name,
             (Procedure x, Procedure y) => x.Name == y.Name,
+            (Procedure x, Variable y) => x.Name == y.Name,
+            (Variable x, Procedure y) => x.Name == y.Name,
+            // wierd stuff
+            (Call x, Procedure y) => x.ProcedureName == y.Name,
+            (Procedure x, Call y) => x.Name == y.ProcedureName,
+            (Call x, Variable y) => x.ProcedureName == y.Name,
+            (Variable x, Call y) => x.Name == y.ProcedureName,
+            (Statement x, Constant y) => x.Line == y.Value,
+            (Constant x, Statement y) => x.Value == y.Line,
             _ => false
         };
 
