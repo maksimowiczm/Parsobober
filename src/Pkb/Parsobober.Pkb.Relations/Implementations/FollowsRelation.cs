@@ -17,60 +17,57 @@ public class FollowsRelation(
 ) : IFollowsCreator, IFollowsAccessor
 {
     /// <summary>
-    /// Stores follows relation between two statements using their line numbers.
+    /// [preceding node line number, following node line number]
     /// </summary>
-    /// <remarks>[following node line number, preceding node line number].</remarks>
-    private readonly Dictionary<int, int> _followsDictionary = new();
+    private readonly Dictionary<int, int> _predecessorDictionary = new();
 
-    public void SetFollows(TreeNode node, TreeNode parent)
+    /// <summary>
+    /// [following node line number, preceding node line number]
+    /// </summary>
+    private readonly Dictionary<int, int> _followerDictionary = new();
+
+    public void SetFollows(TreeNode preceding, TreeNode following)
     {
-        if (!node.Type.IsStatement() || !parent.Type.IsStatement())
+        if (!preceding.Type.IsStatement() || !following.Type.IsStatement())
         {
             logger.LogError(
                 "Follows relation can only be established between two statement nodes. ({parent} => {child})",
-                parent, node);
+                following, preceding);
 
             throw new ArgumentException(
-                $"At least one of provided nodes type: {parent.Type}, {node.Type} is different than any of required: {EntityType.Statement} types.");
+                $"At least one of provided nodes type: {preceding.Type}, {following.Type} is different than any of required: {EntityType.Statement} types.");
         }
 
-        if (!_followsDictionary.TryAdd(node.LineNumber, parent.LineNumber))
-        {
-            logger.LogWarning("Relation {node} follows {parent} already exists",
-                node.LineNumber, parent.LineNumber);
-        }
+        _predecessorDictionary.TryAdd(preceding.LineNumber, following.LineNumber);
+        _followerDictionary.TryAdd(following.LineNumber, preceding.LineNumber);
     }
 
     public IEnumerable<Statement> GetFollowers<TStatement>() where TStatement : Statement
     {
-        return _followsDictionary
-            .Where(statement => programContext.StatementsDictionary[statement.Value].IsType<TStatement>())
-            .Select(statement => programContext.StatementsDictionary[statement.Key].ToStatement())
-            .Distinct();
-    }
-
-    public Statement? GetFollower(int lineNumber)
-    {
-        var followerStmt = _followsDictionary.SingleOrDefault(stmt => stmt.Value == lineNumber);
-        if (followerStmt.Equals(default(KeyValuePair<int, int>)))
-        {
-            return null;
-        }
-
-        return programContext.StatementsDictionary[followerStmt.Key].ToStatement();
-    }
-
-    public IEnumerable<Statement> GetFollowed<TStatement>() where TStatement : Statement
-    {
-        return _followsDictionary
+        return _predecessorDictionary
             .Where(statement => programContext.StatementsDictionary[statement.Key].IsType<TStatement>())
             .Select(statement => programContext.StatementsDictionary[statement.Value].ToStatement())
             .Distinct();
     }
 
-    public Statement? GetFollowed(int lineNumber)
+    public Statement? GetFollower(int lineNumber)
     {
-        return _followsDictionary.TryGetValue(lineNumber, out var statement)
+        return _predecessorDictionary.TryGetValue(lineNumber, out var statement)
+            ? programContext.StatementsDictionary[statement].ToStatement()
+            : null;
+    }
+
+    public IEnumerable<Statement> GetPreceding<TStatement>() where TStatement : Statement
+    {
+        return _followerDictionary
+            .Where(statement => programContext.StatementsDictionary[statement.Key].IsType<TStatement>())
+            .Select(statement => programContext.StatementsDictionary[statement.Value].ToStatement())
+            .Distinct();
+    }
+
+    public Statement? GetPreceding(int lineNumber)
+    {
+        return _followerDictionary.TryGetValue(lineNumber, out var statement)
             ? programContext.StatementsDictionary[statement].ToStatement()
             : null;
     }
@@ -94,12 +91,12 @@ public class FollowsRelation(
             .Select(visited => visited.node.ToStatement());
     }
 
-    public IEnumerable<Statement> GetFollowedTransitive<TStatement>() where TStatement : Statement
+    public IEnumerable<Statement> GetPrecedingTransitive<TStatement>() where TStatement : Statement
     {
         return GetTransitive<TStatement>(new BfsStatementStrategy());
     }
 
-    public IEnumerable<Statement> GetFollowedTransitive(int lineNumber)
+    public IEnumerable<Statement> GetPrecedingTransitive(int lineNumber)
     {
         if (!programContext.StatementsDictionary.TryGetValue(lineNumber, out var statementNode))
         {
@@ -113,15 +110,15 @@ public class FollowsRelation(
             .Select(visited => visited.node.ToStatement());
     }
 
-    public bool IsFollowed(int lineNumber, int followerLineNumber) =>
-        GetFollowed(lineNumber) switch
+    public bool IsFollows(int predecessor, int follower) =>
+        GetPreceding(follower) switch
         {
-            { Line: var line } => line == followerLineNumber,
+            { Line: var line } => line == predecessor,
             _ => false
         };
 
-    public bool IsFollowedTransitive(int lineNumber, int followerLineNumber) =>
-        GetFollowedTransitive(followerLineNumber).Any(f => f.Line == lineNumber);
+    public bool IsFollowsTransitive(int predecessor, int follower) =>
+        GetPrecedingTransitive(follower).Any(f => f.Line == predecessor);
 
     private IEnumerable<Statement> GetTransitive<TStatement>(IAstTraversalStrategy strategy)
         where TStatement : Statement

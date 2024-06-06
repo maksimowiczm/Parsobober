@@ -138,7 +138,7 @@ internal static class Follows
     {
         public override IEnumerable<Statement> Build(IStatementDeclaration follows)
         {
-            var precedingStatement = followsAccessor.GetPreceding(line);
+            var precedingStatement = followsAccessor.GetFollower(line);
 
             var result = follows switch
             {
@@ -163,7 +163,7 @@ internal static class Follows
     {
         public override IEnumerable<Statement> Build(IStatementDeclaration follows)
         {
-            var followsStatement = followsAccessor.GetFollower(line);
+            var followsStatement = followsAccessor.GetPreceding(line);
 
             var result = follows switch
             {
@@ -186,7 +186,7 @@ internal static class Follows
 
     private class BooleanFollowsQuery(IFollowsAccessor accessor, int left, int right)
     {
-        public IEnumerable<IPkbDto> Build() => IPkbDto.Boolean(accessor.IsFollowed(left, right));
+        public IEnumerable<IPkbDto> Build() => IPkbDto.Boolean(accessor.IsFollows(left, right));
     }
 
     private abstract class FollowsQuery

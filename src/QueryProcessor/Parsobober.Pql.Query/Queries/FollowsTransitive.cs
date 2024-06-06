@@ -167,7 +167,7 @@ internal static class FollowsTransitive
 
     private class BooleanFollowsQuery(IFollowsAccessor accessor, int left, int right)
     {
-        public IEnumerable<IPkbDto> Build() => IPkbDto.Boolean(accessor.IsFollowedTransitive(left, right));
+        public IEnumerable<IPkbDto> Build() => IPkbDto.Boolean(accessor.IsFollowsTransitive(left, right));
     }
 
     #endregion

@@ -59,10 +59,10 @@ public interface IFollowsAccessor
     /// <summary>
     /// Returns true if statement with given line number follows statement with given line number
     /// </summary>
-    bool IsFollowed(int lineNumber, int followerLineNumber);
+    bool IsFollows(int predecessor, int follower);
 
     /// <summary>
     /// Returns true if statement with given line number follows transitive statement with given line number
     /// </summary>
-    bool IsFollowedTransitive(int lineNumber, int followerLineNumber);
+    bool IsFollowsTransitive(int predecessor, int follower);
 }
