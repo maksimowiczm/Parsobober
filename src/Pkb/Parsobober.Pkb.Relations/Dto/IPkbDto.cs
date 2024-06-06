@@ -25,7 +25,7 @@ public interface IPkbDto
             throw new NotImplementedException();
         }
 
-        public IPkbDto Current { get; }
+        public IPkbDto Current => throw new NotImplementedException();
 
         object IEnumerator.Current => Current;
 

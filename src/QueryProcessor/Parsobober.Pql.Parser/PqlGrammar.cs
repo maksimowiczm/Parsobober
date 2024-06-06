@@ -45,6 +45,10 @@ internal class PqlGrammar(IQueryBuilder queryBuilder)
     public IQueryBuilder AttributeCompare(Token<PqlToken> attribute, Token<PqlToken> reference) =>
         queryBuilder.With(attribute.Value, reference.Value);
 
+    [Production("attribute-compare : Attribute Equal[d] Attribute")]
+    public IQueryBuilder AttributeCombine(Token<PqlToken> attribute1, Token<PqlToken> attribute2) =>
+        queryBuilder.WithCombined(attribute1.Value, attribute2.Value);
+
     #endregion
 
 

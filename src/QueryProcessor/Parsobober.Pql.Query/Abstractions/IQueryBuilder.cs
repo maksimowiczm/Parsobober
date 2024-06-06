@@ -35,6 +35,8 @@ public interface IQueryBuilder
     /// <param name="attribute">The attribute in the With clause.</param>
     /// <param name="reference">The reference in the With clause.</param>
     IQueryBuilder With(string attribute, string reference);
+    
+    IQueryBuilder WithCombined(string attribute1, string attribute2);
 
     #region Relation methods
 

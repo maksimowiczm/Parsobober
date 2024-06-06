@@ -27,7 +27,11 @@ public record While(int Line) : ContainerStatement(Line)
     public override string ToString() => base.ToString();
 }
 
-public record Call(int Line) : Statement(Line)
+public record Call(int Line, string ProcedureName) : Statement(Line)
 {
     public override string ToString() => base.ToString();
+
+#if DEBUG
+    public string DebugString => $"{Line} {ProcedureName}";
+#endif
 }

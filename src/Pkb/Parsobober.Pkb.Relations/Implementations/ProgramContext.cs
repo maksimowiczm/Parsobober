@@ -122,7 +122,7 @@ public class ProgramContext(ILogger<ProgramContext> logger)
                 $"Provided node type {constant.Type} is different than any of required {EntityType.Constant} types.");
         }
 
-        return _constantSet.Add(Int32.Parse(constant.Attribute));
+        return _constantSet.Add(int.Parse(constant.Attribute!));
     }
 
     public IEnumerable<Variable> Variables => VariablesDictionary.Values
