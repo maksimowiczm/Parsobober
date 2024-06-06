@@ -17,22 +17,26 @@ public class ModifiesRelation(
 
 {
     /// <summary>
-    /// Stores modifies relation between statement and variable set
+    /// [statement line number,  list of variable names].
     /// </summary>
-    /// <remarks>[statement line number,  list of variable names].</remarks>
+    /// <remarks>!USED ONLY FOR COMPUTING!</remarks>
     private readonly Dictionary<int, HashSet<string>> _modifiesStatementDictionary = new();
 
     /// <summary>
-    /// Stores modifies relation between procedure and variable set
+    /// [procedure name, list of variable names].
     /// </summary>
-    /// <remarks>[procedure name, list of variable names].</remarks>
+    /// <remarks>!USED ONLY FOR COMPUTING!</remarks>
     private readonly Dictionary<string, HashSet<string>> _modifiesProcedureDictionary = new();
 
     /// <summary>
-    /// Stores modifies relation between procedure and variable set including calls connections
+    /// [procedure name, list of variable names].
     /// </summary>
-    /// <remarks>[procedure name, list of variable names].</remarks>
     private readonly Dictionary<string, HashSet<string>> _modifiesProcedureDictionaryFull = new();
+
+    /// <summary>
+    /// [statement line number,  list of variable names].
+    /// </summary>
+    private readonly Dictionary<int, HashSet<string>> _modifiesStatementDictionaryFull = new();
 
     #region IModifiesCreator
 
@@ -111,12 +115,49 @@ public class ModifiesRelation(
 
     public void Compute()
     {
+        // Compute for procedures
         foreach (var procedure in programContext.ProceduresDictionary.Keys.Reverse())
         {
             var modifiedVariables = new HashSet<string>();
             ComputeForProcedure(procedure, modifiedVariables);
             _modifiesProcedureDictionaryFull.Add(procedure, modifiedVariables);
         }
+
+        // Compute for call statements
+        var callStatements = programContext.StatementsDictionary
+            .Where(e => e.Value.Type.IsCallStatement())
+            .Select(e => e.Key);
+
+        foreach (var call in callStatements)
+        {
+            var modified = _modifiesProcedureDictionaryFull[programContext.StatementsDictionary[call].Attribute!];
+            _modifiesStatementDictionaryFull.Add(call, modified);
+        }
+
+        // Compute for assign
+        var assignStatements = programContext.StatementsDictionary
+            .Where(e => e.Value.Type.IsAssign())
+            .Select(e => e.Key);
+
+        foreach (var assignLineNumber in assignStatements)
+        {
+            _modifiesStatementDictionaryFull.Add(assignLineNumber, _modifiesStatementDictionary[assignLineNumber]);
+        }
+
+        // Compute for containers (can be optimized but complicated and probably not necessary)
+        var containerStatements = programContext.StatementsDictionary
+            .Where(e => e.Value.Type.IsContainerStatement())
+            .Select(e => e.Key)
+            .Reverse();
+        foreach (var container in containerStatements)
+        {
+            var modifiedVariables = ComputeForContainerStatement(container);
+            _modifiesStatementDictionaryFull.Add(container, modifiedVariables);
+        }
+
+        // Clear dictionaries that are no longer needed
+        _modifiesStatementDictionary.Clear();
+        _modifiesProcedureDictionary.Clear();
     }
 
     private void ComputeForProcedure(string procedureName, HashSet<string> modifiedVariables)
@@ -148,168 +189,55 @@ public class ModifiesRelation(
         }
     }
 
-    #endregion
+    private HashSet<string> ComputeForContainerStatement(int statementLineNumber)
+    {
+        var modifiedVariables = new HashSet<string>();
+        if (_modifiesStatementDictionary.TryGetValue(statementLineNumber, out var flatModifiedVariables))
+        {
+            modifiedVariables.UnionWith(flatModifiedVariables);
+        }
 
-    #region GetVariables<T>
+        if (callsRelation.GetAllContainerCalls().TryGetValue(statementLineNumber, out var procedureList))
+        {
+            foreach (var procedure in procedureList)
+            {
+                modifiedVariables.UnionWith(_modifiesProcedureDictionaryFull[procedure]);
+            }
+        }
+
+        return modifiedVariables;
+    }
+
+    #endregion
 
     public IEnumerable<Variable> GetVariables<T>() where T : IRequest
     {
-        return true switch
-        {
-            true when typeof(T) == typeof(Call) => // Call
-                GetVariablesForCalls(),
-            true when typeof(T).IsSubclassOf(typeof(ContainerStatement)) => // If, While
-                GetVariablesForContainerStatements<T>(),
-            true when typeof(T).IsSubclassOf(typeof(Statement)) => // Assign
-                GetVariablesForDefaultStatement<T>(),
-            true when typeof(T) == typeof(Statement) => // Statement
-                GetVariableForGenericStatement(),
-            _ => throw new NotSupportedException("How you passed type that does not implement IRequest?")
-        };
-    }
-
-    // Assuming that every Calls statement modifies at least one variable
-    // (procedure needs at least calls or assign statement => somewhere in `calls line` there is procedure with assign)
-    private IEnumerable<Variable> GetVariablesForCalls()
-    {
-        return callsRelation
-            .GetAllCalledProcedures()
-            .Select(procedure => _modifiesProcedureDictionaryFull[procedure])
-            .SelectMany(variableList => variableList)
+        return _modifiesStatementDictionaryFull
+            .Where(stmt => programContext.StatementsDictionary[stmt.Key].IsType<T>())
+            .SelectMany(stmt => stmt.Value)
             .Distinct()
-            .Select(variable => programContext.VariablesDictionary[variable].ToVariable());
+            .Select(variableName => programContext.VariablesDictionary[variableName].ToVariable());
     }
-
-    private IEnumerable<Variable> GetVariablesForContainerStatements<T>() where T : IRequest
-    {
-        var flatModifiedVariables = _modifiesStatementDictionary
-            .Where(statement => programContext.StatementsDictionary[statement.Key].IsType<T>())
-            .SelectMany(statement => statement.Value)
-            .Distinct();
-
-        var transientModifiedVariables = callsRelation
-            .GetAllContainerCalls()
-            .Where(container => programContext.StatementsDictionary[container.Key].IsType<T>())
-            .SelectMany(container => container.Value)
-            .Distinct()
-            .SelectMany(procedure => _modifiesProcedureDictionaryFull[procedure])
-            .Distinct();
-
-        return flatModifiedVariables
-            .Union(transientModifiedVariables)
-            .Select(variable => programContext.VariablesDictionary[variable].ToVariable());
-    }
-
-    private IEnumerable<Variable> GetVariablesForDefaultStatement<T>() where T : IRequest
-    {
-        return _modifiesStatementDictionary
-            .Where(statement => programContext.StatementsDictionary[statement.Key].IsType<T>())
-            .SelectMany(statement => statement.Value)
-            .Distinct()
-            .Select(variable => programContext.VariablesDictionary[variable].ToVariable());
-    }
-
-    // Only statements can modify variables, so it is safe to return all variables modified by procedures 
-    private IEnumerable<Variable> GetVariableForGenericStatement()
-    {
-        return _modifiesProcedureDictionaryFull.Values
-            .SelectMany(variableList => variableList)
-            .Distinct()
-            .Select(variable => programContext.VariablesDictionary[variable].ToVariable());
-    }
-
-    #endregion
-
-    // Every statement have to modify at least one variable at some point
+    
     public IEnumerable<Statement> GetStatements()
     {
-        return programContext.StatementsDictionary.Keys
+        return _modifiesStatementDictionaryFull.Keys
             .Select(lineNumber => programContext.StatementsDictionary[lineNumber].ToStatement());
     }
-
-    #region GetVariables(int)
-
+    
     public IEnumerable<Variable> GetVariables(int lineNumber)
     {
-        if (!programContext.StatementsDictionary.TryGetValue(lineNumber, out var statement))
-        {
-            return Enumerable.Empty<Variable>();
-        }
-
-        if (statement.Type.IsCallStatement())
-        {
-            return GetVariables(statement.Attribute!);
-        }
-
-        if (statement.Type.IsContainerStatement())
-        {
-            return GetVariablesForContainerStatement(lineNumber);
-        }
-
-        return _modifiesStatementDictionary.TryGetValue(lineNumber, out var variableList)
+        return _modifiesStatementDictionaryFull.TryGetValue(lineNumber, out var variableList)
             ? variableList.Select(variableName => programContext.VariablesDictionary[variableName].ToVariable())
             : Enumerable.Empty<Variable>();
     }
-
-    private IEnumerable<Variable> GetVariablesForContainerStatement(int lineNumber)
-    {
-        var variableList = new HashSet<string>();
-
-        if (_modifiesStatementDictionary.TryGetValue(lineNumber, out var flatModifiedVariables))
-        {
-            variableList.UnionWith(flatModifiedVariables);
-        }
-
-        if (callsRelation.GetAllContainerCalls().TryGetValue(lineNumber, out var procedureList))
-        {
-            variableList.UnionWith(procedureList
-                .SelectMany(procedure => _modifiesProcedureDictionaryFull[procedure])
-                .Distinct());
-        }
-
-        return variableList.Select(variable => programContext.VariablesDictionary[variable].ToVariable());
-    }
-
-    #endregion
-
-    #region GetStatements(string)
-
+    
     public IEnumerable<Statement> GetStatements(string variableName)
     {
-        // Get all procedures that modify given variable
-        var proceduresThatModifyVariable = _modifiesProcedureDictionaryFull
-            .Where(procedure => procedure.Value.Contains(variableName))
-            .Select(procedure => procedure.Key)
-            .ToArray();
-
-        // Get all calls that modify given variable
-        var callStatements = programContext.StatementsDictionary
-            .Where(stmt =>
-                stmt.Value.Type.IsCallStatement() &&
-                proceduresThatModifyVariable.Contains(stmt.Value.Attribute))
-            .Select(stmt => stmt.Value.ToStatement());
-
-        // Get all container statements that modify given variable by calling procedures that modify given variable
-        var containerStatements = programContext.StatementsDictionary
-            .Where(stmt =>
-                stmt.Value.Type.IsContainerStatement() &&
-                CallsProcedureThatModifiesVariable(stmt.Key, proceduresThatModifyVariable))
-            .Select(stmt => stmt.Value.ToStatement());
-
-        return _modifiesStatementDictionary
+        return _modifiesStatementDictionaryFull
             .Where(stmt => stmt.Value.Contains(variableName))
-            .Select(stmt => programContext.StatementsDictionary[stmt.Key].ToStatement())
-            .Union(callStatements)
-            .Union(containerStatements);
+            .Select(stmt => programContext.StatementsDictionary[stmt.Key].ToStatement());
     }
-
-    private bool CallsProcedureThatModifiesVariable(int lineNumber, IEnumerable<string> proceduresThatModifyVariable)
-    {
-        return callsRelation.GetAllContainerCalls().TryGetValue(lineNumber, out var procedureList) &&
-               procedureList.Any(proceduresThatModifyVariable.Contains);
-    }
-
-    #endregion
 
     public IEnumerable<Procedure> GetProcedures(string variableName)
     {
