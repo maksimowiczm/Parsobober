@@ -22,6 +22,8 @@ internal partial class QueryBuilder(
 
     private readonly Dictionary<string, IDeclaration> _declarations = new();
 
+    private readonly List<(string, string)> _aliases = [];
+
     private record AttributeDeclaration(string Attribute, string Value);
 
     private readonly Dictionary<string, AttributeDeclaration> _attributes = new();
@@ -82,6 +84,12 @@ internal partial class QueryBuilder(
             queryOrganizerBuilder.AddAttribute(attribute);
         }
 
+        foreach (var alias in _aliases)
+        {
+            var (key1, key2) = alias;
+            queryOrganizerBuilder.AddAlias((_declarations[key1], _declarations[key2]));
+        }
+
         var organizer = queryOrganizerBuilder.Build();
 
         if (Select is null)
@@ -130,6 +138,14 @@ internal partial class QueryBuilder(
 
         _attributes.Add(key, new AttributeDeclaration(attributeKey, value.Replace("\"", "")));
 
+        return this;
+    }
+
+    public IQueryBuilder WithCombined(string attribute1, string attribute2)
+    {
+        var key1 = AttributeRegex().Match(attribute1).Groups[1].Value;
+        var key2 = AttributeRegex().Match(attribute2).Groups[1].Value;
+        _aliases.Add((key1, key2));
         return this;
     }
 

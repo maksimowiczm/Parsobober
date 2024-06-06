@@ -17,14 +17,17 @@ public class QueryOrganizer : IQueryOrganizer
     private readonly List<IQueryDeclaration> _queries;
     private readonly List<IAttributeQuery> _attributes;
     private readonly IDtoProgramContextAccessor _context;
+    private readonly List<(IDeclaration, IDeclaration)> _aliases;
 
     public QueryOrganizer(
         List<IQueryDeclaration> queries,
         List<IAttributeQuery> attributes,
-        IDtoProgramContextAccessor context
+        IDtoProgramContextAccessor context,
+        List<(IDeclaration, IDeclaration)> aliases
     )
     {
         _context = context;
+        _aliases = aliases;
         _queries = queries;
         _attributes = attributes;
 
@@ -58,7 +61,8 @@ public class QueryOrganizer : IQueryOrganizer
         var attribute = _attributes.FirstOrDefault(a => a.Declaration == declaration);
         if (attribute is not null)
         {
-            _declarationsMap[declaration] = _declarationsMap[declaration].Intersect(attribute.Do(), new PkbDtoComparer());
+            _declarationsMap[declaration] =
+                _declarationsMap[declaration].Intersect(attribute.Do(), new PkbDtoComparer());
         }
 
         return true;
