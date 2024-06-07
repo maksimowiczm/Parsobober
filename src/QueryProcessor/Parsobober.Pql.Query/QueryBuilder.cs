@@ -74,6 +74,8 @@ internal partial class QueryBuilder(
         AddQueries(_uses, (l, r) => new Uses.QueryDeclaration(l, r, accessor.Uses));
         AddQueries(_calls, (l, r) => new Calls.QueryDeclaration(l, r, accessor.Calls));
         AddQueries(_callsTransitive, (l, r) => new CallsTransitive.QueryDeclaration(l, r, accessor.Calls));
+        AddQueries(_next, (l, r) => new Next(l, r, accessor.Next));
+        AddQueries(_nextTransitive, (l, r) => new NextTransitive(l, r, accessor.Next));
 
         var factory = new WithQueryFactory(programContext);
         var attributes = _attributes
