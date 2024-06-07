@@ -133,12 +133,22 @@ public class QueryOrganizer : IQueryOrganizer
 
         var factory = new QueryOptimizerFactory(_queries, _comparer);
 
-        Prepare(factory.Create());
+        // todo everything is too bugged :D
+        // Prepare(factory.Create());
 
-        foreach (var optimizer in _queries.Select(_ => factory.Create()))
+        if (_queries.Count > 0)
         {
-            // iterate multiple times because I said so
-            Iterate(optimizer);
+            var count = _queries
+                .SelectMany(q => new[] { q.Left, q.Right })
+                .GroupBy(q => q)
+                .Select(g => g.Count())
+                .Max();
+
+            foreach (var optimizer in Enumerable.Range(0, count).Select(_ => factory.Create()))
+            {
+                // iterate multiple times because I said so
+                Iterate(optimizer);
+            }
         }
 
         return selectNothing switch
