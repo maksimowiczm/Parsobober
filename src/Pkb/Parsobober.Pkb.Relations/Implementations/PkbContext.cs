@@ -27,4 +27,5 @@ internal class PkbContext(
     IModifiesAccessor IPkbAccessors.Modifies => modifies;
     IUsesAccessor IPkbAccessors.Uses => uses;
     ICallsAccessor IPkbAccessors.Calls => calls;
+    INextAccessor IPkbAccessors.Next { get; }
 }
