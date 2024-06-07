@@ -16,6 +16,7 @@ public class QueryOrganizer : IQueryOrganizer
 {
     private readonly List<IQueryDeclaration> _queries;
     private readonly List<IAttributeQuery> _attributes;
+    private readonly IComparer<IQueryDeclaration> _comparer;
     private readonly IDtoProgramContextAccessor _context;
     private readonly List<(IDeclaration, IDeclaration)> _aliases;
 
@@ -23,13 +24,15 @@ public class QueryOrganizer : IQueryOrganizer
         List<IQueryDeclaration> queries,
         List<IAttributeQuery> attributes,
         IDtoProgramContextAccessor context,
-        List<(IDeclaration, IDeclaration)> aliases
+        List<(IDeclaration, IDeclaration)> aliases,
+        IComparer<IQueryDeclaration> comparer
     )
     {
         _context = context;
         _aliases = aliases;
         _queries = queries;
         _attributes = attributes;
+        _comparer = comparer;
 
         // map all declarations used in queries
         _declarations = _queries
@@ -50,6 +53,15 @@ public class QueryOrganizer : IQueryOrganizer
 
         // apply aliases
         ApplyAliases();
+
+        // replace arguments with attributes
+        _queries = _queries
+            .Select(q =>
+            {
+                var attribute = _attributes.Where(a => a.Declaration == q.Left || a.Declaration == q.Right);
+                return attribute.Aggregate(q, (current, a) => a.ApplyAttribute(current));
+            })
+            .ToList();
     }
 
     private void ApplyAliases()
@@ -59,11 +71,10 @@ public class QueryOrganizer : IQueryOrganizer
             _declarationsMap[from] = _declarationsMap[from]
                 .Intersect(_declarationsMap[to], new PkbDtoComparer())
                 .ToList();
-            ;
+
             _declarationsMap[to] = _declarationsMap[to]
                 .Intersect(_declarationsMap[from], new PkbDtoComparer())
                 .ToList();
-            ;
         }
     }
 
@@ -96,10 +107,48 @@ public class QueryOrganizer : IQueryOrganizer
     {
         var selectNothing = TryAddDeclarationToMap(select);
 
-        foreach (var optimizer in _queries.Select(_ => new QueryOptimizer(_queries.ToList())))
+        // check if it is not boolean query
+        var booleans = _queries.Where(QueryDeclarationExtensions.IsBooleanQuery).ToList();
+
+        // optimize boolean queries
+        if (booleans.Count > 0)
         {
-            // iterate multiple times because I said so
-            Iterate(optimizer);
+            var result = _queries
+                .Select(q => q.Do())
+                .All(r => r.Any());
+
+            if (!result)
+            {
+                return [];
+            }
+
+            if (booleans.Count == _queries.Count)
+            {
+                return _declarationsMap[select];
+            }
+
+            _queries.RemoveAll(b => booleans.Contains(b));
+        }
+
+
+        var factory = new QueryOptimizerFactory(_queries, _comparer);
+
+        // todo everything is too bugged :D
+        // Prepare(factory.Create());
+
+        if (_queries.Count > 0)
+        {
+            var count = _queries
+                .SelectMany(q => new[] { q.Left, q.Right })
+                .GroupBy(q => q)
+                .Select(g => g.Count())
+                .Max();
+
+            foreach (var optimizer in Enumerable.Range(0, count).Select(_ => factory.Create()))
+            {
+                // iterate multiple times because I said so
+                Iterate(optimizer);
+            }
         }
 
         return selectNothing switch
@@ -107,6 +156,21 @@ public class QueryOrganizer : IQueryOrganizer
             true when !_declarationsMap.Values.All(v => v.Any()) => Enumerable.Empty<IPkbDto>(),
             _ => _declarationsMap[select]
         };
+    }
+
+    private void Prepare(QueryOptimizer optimizer)
+    {
+        var easy = _declarations
+            .Select(optimizer.GetBest)
+            .WhereNotNull();
+
+        foreach (var (select, query) in easy)
+        {
+            var result = query.Do(select);
+            _declarationsMap[select] = result;
+        }
+
+        ApplyAliases();
     }
 
     private void Iterate(QueryOptimizer optimizer)
