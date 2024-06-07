@@ -5,7 +5,7 @@ using Parsobober.Pql.Query.Queries.Abstractions;
 using Parsobober.Pql.Query.Queries.Core;
 using Parsobober.Pql.Query.Queries.Exceptions;
 
-namespace Parsobober.Pql.Query;
+namespace Parsobober.Pql.Query.Queries;
 
 internal class NextTransitive(IArgument left, IArgument right, INextAccessor accessor)
     : ReplaceableArgumentQueryDeclaration<NextTransitive>, IQueryDeclaration
@@ -17,7 +17,7 @@ internal class NextTransitive(IArgument left, IArgument right, INextAccessor acc
     {
         var query = (Left, Right) switch
         {
-            (Line left, Line right) => IPkbDto.Boolean(accessor.IsNext(left.Value, right.Value)),
+            (Line left, Line right) => IPkbDto.Boolean(accessor.IsNextTransitive(left.Value, right.Value)),
             _ => DoDeclaration()
         };
 
@@ -28,9 +28,9 @@ internal class NextTransitive(IArgument left, IArgument right, INextAccessor acc
     {
         var query = (Left, Right) switch
         {
-            (IOtherDeclaration.ProgramLine, Line right) => accessor.GetPrevious(right.Value),
+            (IOtherDeclaration.ProgramLine, Line right) => accessor.GetPreviousTransitive(right.Value),
 
-            (Line left, IOtherDeclaration.ProgramLine) => accessor.GetNext(left.Value),
+            (Line left, IOtherDeclaration.ProgramLine) => accessor.GetNextTransitive(left.Value),
 
             _ => throw new QueryNotSupported(this, $"Next({Left}, {Right}) is not supported.")
         };
