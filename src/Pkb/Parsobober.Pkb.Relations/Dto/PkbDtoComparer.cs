@@ -17,6 +17,7 @@ public class PkbDtoComparer : IEqualityComparer<IPkbDto>, IComparer<IPkbDto>
             (Procedure x, Procedure y) => x.Name == y.Name,
             (Procedure x, Variable y) => x.Name == y.Name,
             (Variable x, Procedure y) => x.Name == y.Name,
+            (ProgramLine x, ProgramLine y) => x.Line == y.Line,
             // wierd stuff
             (Call x, Procedure y) => x.ProcedureName == y.Name,
             (Procedure x, Call y) => x.Name == y.ProcedureName,

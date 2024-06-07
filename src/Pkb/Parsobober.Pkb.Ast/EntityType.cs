@@ -51,6 +51,6 @@ public static class EntityTypeExtensions
     public static bool IsStatementList(this EntityType entityType) => entityType == EntityType.StatementsList;
 
     public static bool IsConstant(this EntityType entityType) => entityType == EntityType.Constant;
-    
+
     public static bool IsAssign(this EntityType entityType) => entityType == EntityType.Assign;
 }

@@ -46,6 +46,10 @@ internal partial class QueryBuilder(
 
     private readonly List<QueryDeclaration> _callsTransitive = [];
 
+    private readonly List<QueryDeclaration> _next = [];
+
+    private readonly List<QueryDeclaration> _nextTransitive = [];
+
     private IQueryResultFactory _queryResultFactory = new QueryListResult.Factory();
 
     private void AddQueries<T>(List<QueryDeclaration> relations, Func<IArgument, IArgument, T> queryCreator)
@@ -70,6 +74,8 @@ internal partial class QueryBuilder(
         AddQueries(_uses, (l, r) => new Uses.QueryDeclaration(l, r, accessor.Uses));
         AddQueries(_calls, (l, r) => new Calls.QueryDeclaration(l, r, accessor.Calls));
         AddQueries(_callsTransitive, (l, r) => new CallsTransitive.QueryDeclaration(l, r, accessor.Calls));
+        AddQueries(_next, (l, r) => new Next(l, r, accessor.Next));
+        AddQueries(_nextTransitive, (l, r) => new NextTransitive(l, r, accessor.Next));
 
         var factory = new WithQueryFactory(programContext);
         var attributes = _attributes
@@ -196,6 +202,18 @@ internal partial class QueryBuilder(
     public IQueryBuilder AddCallsTransitive(string reference1, string reference2)
     {
         _callsTransitive.Add(new QueryDeclaration(reference1, reference2));
+        return this;
+    }
+
+    public IQueryBuilder AddNext(string reference1, string reference2)
+    {
+        _next.Add(new QueryDeclaration(reference1, reference2));
+        return this;
+    }
+
+    public IQueryBuilder AddNextTransitive(string reference1, string reference2)
+    {
+        _nextTransitive.Add(new QueryDeclaration(reference1, reference2));
         return this;
     }
 

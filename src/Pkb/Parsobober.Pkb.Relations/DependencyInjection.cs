@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<ModifiesRelation>();
         services.AddScoped<UsesRelation>();
         services.AddScoped<CallsRelation>();
+        services.AddScoped<NextRelation>();
 
         services.AddScoped<PkbContext>();
         services.AddScoped<IPkbCreators>(s => s.GetRequiredService<PkbContext>());
@@ -33,6 +34,7 @@ public static class DependencyInjection
 
         services.AddScoped<IPostParseComputable>(s => s.GetRequiredService<ModifiesRelation>());
         services.AddScoped<IPostParseComputable>(s => s.GetRequiredService<UsesRelation>());
+        services.AddScoped<IPostParseComputable>(s => s.GetRequiredService<NextRelation>());
 
         return services;
     }

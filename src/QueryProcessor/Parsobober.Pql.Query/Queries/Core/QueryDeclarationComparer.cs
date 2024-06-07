@@ -24,7 +24,7 @@ internal class QueryDeclarationComparer : IComparer<IQueryDeclaration>
         {
             { Left: not IDeclaration, Right: not IDeclaration } => RateTwoArguments(query),
             { Left: IDeclaration, Right: not IDeclaration } or
-                { Left: not IDeclaration, Right: IDeclaration } => RateTwoDeclarations(query),
+            { Left: not IDeclaration, Right: IDeclaration } => RateTwoDeclarations(query),
             _ => RateTwoArguments(query),
         };
 
