@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Parsobober.Pkb.Ast\Parsobober.Pkb.Ast.csproj" />
+      <ProjectReference Include="..\Parsobober.Pkb.Cfg\Parsobober.Pkb.Cfg.csproj" />
     </ItemGroup>
-
 </Project>

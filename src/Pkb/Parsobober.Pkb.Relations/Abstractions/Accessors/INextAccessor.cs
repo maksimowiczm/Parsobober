@@ -9,10 +9,10 @@ public interface INextAccessor
     IEnumerable<ProgramLine> GetNext(int line);
 
     bool IsNext(int left, int right);
-    
+
     IEnumerable<ProgramLine> GetPreviousTransitive(int line);
-    
+
     IEnumerable<ProgramLine> GetNextTransitive(int line);
-    
+
     bool IsNextTransitive(int left, int right);
 }
