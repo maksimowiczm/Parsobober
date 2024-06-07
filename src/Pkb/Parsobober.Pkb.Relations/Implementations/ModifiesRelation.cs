@@ -218,20 +218,20 @@ public class ModifiesRelation(
             .Distinct()
             .Select(variableName => programContext.VariablesDictionary[variableName].ToVariable());
     }
-    
+
     public IEnumerable<Statement> GetStatements()
     {
         return _modifiesStatementDictionaryFull.Keys
             .Select(lineNumber => programContext.StatementsDictionary[lineNumber].ToStatement());
     }
-    
+
     public IEnumerable<Variable> GetVariables(int lineNumber)
     {
         return _modifiesStatementDictionaryFull.TryGetValue(lineNumber, out var variableList)
             ? variableList.Select(variableName => programContext.VariablesDictionary[variableName].ToVariable())
             : Enumerable.Empty<Variable>();
     }
-    
+
     public IEnumerable<Statement> GetStatements(string variableName)
     {
         return _modifiesStatementDictionaryFull

@@ -154,7 +154,7 @@ public class UsesRelation(
             _usesStatementDictionaryFull.Add(assignLineNumber,
                 _usesStatementDictionary.TryGetValue(assignLineNumber, out var variableList) ? variableList : []);
         }
-        
+
         // Clear unused dictionaries
         _usesStatementDictionary.Clear();
         _usesProcedureDictionary.Clear();

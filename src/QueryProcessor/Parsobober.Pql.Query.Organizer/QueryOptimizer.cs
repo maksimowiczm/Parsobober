@@ -43,7 +43,7 @@ public class QueryOptimizer(List<IQueryDeclaration> queries, IComparer<IQueryDec
         var queriesOneDeclaration = _queries
             .Where(q =>
                 q is { Left: IDeclaration, Right: not IDeclaration } or
-                    { Left: not IDeclaration, Right: IDeclaration });
+                { Left: not IDeclaration, Right: IDeclaration });
 
         var query1 = queriesOneDeclaration.FirstOrDefault();
         if (query1 is not null)
