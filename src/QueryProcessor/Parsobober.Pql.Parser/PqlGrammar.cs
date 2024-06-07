@@ -109,6 +109,14 @@ internal class PqlGrammar(IQueryBuilder queryBuilder)
         "relation : CallsTransitive[d] LeftParenthesis[d] QuoteReference Coma[d] QuoteReference RightParenthesis[d]")]
     public IQueryBuilder CallsTransitiveExpression(Token<PqlToken> reference1, Token<PqlToken> reference2) =>
         queryBuilder.AddCallsTransitive(reference1.Value, reference2.Value);
+    
+    [Production("relation : Next[d] LeftParenthesis[d] Reference Coma[d] Reference RightParenthesis[d]")]
+    public IQueryBuilder NextExpression(Token<PqlToken> reference1, Token<PqlToken> reference2) =>
+        queryBuilder.AddNext(reference1.Value, reference2.Value);
 
+    [Production("relation : NextTransitive[d] LeftParenthesis[d] Reference Coma[d] Reference RightParenthesis[d]")]
+    public IQueryBuilder NextTransitiveExpression(Token<PqlToken> reference1, Token<PqlToken> reference2) =>
+        queryBuilder.AddNextTransitive(reference1.Value, reference2.Value);
+    
     #endregion
 }

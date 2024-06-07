@@ -78,6 +78,12 @@ internal enum PqlToken
     [Lexeme("Calls")]
     Calls,
 
+    [Lexeme("Next")]
+    Next,
+
+    [Lexeme("NextTransitive")]
+    NextTransitive,
+
     #endregion
 
     #endregion
