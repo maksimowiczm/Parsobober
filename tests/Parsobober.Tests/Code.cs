@@ -650,4 +650,49 @@ public static class Code
                                    """;
 
     #endregion
+    #region CallCode
+    public const string simpleCodeKM = """
+                                        procedure SimpleP {
+                                         x = 5;
+                                         y = x;
+                                         while i 
+                                                {
+                                                  z = y - z;
+                                                  if t then {
+                                                    y = z + x;
+                                                    i = z + 1;
+                                                  }
+                                                else 
+                                                {
+                                                    y = z + x;
+                                                    i = i - y;
+                                                }
+                                                y = z + x;
+                                            }
+                                           g = p;
+                                         }
+                                     """;
+
+
+    //    procedure SimpleP {
+    // 1. x = 5;
+    // 2. y = x;
+    // 3. while i
+    //        {
+    // 4.       z = y - z;
+    // 5.       if x then {
+    // 6.         y = z + x;
+    // 7.         i = z + 1;
+    //           }
+    //          else
+    //          {
+    // 8.         y = z + x;
+    // 9.         i = i - y;
+    //          }
+    // 10.        y = z + x;
+    //        }
+    // 11.   g = p;
+    //    }
+
+    #endregion
 }
