@@ -189,12 +189,14 @@ public static class Code
                                          }
                                          procedure Triangle {
                                             while d {
-                                            if t then {
-                                                d = t + 2; 
+                                                if t then {
+                                                    d = t + 2; 
+                                                }
+                                                else {
+                                                    a = t * a + d + k * b; 
+                                                }
                                             }
-                                            else {
-                                                a = t * a + d + k * b; }}
-                                                c = t + k + d;
+                                            c = t + k + d;
                                             }
                                          procedure Hexagon {
                                             t = a + t; 

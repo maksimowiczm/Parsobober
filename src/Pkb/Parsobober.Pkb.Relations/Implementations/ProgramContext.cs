@@ -21,6 +21,8 @@ public class ProgramContext(ILogger<ProgramContext> logger)
     public IReadOnlyDictionary<string, TreeNode> ProceduresDictionary => _proceduresDictionary.AsReadOnly();
     public IEnumerable<int> ConstantsEnumerable => _constantSet;
 
+    #region IProgramContextCreator
+
     public bool TryAddVariable(TreeNode variable)
     {
         if (variable.Type != EntityType.Variable)
@@ -78,23 +80,6 @@ public class ProgramContext(ILogger<ProgramContext> logger)
         return _proceduresDictionary.TryAdd(procedure.Attribute, procedure);
     }
 
-    public IEnumerable<Statement> Statements => StatementsDictionary.Values
-        .Select(s => s.ToStatement());
-
-    public IEnumerable<Assign> Assigns => GetStatementsOfType<Assign>();
-
-    public IEnumerable<While> Whiles => GetStatementsOfType<While>();
-
-    public IEnumerable<If> Ifs => GetStatementsOfType<If>();
-
-    public IEnumerable<Call> Calls => GetStatementsOfType<Call>();
-
-    private IEnumerable<T> GetStatementsOfType<T>()
-        where T : Statement
-        => StatementsDictionary.Values
-            .Where(s => s.IsType<T>())
-            .Select(s => s.ToStatement() as T)!;
-
     public bool TryAddStatementList(TreeNode statementList)
     {
         if (statementList.Type.IsStatementList() == false)
@@ -125,6 +110,27 @@ public class ProgramContext(ILogger<ProgramContext> logger)
         return _constantSet.Add(int.Parse(constant.Attribute!));
     }
 
+    #endregion
+
+    #region IDtoProgramContextAccessor
+
+    public IEnumerable<Statement> Statements => StatementsDictionary.Values
+        .Select(s => s.ToStatement());
+
+    public IEnumerable<Assign> Assigns => GetStatementsOfType<Assign>();
+
+    public IEnumerable<While> Whiles => GetStatementsOfType<While>();
+
+    public IEnumerable<If> Ifs => GetStatementsOfType<If>();
+
+    public IEnumerable<Call> Calls => GetStatementsOfType<Call>();
+
+    private IEnumerable<T> GetStatementsOfType<T>()
+        where T : Statement
+        => StatementsDictionary.Values
+            .Where(s => s.IsType<T>())
+            .Select(s => s.ToStatement() as T)!;
+
     public IEnumerable<Variable> Variables => VariablesDictionary.Values
         .Select(v => v.ToVariable());
 
@@ -138,4 +144,6 @@ public class ProgramContext(ILogger<ProgramContext> logger)
         .Select(c => c.ToConstant());
 
     public IEnumerable<ProgramLine> ProgramLines => StatementsDictionary.Keys.Select(p => p.ToProgramLine());
+
+    #endregion
 }
