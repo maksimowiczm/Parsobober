@@ -21,11 +21,30 @@ if (!verbose)
 // Run the application
 using var app = builder.Build(code);
 
+Console.WriteLine("Parsobober 🦫. Może nie jest szybki, ale za to też nie działa 💀🪦.");
 Console.WriteLine("Ready");
 
 while (true)
 {
-    var query = $"{Console.ReadLine()} {Console.ReadLine()}";
-    var response = app.Query(query);
-    Console.WriteLine(response);
+    var declaration = Console.ReadLine();
+    if (declaration is "quit" or "exit")
+    {
+        return 0;
+    }
+
+    var query = Console.ReadLine();
+    if (query is "quit" or "exit")
+    {
+        return 0;
+    }
+
+    try
+    {
+        var response = app.Query($"{declaration}{query}");
+        Console.WriteLine(response);
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e.Message);
+    }
 }
