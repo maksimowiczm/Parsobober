@@ -21,6 +21,26 @@ public class TreeNode(int lineNumber, EntityType type)
         return Type.ToString() + ':' + Attribute;
     }
 
+    public bool _Equals_(object? obj)
+    {
+
+        if (Equals(obj))
+        {
+            return true;
+        }
+
+        if (Children.Count > 0 && Children[0]._Equals_(obj))
+        {
+            return true;
+        }
+
+        if (Children.Count > 1 && Children[1]._Equals_(obj))
+        {
+            return true;
+        }
+        return false;
+    }
+
     public override bool Equals(object? obj)
     {
         if (obj is not TreeNode node)
@@ -28,6 +48,19 @@ public class TreeNode(int lineNumber, EntityType type)
             return false;
         }
 
-        return Type == node.Type && Attribute == node.Attribute && Children == node.Children;
+        if (Children.Count != node.Children.Count || Type != node.Type || Attribute != node.Attribute)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < Children.Count; i++)
+        {
+            if (!Children[i].Equals(node.Children[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
