@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+<ItemGroup>
+	<ProjectReference Include="..\..\Pkb\Parsobober.Pkb.Ast\Parsobober.Pkb.Ast.csproj" />
+	<ProjectReference Include="..\..\SpaFronted\Parsobober.Simple.Lexer\Parsobober.Simple.Lexer.csproj" />
+	<ProjectReference Include="..\..\SpaFronted\Parsobober.Simple.Parser\Parsobober.Simple.Parser.csproj" />
+</ItemGroup>
+
+</Project>

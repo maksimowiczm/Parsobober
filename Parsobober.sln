@@ -1,46 +1,55 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SpaFrontend", "SpaFrontend", "{440A8BEF-344E-43C9-9078-E25317708B4A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pkb", "Pkb", "{8C1915BB-90DA-4367-9621-0A5CB3AC0F15}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "QueryProcessor", "QueryProcessor", "{04EA456D-F461-411D-B114-B3DC2F95A0EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Shared", "src\Parsobober.Shared\Parsobober.Shared.csproj", "{DC4D45C5-EECB-4C21-878D-8DBDB031A84D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Parsobober.Shared", "src\Parsobober.Shared\Parsobober.Shared.csproj", "{DC4D45C5-EECB-4C21-878D-8DBDB031A84D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Cli", "src\Parsobober.Cli\Parsobober.Cli.csproj", "{57C00A5A-A6E0-408D-BB7F-52305C1B8137}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Parsobober.Cli", "src\Parsobober.Cli\Parsobober.Cli.csproj", "{57C00A5A-A6E0-408D-BB7F-52305C1B8137}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Simple.Lexer", "src\SpaFronted\Parsobober.Simple.Lexer\Parsobober.Simple.Lexer.csproj", "{D57C2D07-EA23-413A-85DF-B6E1786DF56B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Parsobober.Simple.Lexer", "src\SpaFronted\Parsobober.Simple.Lexer\Parsobober.Simple.Lexer.csproj", "{D57C2D07-EA23-413A-85DF-B6E1786DF56B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Simple.Parser", "src\SpaFronted\Parsobober.Simple.Parser\Parsobober.Simple.Parser.csproj", "{28D828E9-C169-47E5-BF57-E4B7E1AF2C57}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Parsobober.Simple.Parser", "src\SpaFronted\Parsobober.Simple.Parser\Parsobober.Simple.Parser.csproj", "{28D828E9-C169-47E5-BF57-E4B7E1AF2C57}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Pkb.Ast", "src\Pkb\Parsobober.Pkb.Ast\Parsobober.Pkb.Ast.csproj", "{D6216C15-CDC1-4876-BDB9-2B88C9DD35DB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Parsobober.Pkb.Ast", "src\Pkb\Parsobober.Pkb.Ast\Parsobober.Pkb.Ast.csproj", "{D6216C15-CDC1-4876-BDB9-2B88C9DD35DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Pkb.Relations", "src\Pkb\Parsobober.Pkb.Relations\Parsobober.Pkb.Relations.csproj", "{EC202DD0-56DB-4C9F-9248-F8E73CD909A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Parsobober.Pkb.Relations", "src\Pkb\Parsobober.Pkb.Relations\Parsobober.Pkb.Relations.csproj", "{EC202DD0-56DB-4C9F-9248-F8E73CD909A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Pql.Parser", "src\QueryProcessor\Parsobober.Pql.Parser\Parsobober.Pql.Parser.csproj", "{C6339CBE-9406-4FC4-B354-2501B0A827C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Parsobober.Pql.Parser", "src\QueryProcessor\Parsobober.Pql.Parser\Parsobober.Pql.Parser.csproj", "{C6339CBE-9406-4FC4-B354-2501B0A827C2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Pql.Query", "src\QueryProcessor\Parsobober.Pql.Query\Parsobober.Pql.Query.csproj", "{A8299C81-B6FE-4993-BE72-8F347D23281A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Parsobober.Pql.Query", "src\QueryProcessor\Parsobober.Pql.Query\Parsobober.Pql.Query.csproj", "{A8299C81-B6FE-4993-BE72-8F347D23281A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.DesignExtractor", "src\SpaFronted\Parsobober.DesignExtractor\Parsobober.DesignExtractor.csproj", "{63494377-1C53-4866-9328-9F1439762909}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Parsobober.DesignExtractor", "src\SpaFronted\Parsobober.DesignExtractor\Parsobober.DesignExtractor.csproj", "{63494377-1C53-4866-9328-9F1439762909}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{CA387FC2-2109-4295-BC43-041A3D4D1EEF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "QueryProcessor", "QueryProcessor", "{B49A447C-EC1E-4115-980D-AA1542A24F45}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Pql.Parser.Tests", "tests\Parsobober.Pql.Parser.Tests\Parsobober.Pql.Parser.Tests.csproj", "{5718E14E-BCA6-45BE-957E-64C74932BD97}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Parsobober.Pql.Parser.Tests", "tests\Parsobober.Pql.Parser.Tests\Parsobober.Pql.Parser.Tests.csproj", "{5718E14E-BCA6-45BE-957E-64C74932BD97}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Tests", "tests\Parsobober.Tests\Parsobober.Tests.csproj", "{177D7086-D03B-45F1-99AA-7CC66C2EA933}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Parsobober.Tests", "tests\Parsobober.Tests\Parsobober.Tests.csproj", "{177D7086-D03B-45F1-99AA-7CC66C2EA933}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pkb", "Pkb", "{92EE90BB-92A6-415D-915C-980D38D23D1A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Pkb.Ast.Tests", "tests\Parsobober.Pkb.Ast.Tests\Parsobober.Pkb.Ast.Tests.csproj", "{7CABAAB4-EF63-48AB-852F-42E472C3D94D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Parsobober.Pkb.Ast.Tests", "tests\Parsobober.Pkb.Ast.Tests\Parsobober.Pkb.Ast.Tests.csproj", "{7CABAAB4-EF63-48AB-852F-42E472C3D94D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Pql.Query.Organizer", "src\QueryProcessor\Parsobober.Pql.Query.Organizer\Parsobober.Pql.Query.Organizer.csproj", "{E6E8B73A-E0D0-443F-B5CA-880BB95648E8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Parsobober.Pql.Query.Organizer", "src\QueryProcessor\Parsobober.Pql.Query.Organizer\Parsobober.Pql.Query.Organizer.csproj", "{E6E8B73A-E0D0-443F-B5CA-880BB95648E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Pql.Query.Organizer.Obsolete", "src\QueryProcessor\Parsobober.Pql.Query.Organizer.Obsolete\Parsobober.Pql.Query.Organizer.Obsolete.csproj", "{70CAE9F7-1892-4F0D-9055-E5E942ACAA64}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Parsobober.Pql.Query.Organizer.Obsolete", "src\QueryProcessor\Parsobober.Pql.Query.Organizer.Obsolete\Parsobober.Pql.Query.Organizer.Obsolete.csproj", "{70CAE9F7-1892-4F0D-9055-E5E942ACAA64}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Pkb.Cfg", "src\Pkb\Parsobober.Pkb.Cfg\Parsobober.Pkb.Cfg.csproj", "{A2F57084-1610-4FD0-8FF4-BCAEBF5DCAC9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Parsobober.Pkb.Cfg", "src\Pkb\Parsobober.Pkb.Cfg\Parsobober.Pkb.Cfg.csproj", "{A2F57084-1610-4FD0-8FF4-BCAEBF5DCAC9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Parsobober.Pql.Pattern.Parser", "src\QueryProcessor\Parsobober.Pql.Pattern.Parser\Parsobober.Pql.Pattern.Parser.csproj", "{D39BC42B-826B-4FB4-804B-BE299843D542}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D57C2D07-EA23-413A-85DF-B6E1786DF56B} = {D57C2D07-EA23-413A-85DF-B6E1786DF56B}
+		{D6216C15-CDC1-4876-BDB9-2B88C9DD35DB} = {D6216C15-CDC1-4876-BDB9-2B88C9DD35DB}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsobober.Pql.Query.Organizer.Another", "src\QueryProcessor\Parsobober.Pql.Query.Organizer.Another\Parsobober.Pql.Query.Organizer.Another.csproj", "{916EFDC1-108D-4C6E-8AE5-D0301584C18F}"
 EndProject
@@ -96,14 +105,14 @@ Global
 		{5718E14E-BCA6-45BE-957E-64C74932BD97}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5718E14E-BCA6-45BE-957E-64C74932BD97}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5718E14E-BCA6-45BE-957E-64C74932BD97}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7CABAAB4-EF63-48AB-852F-42E472C3D94D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7CABAAB4-EF63-48AB-852F-42E472C3D94D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7CABAAB4-EF63-48AB-852F-42E472C3D94D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7CABAAB4-EF63-48AB-852F-42E472C3D94D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{177D7086-D03B-45F1-99AA-7CC66C2EA933}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{177D7086-D03B-45F1-99AA-7CC66C2EA933}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{177D7086-D03B-45F1-99AA-7CC66C2EA933}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{177D7086-D03B-45F1-99AA-7CC66C2EA933}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7CABAAB4-EF63-48AB-852F-42E472C3D94D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CABAAB4-EF63-48AB-852F-42E472C3D94D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CABAAB4-EF63-48AB-852F-42E472C3D94D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CABAAB4-EF63-48AB-852F-42E472C3D94D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E6E8B73A-E0D0-443F-B5CA-880BB95648E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E6E8B73A-E0D0-443F-B5CA-880BB95648E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E6E8B73A-E0D0-443F-B5CA-880BB95648E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -132,8 +141,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{D57C2D07-EA23-413A-85DF-B6E1786DF56B} = {440A8BEF-344E-43C9-9078-E25317708B4A}
 		{28D828E9-C169-47E5-BF57-E4B7E1AF2C57} = {440A8BEF-344E-43C9-9078-E25317708B4A}
-		{EC202DD0-56DB-4C9F-9248-F8E73CD909A3} = {8C1915BB-90DA-4367-9621-0A5CB3AC0F15}
 		{D6216C15-CDC1-4876-BDB9-2B88C9DD35DB} = {8C1915BB-90DA-4367-9621-0A5CB3AC0F15}
+		{EC202DD0-56DB-4C9F-9248-F8E73CD909A3} = {8C1915BB-90DA-4367-9621-0A5CB3AC0F15}
 		{C6339CBE-9406-4FC4-B354-2501B0A827C2} = {04EA456D-F461-411D-B114-B3DC2F95A0EF}
 		{A8299C81-B6FE-4993-BE72-8F347D23281A} = {04EA456D-F461-411D-B114-B3DC2F95A0EF}
 		{63494377-1C53-4866-9328-9F1439762909} = {440A8BEF-344E-43C9-9078-E25317708B4A}

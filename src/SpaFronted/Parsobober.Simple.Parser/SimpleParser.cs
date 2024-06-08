@@ -25,11 +25,11 @@ internal class SimpleParser(
         while (_currentToken.Type == SimpleToken.Procedure)
         {
             var nextProcedureNode = Procedure();
-            ast.SetSiblings(procedureNode, nextProcedureNode);
+            IAst.SetSiblings(procedureNode, nextProcedureNode);
         }
 
         Match(SimpleToken.WhiteSpace);
-        ast.SetParenthood(ast.Root, procedureNode);
+        IAst.SetParenthood(ast.Root, procedureNode);
         NotifyAll(ex => ex.FinishedParsing());
         logger.LogInformation("Parsing completed successfully");
         return ast;
@@ -63,10 +63,10 @@ internal class SimpleParser(
 
     private TreeNode CreateTreeNode(EntityType type, int lineNumber, string? attr = null)
     {
-        TreeNode node = ast.CreateTreeNode(lineNumber, type);
+        TreeNode node = IAst.CreateTreeNode(lineNumber, type);
         if (attr is not null)
         {
-            ast.SetAttribute(node, attr);
+            IAst.SetAttribute(node, attr);
         }
 
         return node;
@@ -74,7 +74,7 @@ internal class SimpleParser(
 
     private void AddNthChild(TreeNode parent, TreeNode child, int n)
     {
-        int number = ast.SetParenthood(parent, child);
+        int number = IAst.SetParenthood(parent, child);
         if (number != n)
         {
             throw new Exception("Parser internal error - bad child position");
@@ -110,14 +110,14 @@ internal class SimpleParser(
     private TreeNode StmtLstElement(TreeNode list)
     {
         TreeNode node = Stmt();
-        ast.SetParenthood(list, node);
+        IAst.SetParenthood(list, node);
         if (_currentToken.Type == SimpleToken.RightCurly)
         {
             return node;
         }
 
         TreeNode nextNode = StmtLstElement(list);
-        ast.SetSiblings(node, nextNode);
+        IAst.SetSiblings(node, nextNode);
         return node;
     }
 

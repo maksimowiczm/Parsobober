@@ -20,4 +20,14 @@ public class TreeNode(int lineNumber, EntityType type)
     {
         return Type.ToString() + ':' + Attribute;
     }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is not TreeNode node)
+        {
+            return false;
+        }
+
+        return Type == node.Type && Attribute == node.Attribute && Children == node.Children;
+    }
 }

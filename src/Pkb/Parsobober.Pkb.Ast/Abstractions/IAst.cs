@@ -18,21 +18,33 @@ public interface IAst
     /// <returns>
     /// A new tree node with the specified line number and entity type.
     /// </returns>
-    TreeNode CreateTreeNode(int lineNumber, EntityType type);
+    public static TreeNode CreateTreeNode(int lineNumber, EntityType type)
+    {
+        var newNode = new TreeNode(lineNumber, type);
+
+        return newNode;
+    }
 
     /// <summary>
     /// Sets an attribute on the specified tree node.
     /// </summary>
     /// <param name="node">The tree node to set the attribute on.</param>
     /// <param name="attribute">The attribute to set on the tree node.</param>
-    void SetAttribute(TreeNode node, string attribute);
+    public static void SetAttribute(TreeNode node, string attr)
+    {
+        node.Attribute = attr;
+    }
 
     /// <summary>
     /// Sets the specified tree nodes as siblings.
     /// </summary>
     /// <param name="left">The left sibling tree node.</param>
     /// <param name="right">The right sibling tree node.</param>
-    void SetSiblings(TreeNode left, TreeNode right);
+    public static void SetSiblings(TreeNode left, TreeNode right)
+    {
+        left.RightSibling = right;
+        right.LeftSibling = left;
+    }
 
     /// <summary>
     /// Sets the parent-child relationship between the specified tree nodes.
@@ -42,5 +54,11 @@ public interface IAst
     /// <returns>
     /// The number of children.
     /// </returns>
-    int SetParenthood(TreeNode parent, TreeNode child);
+    public static int SetParenthood(TreeNode parent, TreeNode child)
+    {
+        child.Parent = parent;
+        parent.AddChild(child);
+
+        return parent.Children.Count;
+    }
 }
