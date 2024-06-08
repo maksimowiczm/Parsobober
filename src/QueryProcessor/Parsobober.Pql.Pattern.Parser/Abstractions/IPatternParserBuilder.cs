@@ -1,5 +1,5 @@
 ﻿namespace Parsobober.Pql.Pattern.Parser.Abstractions;
-internal interface IPatternParserBuilder
+public interface IPatternParserBuilder
 {
     IPatternParser BuildParser(string pattern);
 }

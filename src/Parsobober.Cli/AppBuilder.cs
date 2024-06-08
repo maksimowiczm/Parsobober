@@ -5,6 +5,7 @@ using Parsobober.DesignExtractor;
 using Parsobober.Pkb.Ast;
 using Parsobober.Pkb.Relations;
 using Parsobober.Pql.Parser;
+using Parsobober.Pql.Pattern.Parser;
 using Parsobober.Pql.Query.Organizer.Night;
 using Parsobober.Simple.Lexer;
 using Parsobober.Simple.Parser;
@@ -24,7 +25,8 @@ public class AppBuilder
             .AddAst()
             .AddRelations()
             .AddPqlQueries()
-            .AddPqlParser();
+            .AddPqlParser()
+            .AddPatternParserBuilder();
     }
 
     public AppBuilder RemoveLogging()
