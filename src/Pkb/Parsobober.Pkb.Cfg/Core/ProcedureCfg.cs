@@ -7,6 +7,7 @@ public class ProcedureCfg
 {
     private readonly Dictionary<int, ICfgNode> _nodeDictionary = new();
     public ICfgNode EntryNode { get; private set; } = null!;
+    public IReadOnlyDictionary<int, ICfgNode> NodeDictionary => _nodeDictionary;
 
     public ProcedureCfg(TreeNode procedureNode)
     {

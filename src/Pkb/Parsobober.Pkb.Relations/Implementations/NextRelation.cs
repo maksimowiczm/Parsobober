@@ -107,4 +107,20 @@ public class NextRelation(
 
     public bool IsNextTransitive(int left, int right) =>
         GetNextTransitive(left).Any(programLine => programLine.Line == right);
+
+    public IEnumerable<ProgramLine> GetAllNextWithPrevious()
+    {
+        return _procedureCfgsDictionary.Values
+            .SelectMany(cfg => cfg.NodeDictionary.Values)
+            .Where(node => node.Previous.Any())
+            .Select(node => node.LineNumber.ToProgramLine());
+    }
+
+    public IEnumerable<ProgramLine> GetAllPreviousWithNext()
+    {
+        return _procedureCfgsDictionary.Values
+            .SelectMany(cfg => cfg.NodeDictionary.Values)
+            .Where(node => node.Next.Any())
+            .Select(node => node.LineNumber.ToProgramLine());
+    }
 }

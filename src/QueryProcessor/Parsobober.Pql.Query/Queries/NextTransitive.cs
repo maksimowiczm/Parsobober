@@ -30,6 +30,8 @@ internal class NextTransitive(IArgument left, IArgument right, INextAccessor acc
         (Line previous, Any) => accessor.GetNextTransitive(previous.Value),
         (Any, Line next) => accessor.GetPreviousTransitive(next.Value),
         (Any, Any) => IPkbDto.Boolean(accessor.ProcedureCfgs.Values.Any(d => d.EntryNode.Next.Any())),
+        (IOtherDeclaration.ProgramLine, Any) => accessor.GetAllPreviousWithNext(),
+        (Any, IOtherDeclaration.ProgramLine) => accessor.GetAllNextWithPrevious(),
         _ => Enumerable.Empty<Statement>()
     };
 

@@ -18,4 +18,8 @@ public interface INextAccessor
     IEnumerable<ProgramLine> GetNextTransitive(int line);
 
     bool IsNextTransitive(int left, int right);
+
+    IEnumerable<ProgramLine> GetAllNextWithPrevious();
+    
+    IEnumerable<ProgramLine> GetAllPreviousWithNext();
 }

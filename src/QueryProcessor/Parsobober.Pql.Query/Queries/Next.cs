@@ -30,6 +30,8 @@ internal class Next(IArgument left, IArgument right, INextAccessor accessor)
         (Line previous, Any) => accessor.GetNext(previous.Value),
         (Any, Line next) => accessor.GetPrevious(next.Value),
         (Any, Any) => IPkbDto.Boolean(accessor.ProcedureCfgs.Values.Any(d => d.EntryNode.Next.Any())),
+        (IOtherDeclaration.ProgramLine, Any) => accessor.GetAllPreviousWithNext(),
+        (Any, IOtherDeclaration.ProgramLine) => accessor.GetAllNextWithPrevious(),
         _ => Enumerable.Empty<Statement>()
     };
 
