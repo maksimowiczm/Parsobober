@@ -526,7 +526,7 @@ public class PqlParserTests
         var builderMock = new Mock<IQueryBuilder>();
         var queryMock = new Mock<IQueryResult>();
         var parser = new PqlParser(builderMock.Object);
-        var queryString = $"{declaration} Select {a} such that Pattern {a}({left}, {right})";
+        var queryString = $"{declaration} Select {a} pattern {a}({left}, {right})";
 
         builderMock.Setup(b => b.Build()).Returns(queryMock.Object);
 

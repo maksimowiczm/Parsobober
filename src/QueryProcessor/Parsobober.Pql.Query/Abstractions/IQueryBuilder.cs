@@ -92,5 +92,7 @@ public interface IQueryBuilder
 
     IQueryBuilder AddNextTransitive(string reference1, string reference2);
 
+    IQueryBuilder AddPattern(string reference, string left, string right);
+
     #endregion
 }

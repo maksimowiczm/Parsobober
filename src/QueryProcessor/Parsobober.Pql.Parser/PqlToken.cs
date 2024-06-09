@@ -14,9 +14,6 @@ internal static class PqlAuxiliaryTokens
 
 internal enum PqlToken
 {
-    [Lexeme("_")]
-    Underscore,
-    
     [Lexeme("<")]
     LeftAngleBracket,
 
@@ -46,6 +43,9 @@ internal enum PqlToken
 
     [Lexeme("Select")]
     Select,
+
+    [Lexeme("Pattern|pattern")]
+    Pattern,
 
     [Lexeme("such that")]
     SuchThat,
@@ -113,6 +113,12 @@ internal enum PqlToken
 
     [Lexeme(PqlAuxiliaryTokens.QuoteReference)]
     QuoteReference,
+
+    [Lexeme("""(_?"([a-zA-Z\d+\*\- ])*"_?)""")]
+    PatternArgument,
+
+    [Lexeme("_\\b")]
+    Underscore,
 
     [Lexeme($"{PqlAuxiliaryTokens.StatementReference}")]
     Reference,

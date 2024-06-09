@@ -48,7 +48,36 @@ internal class PqlGrammar(IQueryBuilder queryBuilder)
 
     [Production("condition-clause : such-that-clause")]
     [Production("condition-clause : with-clause")]
+    [Production("condition-clause : pattern-clause")]
     public IQueryBuilder ConditionClause(IQueryBuilder relation) => relation;
+
+    #region Pattern Clause
+
+    [Production("pattern-clause : Pattern[d] pattern-expression and-pattern-expression*")]
+    public IQueryBuilder PatternClause(IQueryBuilder _1, List<IQueryBuilder> _2) => queryBuilder;
+
+    [Production("and-pattern-expression : And[d] pattern-expression")]
+    public IQueryBuilder AndPatternAssign(IQueryBuilder assign) => assign;
+
+    [Production(
+        "pattern-expression : Reference LeftParenthesis[d] Underscore Coma[d] PatternArgument RightParenthesis[d]")]
+    [Production(
+        "pattern-expression : Reference LeftParenthesis[d] PatternArgument Coma[d] Underscore RightParenthesis[d]")]
+    [Production(
+        "pattern-expression : Reference LeftParenthesis[d] PatternArgument Coma[d] PatternArgument RightParenthesis[d]")]
+    [Production(
+        "pattern-expression : Reference LeftParenthesis[d] Underscore Coma[d] Underscore RightParenthesis[d]")]
+    public IQueryBuilder PatternExpression(
+        Token<PqlToken> reference,
+        Token<PqlToken> left,
+        Token<PqlToken> right
+    )
+    {
+        queryBuilder.AddPattern(reference.Value, left.Value, right.Value);
+        return queryBuilder;
+    }
+
+    #endregion
 
     #region With Clause
 
@@ -147,9 +176,11 @@ internal class PqlGrammar(IQueryBuilder queryBuilder)
     [Production(
         "relation : CallsTransitive[d] LeftParenthesis[d] QuoteReference Coma[d] QuoteReference RightParenthesis[d]")]
     [Production("relation : CallsTransitive[d] LeftParenthesis[d] Reference Coma[d] Underscore RightParenthesis[d]")]
-    [Production("relation : CallsTransitive[d] LeftParenthesis[d] QuoteReference Coma[d] Underscore RightParenthesis[d]")]
+    [Production(
+        "relation : CallsTransitive[d] LeftParenthesis[d] QuoteReference Coma[d] Underscore RightParenthesis[d]")]
     [Production("relation : CallsTransitive[d] LeftParenthesis[d] Underscore Coma[d] Reference RightParenthesis[d]")]
-    [Production("relation : CallsTransitive[d] LeftParenthesis[d] Underscore Coma[d] QuoteReference RightParenthesis[d]")]
+    [Production(
+        "relation : CallsTransitive[d] LeftParenthesis[d] Underscore Coma[d] QuoteReference RightParenthesis[d]")]
     [Production("relation : CallsTransitive[d] LeftParenthesis[d] Underscore Coma[d] Underscore RightParenthesis[d]")]
     public IQueryBuilder CallsTransitiveExpression(Token<PqlToken> reference1, Token<PqlToken> reference2) =>
         queryBuilder.AddCallsTransitive(reference1.Value, reference2.Value);

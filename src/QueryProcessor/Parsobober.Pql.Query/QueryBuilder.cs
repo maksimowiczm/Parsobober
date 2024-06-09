@@ -236,6 +236,14 @@ internal partial class QueryBuilder(
         return this;
     }
 
+    private readonly List<(string reference, string left, string right)> _patterns = [];
+
+    public IQueryBuilder AddPattern(string reference, string left, string right)
+    {
+        _patterns.Add((reference, left, right));
+        return this;
+    }
+
     [GeneratedRegex(@"^(.+)\.(.+)$", RegexOptions.Compiled)]
     private static partial Regex AttributeRegex();
 
