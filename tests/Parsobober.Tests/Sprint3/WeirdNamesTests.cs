@@ -1,7 +1,5 @@
 ﻿namespace Parsobober.Tests.Sprint3;
 
-#if !DEBUG
-
 public class WeirdNamesTests() : BaseTestClass(Code.Dropbox)
 {
     [Theory]
@@ -22,12 +20,16 @@ public class WeirdNamesTests() : BaseTestClass(Code.Dropbox)
                 if ifs1; while whilew; procedure procedurep;
                 Select ifs1 such that Follows(ifs1,whilew) with procedurep.procName="whilew"
                 """, "none")]
+    [InlineData("""
+                if i; while w; procedure p;
+                Select i such that Follows(i,w) with p.procName="whilew"
+                """, "none")]
     public void NameTests(string query, string expected)
     {
         var result = App.Query(query);
         result.Should().Be(expected.Replace(" ", ""));
     }
-    
+
     [Theory]
     [Trait("SkipInActions", "true")]
     [InlineData("""
@@ -39,7 +41,7 @@ public class WeirdNamesTests() : BaseTestClass(Code.Dropbox)
         var result = App.Query(query);
         result.Should().Be(expected.Replace(" ", ""));
     }
-    
+
     [Theory(Skip = "Skipping name testing")]
     [Trait("SkipInActions", "true")]
     [InlineData("""
@@ -56,5 +58,3 @@ public class WeirdNamesTests() : BaseTestClass(Code.Dropbox)
         result.Should().Be(expected.Replace(" ", ""));
     }
 }
-
-#endif

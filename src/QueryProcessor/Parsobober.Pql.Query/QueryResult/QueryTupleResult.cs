@@ -32,8 +32,7 @@ internal class QueryTupleResult(IEnumerable<Dictionary<IDeclaration, IPkbDto>> r
                 inner.Append($" {value}");
             }
 
-            inner.Append(',');
-            sb.Append(inner.ToString().Trim());
+            sb.AppendJoin(",", inner.ToString().Trim());
         }
 
         return sb.ToString();
