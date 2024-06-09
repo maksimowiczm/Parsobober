@@ -27,13 +27,16 @@ internal static class Follows
             return query;
         }
 
-        private IEnumerable<Statement> HandleAny() => (Left, Right) switch
+        private IEnumerable<IPkbDto> HandleAny() => (Left, Right) switch
         {
             (Line predecessor, Any) when accessor.GetFollower(predecessor.Value) is not null =>
                 Enumerable.Repeat(accessor.GetFollower(predecessor.Value)!, 1),
             (Any, Line follower) when accessor.GetPreceding(follower.Value) is not null =>
                 Enumerable.Repeat(accessor.GetPreceding(follower.Value)!, 1),
             (Any, Any) => accessor.GetFollowersTransitive<Statement>(),
+            (IStatementDeclaration predecessor, Any) => new GetPrecedingByFollowsType(accessor).Create()
+                .Build(predecessor),
+            (Any, IStatementDeclaration follower) => new GetFollowerByFollowedType(accessor).Create().Build(follower),
             _ => Enumerable.Empty<Statement>()
         };
 
@@ -71,9 +74,7 @@ internal static class Follows
 
                 if (follows == select)
                 {
-                    var xd = new GetFollowerByFollowedType(accessor).Create(preceding).Build(follows);
-                    var xp = xd.ToList();
-                    return xp;
+                    return new GetFollowerByFollowedType(accessor).Create(preceding).Build(follows);
                 }
 
                 throw new DeclarationNotFoundException(select, this);
@@ -97,6 +98,8 @@ internal static class Follows
                 IStatementDeclaration.Call => new GetPrecedingByFollowsType<Call>(followsAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(followsStatementDeclaration))
             };
+
+        public FollowsQuery Create() => new GetPrecedingByFollowsType<Statement>(followsAccessor);
     }
 
     private class GetPrecedingByFollowsType<TFollows>(IFollowsAccessor followsAccessor) : FollowsQuery
@@ -126,6 +129,8 @@ internal static class Follows
                 IStatementDeclaration.Call => new GetFollowerByFollowedType<Call>(followsAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(precedingDeclaration))
             };
+
+        public FollowsQuery Create() => new GetFollowerByFollowedType<Statement>(followsAccessor);
     }
 
     private class GetFollowerByFollowedType<TFollower>(IFollowsAccessor followsAccessor) : FollowsQuery

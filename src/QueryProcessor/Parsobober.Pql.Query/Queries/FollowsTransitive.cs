@@ -32,6 +32,8 @@ internal static class FollowsTransitive
             (Line predecessor, Any) => accessor.GetFollowersTransitive(predecessor.Value),
             (Any, Line follower) => accessor.GetPrecedingTransitive(follower.Value),
             (Any, Any) => accessor.GetFollowersTransitive<Statement>(),
+            (IStatementDeclaration predecessor, Any) => new GetTransitivePrecedingByFollowsType(accessor).Create().Build(predecessor),
+            (Any, IStatementDeclaration follower) => new GetTransitiveFollowerByFollowedType(accessor).Create().Build(follower),
             _ => Enumerable.Empty<Statement>()
         };
 
@@ -93,6 +95,8 @@ internal static class FollowsTransitive
                 IStatementDeclaration.Call => new GetTransitivePrecedingByFollowsType<Call>(followedAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(followsStatementDeclaration))
             };
+
+        public FollowedQuery Create() => new GetTransitivePrecedingByFollowsType<Statement>(followedAccessor);
     }
 
     private class GetTransitivePrecedingByFollowsType<TFollows>(IFollowsAccessor followedAccessor) : FollowedQuery
@@ -122,6 +126,7 @@ internal static class FollowsTransitive
                 IStatementDeclaration.Call => new GetTransitiveFollowerByFollowedType<Call>(followedAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(precedingStatementDeclaration))
             };
+        public FollowedQuery Create() => new GetTransitiveFollowerByFollowedType<Statement>(followedAccessor);
     }
 
     private class GetTransitiveFollowerByFollowedType<TFollowed>(IFollowsAccessor followedAccessor) : FollowedQuery
