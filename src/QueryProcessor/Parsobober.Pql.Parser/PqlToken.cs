@@ -8,12 +8,15 @@ internal static class PqlAuxiliaryTokens
     public const string Ident = @"([a-zA-Z][a-zA-Z\d#]*)";
     public const string Synonym = Ident;
     public const string DesignEntity = "(procedure|stmtLst|stmt|assign|call|while|if|variable|constant|prog_line)\\b";
-    public const string StatementReference = $"({Synonym}|_|{Integer})";
+    public const string StatementReference = $@"({Synonym}|{Integer})\b";
     public const string QuoteReference = $"\"{StatementReference}\"";
 }
 
 internal enum PqlToken
 {
+    [Lexeme("_")]
+    Underscore,
+    
     [Lexeme("<")]
     LeftAngleBracket,
 
