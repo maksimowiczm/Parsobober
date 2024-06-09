@@ -70,9 +70,7 @@ public interface IDeclaration : IArgument
                 dtos.Calls.Where(dto => dto.ProcedureName == p.Name),
             (IStatementDeclaration.Call, Variable v) =>
                 dtos.Calls.Where(dto => dto.ProcedureName == v.Name),
-            (IStatementDeclaration.Call, Statement s) =>
-                dtos.Calls.Where(dto => dto.Line == s.Line),
-            (IStatementDeclaration.Statement, Statement s) =>
+            (IStatementDeclaration, Statement s) =>
                 dtos.Statements.Where(dto => dto.Line == s.Line),
             (IVariableDeclaration.Variable, Variable v) =>
                 dtos.Variables.Where(dto => dto.Name == v.Name),

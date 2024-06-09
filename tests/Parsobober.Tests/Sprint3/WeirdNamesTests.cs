@@ -20,10 +20,6 @@ public class WeirdNamesTests() : BaseTestClass(Code.Dropbox)
                 if ifs1; while whilew; procedure procedurep;
                 Select ifs1 such that Follows(ifs1,whilew) with procedurep.procName="whilew"
                 """, "none")]
-    [InlineData("""
-                if i; while w; procedure p;
-                Select i such that Follows(i,w) with p.procName="whilew"
-                """, "none")]
     public void NameTests(string query, string expected)
     {
         var result = App.Query(query);
