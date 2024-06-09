@@ -20,7 +20,7 @@ public interface IModifiesAccessor
 
     /// <summary>
     /// Returns statements that modify variable
-    /// => Modifies(returned, provided)
+    /// => Modifies(returned, _)
     /// </summary>
     IEnumerable<Statement> GetStatements();
 
@@ -31,6 +31,13 @@ public interface IModifiesAccessor
     /// <param name="variableName">Variable name</param>
     IEnumerable<Statement> GetStatements(string variableName);
 
+    /// <summary>
+    /// Returns procedures that modify variables
+    /// => Modifies(returned, _)
+    /// </summary>
+    /// <returns></returns>
+    IEnumerable<Procedure> GetProcedures();
+    
     /// <summary>
     /// Returns procedures that modify variable with given variableName
     /// => Modifies(returned, provided)

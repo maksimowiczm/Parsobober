@@ -239,6 +239,12 @@ public class ModifiesRelation(
             .Select(stmt => programContext.StatementsDictionary[stmt.Key].ToStatement());
     }
 
+    public IEnumerable<Procedure> GetProcedures()
+    {
+        return _modifiesProcedureDictionaryFull.Keys
+            .Select(procedureName => programContext.ProceduresDictionary[procedureName].ToProcedure());
+    }
+
     public IEnumerable<Procedure> GetProcedures(string variableName)
     {
         return _modifiesProcedureDictionaryFull.Where(procedure => procedure.Value.Contains(variableName))
