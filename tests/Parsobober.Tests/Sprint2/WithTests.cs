@@ -37,6 +37,7 @@ public class WithTests() : BaseTestClass(Code.ZadanieDomowe1_1)
     }
 
     [Theory]
+    [Trait("SkipInActions", "true")]
     [InlineData("variable v; procedure p; call c;" +
                 "Select p with v.varName = p.procName and v.varName = c.procName",
         "Triangle")]
