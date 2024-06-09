@@ -75,4 +75,9 @@ public readonly record struct Line(int Value) : IArgument
 
 public readonly record struct Any : IArgument;
 
-public readonly record struct Pattern(string Value) : IArgument;
+public readonly record struct Pattern(string Value) : IArgument
+{
+#if DEBUG
+    public override string ToString() => $"{Value}";
+#endif
+}
