@@ -114,7 +114,7 @@ internal enum PqlToken
     [Lexeme(PqlAuxiliaryTokens.QuoteReference)]
     QuoteReference,
 
-    [Lexeme("""(_?"([a-zA-Z\d+\*\- ])*"_?)""")]
+    [Lexeme("""(_?"([a-zA-Z\d+\*\- \(\)])*"_?)""")]
     PatternArgument,
 
     [Lexeme("_\\b")]

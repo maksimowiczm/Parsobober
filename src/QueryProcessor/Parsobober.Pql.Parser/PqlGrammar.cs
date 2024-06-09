@@ -62,9 +62,19 @@ internal class PqlGrammar(IQueryBuilder queryBuilder)
     [Production(
         "pattern-expression : Reference LeftParenthesis[d] Underscore Coma[d] PatternArgument RightParenthesis[d]")]
     [Production(
+        "pattern-expression : Reference LeftParenthesis[d] Underscore Coma[d] QuoteReference RightParenthesis[d]")]
+    [Production(
         "pattern-expression : Reference LeftParenthesis[d] PatternArgument Coma[d] Underscore RightParenthesis[d]")]
     [Production(
+        "pattern-expression : Reference LeftParenthesis[d] QuoteReference Coma[d] Underscore RightParenthesis[d]")]
+    [Production(
         "pattern-expression : Reference LeftParenthesis[d] PatternArgument Coma[d] PatternArgument RightParenthesis[d]")]
+    [Production(
+        "pattern-expression : Reference LeftParenthesis[d] QuoteReference Coma[d] PatternArgument RightParenthesis[d]")]
+    [Production(
+        "pattern-expression : Reference LeftParenthesis[d] PatternArgument Coma[d] QuoteReference RightParenthesis[d]")]
+    [Production(
+        "pattern-expression : Reference LeftParenthesis[d] QuoteReference Coma[d] QuoteReference RightParenthesis[d]")]
     [Production(
         "pattern-expression : Reference LeftParenthesis[d] Underscore Coma[d] Underscore RightParenthesis[d]")]
     public IQueryBuilder PatternExpression(
