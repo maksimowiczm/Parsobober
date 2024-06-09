@@ -96,12 +96,60 @@ public class PatternQuery(
 
     private IEnumerable<IPkbDto> HandleLeft()
     {
-        throw new NotImplementedException();
+        var leftPattern = LeftPattern.Value;
+
+        var underscore = leftPattern.Any(c => c == '_');
+
+        var leftNode = parserBuilder.BuildParser(leftPattern.Replace("\"", "").Replace("_", "")).Parse();
+
+        var results = GetInput()
+            .Where(x => x.Value.Children.Count > 0)
+            .Where(x =>
+            {
+                if (underscore)
+                {
+                    return leftNode._Equals_(x.Value.Children[0]);
+                }
+
+                return leftNode.Equals(x.Value.Children[0]);
+            })
+            .ToList();
+
+        return results.Select(r => r.Value.ToStatement());
     }
 
     private IEnumerable<IPkbDto> HandleBoth()
     {
-        throw new NotImplementedException();
+        var leftPattern = LeftPattern.Value;
+        var leftUnderscore = leftPattern.Any(c => c == '_');
+        var leftNode = parserBuilder.BuildParser(leftPattern.Replace("\"", "").Replace("_", "")).Parse();
+
+        var rightPattern = RightPattern.Value;
+        var rightUnderscore = rightPattern.Any(c => c == '_');
+        var rightNode = parserBuilder.BuildParser(rightPattern.Replace("\"", "").Replace("_", "")).Parse();
+
+        var results = GetInput()
+            .Where(x => x.Value.Children.Count > 1)
+            .Where(x =>
+            {
+                if (leftUnderscore && rightUnderscore)
+                {
+                    return leftNode._Equals_(x.Value.Children[0]) && rightNode._Equals_(x.Value.Children[1]);
+                }
+                if (leftUnderscore)
+                {
+                    return leftNode._Equals_(x.Value.Children[0]) && rightNode.Equals(x.Value.Children[1]);
+                }
+                if (rightUnderscore)
+                {
+                    return leftNode.Equals(x.Value.Children[0]) && rightNode._Equals_(x.Value.Children[1]);
+                }
+
+                return leftNode.Equals(x.Value.Children[0]) && rightNode.Equals(x.Value.Children[1]);
+            })
+            .ToList();
+
+        return results.Select(r => r.Value.ToStatement());
     }
 
     public IEnumerable<IPkbDto> Do(IDeclaration select)
