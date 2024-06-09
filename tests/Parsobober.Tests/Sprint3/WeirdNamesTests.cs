@@ -20,7 +20,7 @@ public class WeirdNamesTests() : BaseTestClass(Code.Dropbox)
     [InlineData("""
                 if ifs1; while whilew;variable variablev; procedure procedurep;
                 Select ifs1 such that Follows(ifs1, whilew) and Parent(whilew, ifs1) with ifs1.stmt# = whilew.stmt# and procedurep.procName = variablev.varName
-                """, "None")]    
+                """, "None")]
     [InlineData("""
                 if ifs1; while whilew; procedure procedurep;
                 Select ifs1 such that Follows(ifs1,whilew) with procedurep.procName="whilew"
@@ -34,7 +34,6 @@ public class WeirdNamesTests() : BaseTestClass(Code.Dropbox)
     //             assign and; stmt such, Select; while that;
     //             Select such such that Follows(and, such) and Parent(and, that) with such.stmt# = Select.stmt#
     //             """, "None")]
-    
     public void NameTests(string query, string expected)
     {
         var result = App.Query(query);

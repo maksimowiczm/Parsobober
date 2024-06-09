@@ -30,7 +30,7 @@ public class Route
         var candidateQueries = _queries
             .Where(q =>
                 q is { Left: IDeclaration, Right: IDeclaration } or
-                    { Left: IDeclaration, Right: IDeclaration });
+                { Left: IDeclaration, Right: IDeclaration });
 
         var query = candidateQueries.FirstOrDefault(q => q.Left == _select || q.Right == _select);
 

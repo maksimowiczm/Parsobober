@@ -5,7 +5,7 @@ using Parsobober.Pql.Query.Queries.Abstractions;
 
 namespace Parsobober.Pql.Query.Organizer.Another;
 
-public class QueryOrganizerBuilder(IDtoProgramContextAccessor context, IComparer<IQueryDeclaration> comparer)
+public class QueryOrganizerBuilder(IDtoProgramContextAccessor context)
     : IQueryOrganizerBuilder
 {
     private readonly List<IQueryDeclaration> _queries = [];

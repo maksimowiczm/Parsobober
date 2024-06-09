@@ -214,8 +214,8 @@ public class Query
         }
 
         if (_queries.Any(q => q is
-                { Left: not IDeclaration, Right: not null } or
-                { Left: not null, Right: not IDeclaration }))
+        { Left: not IDeclaration, Right: not null } or
+        { Left: not null, Right: not IDeclaration }))
         {
             return false;
         }

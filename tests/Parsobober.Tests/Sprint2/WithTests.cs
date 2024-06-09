@@ -30,13 +30,20 @@ public class WithTests() : BaseTestClass(Code.ZadanieDomowe1_1)
         "Triangle")]
     [InlineData("variable v; procedure p;Select p with v.varName = p.procName and v.varName = \"Triangle\"",
         "Triangle")]
+    public void WithTest(string query, string expected)
+    {
+        var result = App.Query(query);
+        result.Should().Be(expected.Replace(" ", ""));
+    }
+
+    [Theory]
     [InlineData("variable v; procedure p; call c;" +
                 "Select p with v.varName = p.procName and v.varName = c.procName",
         "Triangle")]
     [InlineData("variable v; procedure p; call c;" +
                 "Select BOOLEAN with v.varName = p.procName and v.varName = c.procName",
         "true")]
-    public void WithTest(string query, string expected)
+    public void WithTestMultiple(string query, string expected)
     {
         var result = App.Query(query);
         result.Should().Be(expected.Replace(" ", ""));

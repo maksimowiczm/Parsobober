@@ -16,10 +16,10 @@ internal enum PqlToken
 {
     [Lexeme("<")]
     LeftAngleBracket,
-    
+
     [Lexeme(">")]
     RightAngleBracket,
-    
+
     #region Separators
 
     [Lexeme(@"\(")]
@@ -84,10 +84,10 @@ internal enum PqlToken
     [Lexeme("Calls")]
     Calls,
 
-    [Lexeme(@"Next\*")] 
+    [Lexeme(@"Next\*")]
     NextTransitive,
 
-    [Lexeme("Next")] 
+    [Lexeme("Next")]
     Next,
 
     #endregion
