@@ -44,6 +44,7 @@ public interface IArgument
             Constant { Value: var value } => new ConstantValue(value),
             ProgramLine { Line: var line } => new Line(line),
             StatementList { Line: var line } => new Line(line),
+            Pattern { Value: var pattern } => new Pattern(pattern),
             _ => throw new ArgumentParseException($"Given argument could not be parsed. {argument}")
         };
 }
@@ -73,3 +74,5 @@ public readonly record struct Line(int Value) : IArgument
 }
 
 public readonly record struct Any : IArgument;
+
+public readonly record struct Pattern(string Value) : IArgument;

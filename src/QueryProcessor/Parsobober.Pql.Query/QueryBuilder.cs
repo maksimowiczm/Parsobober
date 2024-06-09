@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using Parsobober.Pkb.Relations.Abstractions;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
+using Parsobober.Pql.Pattern.Parser.Abstractions;
 using Parsobober.Pql.Query.Abstractions;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries;
@@ -14,7 +15,8 @@ internal partial class QueryBuilder(
     IPkbAccessors accessor,
     IProgramContextAccessor programContext,
     IQueryOrganizerBuilder queryOrganizerBuilder,
-    IDtoProgramContextAccessor context
+    IDtoProgramContextAccessor context,
+    IPatternParserBuilder parserBuilder
 ) : IQueryBuilder
 {
     private string _select = string.Empty;
@@ -77,6 +79,14 @@ internal partial class QueryBuilder(
         AddQueries(_callsTransitive, (l, r) => new CallsTransitive.QueryDeclaration(l, r, accessor.Calls, context));
         AddQueries(_next, (l, r) => new Next(l, r, accessor.Next));
         AddQueries(_nextTransitive, (l, r) => new NextTransitive(l, r, accessor.Next));
+        foreach (var (reference, left, right) in _patterns)
+        {
+            var d = _declarations[reference];
+            var l = new Arguments.Pattern(left);
+            var r = new Arguments.Pattern(right);
+            var query = new PatternQuery(d, l, r, context, programContext, parserBuilder);
+            queryOrganizerBuilder.AddQuery(query);
+        }
 
         var factory = new WithQueryFactory(programContext);
         var attributes = _attributes
