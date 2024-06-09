@@ -13,6 +13,7 @@ using QueryContext =
 
 namespace Parsobober.Pql.Query.Organizer;
 
+[Obsolete("Use Parsobober.Pql.Query.Organizer.Night instead.")]
 public class QueryOrganizer : IQueryOrganizer
 {
     private readonly List<IQueryDeclaration> _queries;

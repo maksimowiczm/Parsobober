@@ -10,6 +10,7 @@ using Cache =
 
 namespace Parsobober.Pql.Query.Organizer.Clueless;
 
+[Obsolete("Use Parsobober.Pql.Query.Organizer.Night instead.")]
 public class QueryOrganizer : IQueryOrganizer
 {
     private readonly List<IQueryDeclaration> _queries;
