@@ -84,10 +84,10 @@ public class PatternQuery(
             {
                 if (underscore)
                 {
-                    return rightNode._Equals_(x.Value.Children[1]);
+                    return x.Value.Children[1]._Equals_(rightNode);
                 }
 
-                return rightNode.Equals(x.Value.Children[1]);
+                return x.Value.Children[1].Equals(rightNode);
             })
             .ToList();
 
@@ -108,10 +108,10 @@ public class PatternQuery(
             {
                 if (underscore)
                 {
-                    return leftNode._Equals_(x.Value.Children[0]);
+                    return x.Value.Children[0]._Equals_(leftNode);
                 }
 
-                return leftNode.Equals(x.Value.Children[0]);
+                return x.Value.Children[0].Equals(leftNode);
             })
             .ToList();
 
@@ -134,18 +134,18 @@ public class PatternQuery(
             {
                 if (leftUnderscore && rightUnderscore)
                 {
-                    return leftNode._Equals_(x.Value.Children[0]) && rightNode._Equals_(x.Value.Children[1]);
+                    return x.Value.Children[0]._Equals_(leftNode) && x.Value.Children[1]._Equals_(rightNode);
                 }
                 if (leftUnderscore)
                 {
-                    return leftNode._Equals_(x.Value.Children[0]) && rightNode.Equals(x.Value.Children[1]);
+                    return x.Value.Children[0]._Equals_(leftNode) && x.Value.Children[1].Equals(rightNode);
                 }
                 if (rightUnderscore)
                 {
-                    return leftNode.Equals(x.Value.Children[0]) && rightNode._Equals_(x.Value.Children[1]);
+                    return x.Value.Children[0].Equals(leftNode) && x.Value.Children[1]._Equals_(rightNode);
                 }
 
-                return leftNode.Equals(x.Value.Children[0]) && rightNode.Equals(x.Value.Children[1]);
+                return x.Value.Children[0].Equals(leftNode) && x.Value.Children[1].Equals(rightNode);
             })
             .ToList();
 

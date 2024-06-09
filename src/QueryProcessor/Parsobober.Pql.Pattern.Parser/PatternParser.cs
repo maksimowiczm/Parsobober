@@ -63,16 +63,14 @@ internal class PatternParser(
 
     private TreeNode Expr()
     {
-        TreeNode termNode = Term();
+        TreeNode mainExprNode = Term();
 
-        if (_currentToken.Type == SimpleToken.Plus || _currentToken.Type == SimpleToken.Minus)
+        while (_currentToken.Type != SimpleToken.WhiteSpace && _currentToken.Type != SimpleToken.RightParenthesis)
         {
-            return BasicOperator(termNode);
+            mainExprNode = BasicOperator(mainExprNode);
         }
-        else
-        {
-            return termNode;
-        }
+
+        return mainExprNode;
     }
 
     private TreeNode Term()
@@ -109,7 +107,7 @@ internal class PatternParser(
                 throw new Exception("Operator not found");
 
         }
-        TreeNode exprNode = Expr();
+        TreeNode exprNode = Term();
         var mainExprNode = CreateTreeNode(entityType, 0);
         AddNthChild(mainExprNode, termNode, 1);
         AddNthChild(mainExprNode, exprNode, 2);

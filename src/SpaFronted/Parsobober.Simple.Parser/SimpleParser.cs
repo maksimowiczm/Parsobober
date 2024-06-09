@@ -222,13 +222,12 @@ internal class SimpleParser(
 
     private TreeNode Expr()
     {
-        TreeNode termNode = Term();
-        if (_currentToken.Type == SimpleToken.Semicolon || _currentToken.Type == SimpleToken.RightParenthesis)
-        {
-            return termNode;
-        }
+        TreeNode mainExprNode = Term();
 
-        var mainExprNode = BasicOperator(termNode);
+        while (_currentToken.Type != SimpleToken.Semicolon && _currentToken.Type != SimpleToken.RightParenthesis)
+        {
+            mainExprNode = BasicOperator(mainExprNode);
+        }
 
         NotifyAll(ex => ex.Expr(mainExprNode));
         return mainExprNode;
@@ -268,7 +267,7 @@ internal class SimpleParser(
                 throw new Exception("Operator not found");
 
         }
-        TreeNode exprNode = Expr();
+        TreeNode exprNode = Term();
         var mainExprNode = CreateTreeNode(entityType, _currentLineNumber);
         AddNthChild(mainExprNode, termNode, 1);
         AddNthChild(mainExprNode, exprNode, 2);
