@@ -123,28 +123,31 @@ public class FollowsRelation(
     private IEnumerable<Statement> GetTransitive<TStatement>(IAstTraversalStrategy strategy)
         where TStatement : Statement
     {
-        var traversedAst = ast.Root.Traverse(strategy);
+        var procedures = programContext.ProceduresDictionary.Values;
         var set = new HashSet<TreeNode>();
-
-        TreeNode? currentScope = null;
-        var currentScopeFollowedList = new Stack<TreeNode>();
-
-        foreach (var (node, _) in traversedAst)
+        foreach (var procedure in procedures)
         {
-            // if nodes have different parent it means they are not in same scope
-            if (currentScope != node.Parent)
-            {
-                currentScope = node.Parent;
-                currentScopeFollowedList.Clear();
-            }
+            var traversedAst = procedure.Traverse(strategy);
+            TreeNode? currentScope = null;
+            var currentScopeFollowedList = new Stack<TreeNode>();
 
-            if (node.IsType<TStatement>())
+            foreach (var (node, _) in traversedAst)
             {
-                set.UnionWith(currentScopeFollowedList);
-                currentScopeFollowedList.Clear();
-            }
+                // if nodes have different parent it means they are not in same scope
+                if (currentScope != node.Parent)
+                {
+                    currentScope = node.Parent;
+                    currentScopeFollowedList.Clear();
+                }
 
-            currentScopeFollowedList.Push(node);
+                if (node.IsType<TStatement>())
+                {
+                    set.UnionWith(currentScopeFollowedList);
+                    currentScopeFollowedList.Clear();
+                }
+
+                currentScopeFollowedList.Push(node);
+            }
         }
 
         return set.Select(node => node.ToStatement());
