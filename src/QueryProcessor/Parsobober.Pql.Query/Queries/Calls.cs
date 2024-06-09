@@ -9,8 +9,12 @@ namespace Parsobober.Pql.Query.Queries;
 
 internal static class Calls
 {
-    public class QueryDeclaration(IArgument caller, IArgument called, ICallsAccessor accessor)
-        : ReplaceableArgumentQueryDeclaration<QueryDeclaration>, IQueryDeclaration
+    public class QueryDeclaration(
+        IArgument caller,
+        IArgument called,
+        ICallsAccessor accessor,
+        IDtoProgramContextAccessor context
+    ) : ReplaceableArgumentQueryDeclaration<QueryDeclaration>, IQueryDeclaration
     {
         public override IArgument Left { get; } = caller;
         public override IArgument Right { get; } = called;
@@ -20,14 +24,21 @@ internal static class Calls
             var query = (Left, Right) switch
             {
                 // Calls('name', 'name')
-                (Name left, Name right) =>
-                    new BooleanCallsQuery(accessor, left.Value, right.Value).Build(),
-
+                (Name left, Name right) => new BooleanCallsQuery(accessor, left.Value, right.Value).Build(),
+                (Any, _) or (_, Any) => HandleAny(),
                 _ => DoDeclaration()
             };
 
             return query;
         }
+
+        private IEnumerable<IPkbDto> HandleAny() => (Left, Right) switch
+        {
+            (Name procedure, Any) => accessor.GetCalled(procedure.Value),
+            (Any, Name procedure) => accessor.GetCallers(procedure.Value),
+            (Any, Any) => IPkbDto.Boolean(context.Calls.Any()),
+            _ => Enumerable.Empty<Statement>()
+        };
 
         public override IEnumerable<IPkbDto> Do(IDeclaration select)
         {
@@ -65,7 +76,8 @@ internal static class Calls
             }
         }
 
-        protected override QueryDeclaration CloneSelf(IArgument left, IArgument right) => new(left, right, accessor);
+        protected override QueryDeclaration CloneSelf(IArgument left, IArgument right) =>
+            new(left, right, accessor, context);
     }
 
     #region Queries

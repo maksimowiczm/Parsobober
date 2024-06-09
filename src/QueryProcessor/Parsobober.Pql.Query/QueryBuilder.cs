@@ -13,7 +13,8 @@ namespace Parsobober.Pql.Query;
 internal partial class QueryBuilder(
     IPkbAccessors accessor,
     IProgramContextAccessor programContext,
-    IQueryOrganizerBuilder queryOrganizerBuilder
+    IQueryOrganizerBuilder queryOrganizerBuilder,
+    IDtoProgramContextAccessor context
 ) : IQueryBuilder
 {
     private string _select = string.Empty;
@@ -66,14 +67,14 @@ internal partial class QueryBuilder(
     public IQueryResult Build()
     {
         AddQueries(_parent, (l, r) => new Parent.QueryDeclaration(l, r, accessor.Parent));
-        AddQueries(_parentTransitive, (l, r) => new ParentTransitive.QueryDeclaration(l, r, accessor.Parent));
+        AddQueries(_parentTransitive, (l, r) => new ParentTransitive.QueryDeclaration(l, r, accessor.Parent, context));
         AddQueries(_follows, (l, r) => new Follows.QueryDeclaration(l, r, accessor.Follows));
         AddQueries(_followsTransitive,
             (l, r) => new FollowsTransitive.QueryDeclaration(l, r, accessor.Follows));
         AddQueries(_modifies, (l, r) => new Modifies.QueryDeclaration(l, r, accessor.Modifies));
         AddQueries(_uses, (l, r) => new Uses.QueryDeclaration(l, r, accessor.Uses));
-        AddQueries(_calls, (l, r) => new Calls.QueryDeclaration(l, r, accessor.Calls));
-        AddQueries(_callsTransitive, (l, r) => new CallsTransitive.QueryDeclaration(l, r, accessor.Calls));
+        AddQueries(_calls, (l, r) => new Calls.QueryDeclaration(l, r, accessor.Calls, context));
+        AddQueries(_callsTransitive, (l, r) => new CallsTransitive.QueryDeclaration(l, r, accessor.Calls, context));
         AddQueries(_next, (l, r) => new Next(l, r, accessor.Next));
         AddQueries(_nextTransitive, (l, r) => new NextTransitive(l, r, accessor.Next));
 

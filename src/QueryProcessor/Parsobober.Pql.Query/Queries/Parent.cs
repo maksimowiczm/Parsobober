@@ -19,14 +19,22 @@ internal static class Parent
         {
             var query = (Left, Right) switch
             {
-                (Line parent, Line child) =>
-                    new BooleanParentQuery(accessor, parent.Value, child.Value).Build(),
-
+                (Line parent, Line child) => new BooleanParentQuery(accessor, parent.Value, child.Value).Build(),
+                (Any, _) or (_, Any) => HandleAny(),
                 _ => DoDeclaration()
             };
 
             return query;
         }
+
+        private IEnumerable<Statement> HandleAny() => (Left, Right) switch
+        {
+            (Line parent, Any) => accessor.GetChildren(parent.Value),
+            (Any, Line child) when accessor.GetParent(child.Value) is not null =>
+                Enumerable.Repeat(accessor.GetParent(child.Value)!, 1),
+            (Any, Any) => accessor.GetParents<Statement>(),
+            _ => Enumerable.Empty<Statement>()
+        };
 
         public override IEnumerable<IPkbDto> Do(IDeclaration select)
         {

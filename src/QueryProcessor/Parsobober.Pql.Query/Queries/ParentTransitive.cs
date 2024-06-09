@@ -9,8 +9,12 @@ namespace Parsobober.Pql.Query.Queries;
 
 internal static class ParentTransitive
 {
-    public class QueryDeclaration(IArgument parent, IArgument child, IParentAccessor accessor) :
-        ReplaceableArgumentQueryDeclaration<QueryDeclaration>, IQueryDeclaration
+    public class QueryDeclaration(
+        IArgument parent,
+        IArgument child,
+        IParentAccessor accessor,
+        IDtoProgramContextAccessor context
+    ) : ReplaceableArgumentQueryDeclaration<QueryDeclaration>, IQueryDeclaration
     {
         public override IArgument Left { get; } = parent;
         public override IArgument Right { get; } = child;
@@ -19,14 +23,21 @@ internal static class ParentTransitive
         {
             var query = (Left, Right) switch
             {
-                (Line parent, Line child) =>
-                    new BooleanParentQuery(accessor, parent.Value, child.Value).Build(),
-
+                (Line parent, Line child) => new BooleanParentQuery(accessor, parent.Value, child.Value).Build(),
+                (Any _, _) or (_, Any _) => HandleAny(),
                 _ => DoDeclaration()
             };
 
             return query;
         }
+
+        private IEnumerable<Statement> HandleAny() => (Left, Right) switch
+        {
+            (Line parent, Any) => accessor.GetChildrenTransitive(parent.Value),
+            (Any, Line child) => accessor.GetParentsTransitive(child.Value),
+            (Any, Any) => accessor.GetParentsTransitive<Statement>(),
+            _ => Enumerable.Empty<Statement>()
+        };
 
         public override IEnumerable<IPkbDto> Do(IDeclaration select)
         {
@@ -69,7 +80,8 @@ internal static class ParentTransitive
             }
         }
 
-        protected override QueryDeclaration CloneSelf(IArgument left, IArgument right) => new(left, right, accessor);
+        protected override QueryDeclaration CloneSelf(IArgument left, IArgument right) =>
+            new(left, right, accessor, context);
     }
 
     #region Queries

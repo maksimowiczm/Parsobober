@@ -1,9 +1,12 @@
+using Parsobober.Pkb.Cfg.Core;
 using Parsobober.Pkb.Relations.Dto;
 
 namespace Parsobober.Pkb.Relations.Abstractions.Accessors;
 
 public interface INextAccessor
 {
+    public IReadOnlyDictionary<string, ProcedureCfg> ProcedureCfgs { get; }
+
     IEnumerable<ProgramLine> GetPrevious(int line);
 
     IEnumerable<ProgramLine> GetNext(int line);

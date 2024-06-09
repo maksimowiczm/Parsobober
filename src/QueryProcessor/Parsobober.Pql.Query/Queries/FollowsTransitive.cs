@@ -19,14 +19,21 @@ internal static class FollowsTransitive
         {
             var query = (Left, Right) switch
             {
-                (Line left, Line right) =>
-                    new BooleanFollowsQuery(accessor, left.Value, right.Value).Build(),
-
+                (Line left, Line right) => new BooleanFollowsQuery(accessor, left.Value, right.Value).Build(),
+                (Any, _) or (_, Any) => HandleAny(),
                 _ => DoDeclaration()
             };
 
             return query;
         }
+
+        private IEnumerable<Statement> HandleAny() => (Left, Right) switch
+        {
+            (Line predecessor, Any) => accessor.GetFollowersTransitive(predecessor.Value),
+            (Any, Line follower) => accessor.GetPrecedingTransitive(follower.Value),
+            (Any, Any) => accessor.GetFollowersTransitive<Statement>(),
+            _ => Enumerable.Empty<Statement>()
+        };
 
         public override IEnumerable<IPkbDto> Do(IDeclaration select)
         {

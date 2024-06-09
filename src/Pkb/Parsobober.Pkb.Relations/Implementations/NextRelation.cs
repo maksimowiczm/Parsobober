@@ -13,6 +13,8 @@ public class NextRelation(
 {
     private readonly Dictionary<string, ProcedureCfg> _procedureCfgsDictionary = new();
 
+    public IReadOnlyDictionary<string, ProcedureCfg> ProcedureCfgs => _procedureCfgsDictionary;
+
     public void Compute()
     {
         foreach (var (procedureName, procedureNode) in programContext.ProceduresDictionary)

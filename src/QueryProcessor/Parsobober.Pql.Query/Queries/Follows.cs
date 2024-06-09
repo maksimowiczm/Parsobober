@@ -19,14 +19,23 @@ internal static class Follows
         {
             var query = (Left, Right) switch
             {
-                (Line left, Line right) =>
-                    new BooleanFollowsQuery(accessor, left.Value, right.Value).Build(),
-
+                (Line left, Line right) => new BooleanFollowsQuery(accessor, left.Value, right.Value).Build(),
+                (Any, _) or (_, Any) => HandleAny(),
                 _ => DoDeclaration()
             };
 
             return query;
         }
+
+        private IEnumerable<Statement> HandleAny() => (Left, Right) switch
+        {
+            (Line predecessor, Any) when accessor.GetFollower(predecessor.Value) is not null =>
+                Enumerable.Repeat(accessor.GetFollower(predecessor.Value)!, 1),
+            (Any, Line follower) when accessor.GetPreceding(follower.Value) is not null =>
+                Enumerable.Repeat(accessor.GetPreceding(follower.Value)!, 1),
+            (Any, Any) => accessor.GetFollowersTransitive<Statement>(),
+            _ => Enumerable.Empty<Statement>()
+        };
 
         public override IEnumerable<IPkbDto> Do(IDeclaration select)
         {

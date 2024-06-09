@@ -9,8 +9,12 @@ namespace Parsobober.Pql.Query.Queries;
 
 internal static class CallsTransitive
 {
-    public class QueryDeclaration(IArgument caller, IArgument called, ICallsAccessor accessor)
-        : ReplaceableArgumentQueryDeclaration<QueryDeclaration>, IQueryDeclaration
+    public class QueryDeclaration(
+        IArgument caller,
+        IArgument called,
+        ICallsAccessor accessor,
+        IDtoProgramContextAccessor context
+    ) : ReplaceableArgumentQueryDeclaration<QueryDeclaration>, IQueryDeclaration
     {
         public override IArgument Left { get; } = caller;
         public override IArgument Right { get; } = called;
@@ -20,14 +24,21 @@ internal static class CallsTransitive
             var query = (Left, Right) switch
             {
                 // Calls*('name', 'name')
-                (Name left, Name right) =>
-                    new BooleanCallsTransitiveQuery(accessor, left.Value, right.Value).Build(),
-
+                (Name left, Name right) => new BooleanCallsTransitiveQuery(accessor, left.Value, right.Value).Build(),
+                (Any, _) or (_, Any) => HandleAny(),
                 _ => DoDeclaration()
             };
 
             return query;
         }
+
+        private IEnumerable<IPkbDto> HandleAny() => (Left, Right) switch
+        {
+            (Name procedure, Any) => accessor.GetCalledTransitive(procedure.Value),
+            (Any, Name procedure) => accessor.GetCallersTransitive(procedure.Value),
+            (Any, Any) => IPkbDto.Boolean(context.Calls.Any()),
+            _ => Enumerable.Empty<Statement>()
+        };
 
         public override IEnumerable<IPkbDto> Do(IDeclaration select)
         {
@@ -35,11 +46,11 @@ internal static class CallsTransitive
             var query = (Left, Right) switch
             {
                 // Calls*(proc, 'name')
-                (IProcedureDeclaration declaration, Name called) =>
+                (IProcedureDeclaration, Name called) =>
                     new GetCallersTransitiveByCalledName(accessor, called.Value).Build(),
 
                 // Calls*('name', proc)
-                (Name caller, IProcedureDeclaration declaration) =>
+                (Name caller, IProcedureDeclaration) =>
                     new GetCalledTransitiveByCallerName(accessor, caller.Value).Build(),
 
                 // Calls*(proc, proc)
@@ -69,7 +80,8 @@ internal static class CallsTransitive
             }
         }
 
-        protected override QueryDeclaration CloneSelf(IArgument left, IArgument right) => new(left, right, accessor);
+        protected override QueryDeclaration CloneSelf(IArgument left, IArgument right) =>
+            new(left, right, accessor, context);
     }
 
     #region Queries

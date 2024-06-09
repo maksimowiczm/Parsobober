@@ -18,11 +18,20 @@ internal class Next(IArgument left, IArgument right, INextAccessor accessor)
         var query = (Left, Right) switch
         {
             (Line left, Line right) => IPkbDto.Boolean(accessor.IsNext(left.Value, right.Value)),
+            (Any, _) or (_, Any) => HandleAny(),
             _ => DoDeclaration()
         };
 
         return query;
     }
+
+    private IEnumerable<IPkbDto> HandleAny() => (Left, Right) switch
+    {
+        (Line previous, Any) => accessor.GetNext(previous.Value),
+        (Any, Line next) => accessor.GetPrevious(next.Value),
+        (Any, Any) => IPkbDto.Boolean(accessor.ProcedureCfgs.Values.Any(d => d.EntryNode.Next.Any())),
+        _ => Enumerable.Empty<Statement>()
+    };
 
     public override IEnumerable<IPkbDto> Do(IDeclaration select)
     {

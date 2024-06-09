@@ -17,6 +17,11 @@ public interface IArgument
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the argument cannot be parsed.</exception>
     static IArgument Parse(IReadOnlyDictionary<string, IDeclaration> declarations, string argument)
     {
+        if (argument == "_")
+        {
+            return new Any();
+        }
+
         if (declarations.TryGetValue(argument, out var declaration))
         {
             return declaration;
@@ -66,3 +71,5 @@ public readonly record struct Line(int Value) : IArgument
     public override string ToString() => Value.ToString();
 #endif
 }
+
+public readonly record struct Any : IArgument;
