@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using Parsobober.Pkb.Ast;
-using Parsobober.Pkb.Ast.Abstractions;
 using Parsobober.Pkb.Ast.AstTraverser;
 using Parsobober.Pkb.Ast.AstTraverser.Strategies;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
@@ -12,8 +11,7 @@ namespace Parsobober.Pkb.Relations.Implementations;
 
 public class ParentRelation(
     ILogger<ParentRelation> logger,
-    IProgramContextAccessor programContext,
-    IAst ast
+    IProgramContextAccessor programContext
 ) : IParentCreator, IParentAccessor
 {
     /// <summary>
@@ -90,24 +88,32 @@ public class ParentRelation(
 
     public IEnumerable<Statement> GetChildrenTransitive<TParentStatement>() where TParentStatement : Statement
     {
-        var traversedAst = ast.Root.Traverse(new DfsStatementStrategy());
-        var containerDepth = -1;
+        var procedures = programContext.ProceduresDictionary.Values;
+        var resultSet = new HashSet<Statement>();
 
-        foreach (var (node, depth) in traversedAst)
+        foreach (var procedure in procedures)
         {
-            if (depth <= containerDepth)
+            var traversedAst = procedure.Traverse(new DfsStatementStrategy());
+            var containerDepth = -1;
+
+            foreach (var (node, depth) in traversedAst)
             {
-                containerDepth = -1;
-            }
-            else if (containerDepth != -1 && node.Type.IsStatement())
-            {
-                yield return node.ToStatement();
-            }
-            else if (node.IsType<TParentStatement>() && node.Type.IsContainerStatement())
-            {
-                containerDepth = depth;
+                if (depth <= containerDepth)
+                {
+                    containerDepth = -1;
+                }
+                else if (containerDepth != -1 && node.Type.IsStatement())
+                {
+                    resultSet.Add(node.ToStatement());
+                }
+                else if (node.IsType<TParentStatement>() && node.Type.IsContainerStatement())
+                {
+                    containerDepth = depth;
+                }
             }
         }
+
+        return resultSet;
     }
 
     public IEnumerable<Statement> GetChildrenTransitive(int lineNumber)
@@ -124,42 +130,39 @@ public class ParentRelation(
             .Select(visited => visited.node.ToStatement());
     }
 
-    private static IEnumerable<Statement> GetNotYieldedParents(
-        Stack<(TreeNode node, int depth)> containerStack,
-        Dictionary<(TreeNode node, int depth), bool> yieldedDictionary
-    )
-    {
-        return containerStack
-            .Where(container => yieldedDictionary.TryAdd(container, true))
-            .Select(container => container.node.ToStatement());
-    }
-
     public IEnumerable<Statement> GetParentsTransitive<TChildStatement>() where TChildStatement : Statement
     {
-        var traversedAst = ast.Root.Traverse(new DfsStatementStrategy());
-        var containerStack = new Stack<(TreeNode node, int depth)>();
-        var yieldedDictionary = new Dictionary<(TreeNode node, int depth), bool>();
+        var procedures = programContext.ProceduresDictionary.Values;
+        var resultSet = new HashSet<Statement>();
 
-        foreach (var visited in traversedAst)
+        foreach (var procedure in procedures)
         {
-            while (containerStack.Count != 0 && containerStack.Peek().depth >= visited.depth)
-            {
-                containerStack.Pop();
-            }
+            var traversedAst = procedure.Traverse(new DfsStatementStrategy());
+            var containerStack = new Stack<(TreeNode node, int depth)>();
 
-            if (visited.node.IsType<TChildStatement>())
+            foreach (var visited in traversedAst)
             {
-                foreach (var parent in GetNotYieldedParents(containerStack, yieldedDictionary))
+                while (containerStack.Count != 0 && containerStack.Peek().depth >= visited.depth)
                 {
-                    yield return parent;
+                    containerStack.Pop();
+                }
+
+                if (visited.node.IsType<TChildStatement>())
+                {
+                    foreach (var parentStatement in containerStack.Select(container => container.node.ToStatement()))
+                    {
+                        resultSet.Add(parentStatement);
+                    }
+                }
+
+                if (visited.node.Type.IsContainerStatement())
+                {
+                    containerStack.Push(visited);
                 }
             }
-
-            if (visited.node.Type.IsContainerStatement())
-            {
-                containerStack.Push(visited);
-            }
         }
+
+        return resultSet;
     }
 
     public IEnumerable<Statement> GetParentsTransitive(int lineNumber)
