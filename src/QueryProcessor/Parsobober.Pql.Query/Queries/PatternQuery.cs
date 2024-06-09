@@ -1,9 +1,9 @@
 using Parsobober.Pkb.Ast;
-using Parsobober.Pkb.Relations.Abstractions;
 using Parsobober.Pkb.Relations.Abstractions.Accessors;
 using Parsobober.Pkb.Relations.Dto;
 using Parsobober.Pkb.Relations.Utilities;
 using Parsobober.Pql.Pattern.Parser.Abstractions;
+using Parsobober.Pql.Query.Abstractions;
 using Parsobober.Pql.Query.Arguments;
 using Parsobober.Pql.Query.Queries.Abstractions;
 using Pat = Parsobober.Pql.Query.Arguments.Pattern;
@@ -34,7 +34,7 @@ public class PatternQuery(
 
         if (argument is not Line line)
         {
-            throw new Exception("xd");
+            throw new WtfException("Pattern query does not have declaration or line as given argument.");
         }
 
         return programContext.StatementsDictionary
@@ -46,13 +46,28 @@ public class PatternQuery(
     {
         var result = (LeftPattern.Value, RightPattern.Value) switch
         {
-            ("_", "_") => throw new NotImplementedException(),
+            ("_", "_") => HandleAll(),
             ("_", _) => HandleRight(),
             (_, "_") => HandleLeft(),
             _ => HandleBoth()
         };
 
         return result;
+    }
+
+    private IEnumerable<IPkbDto> HandleAll()
+    {
+        if (argument is IDeclaration declaration)
+        {
+            return declaration.ExtractFromContext(dtoContext);
+        }
+
+        if (argument is Line line)
+        {
+            return Enumerable.Repeat(programContext.StatementsDictionary[line.Value].ToStatement(), 1);
+        }
+
+        throw new WtfException("Pattern query does not have declaration or line as given argument.");
     }
 
     private IEnumerable<IPkbDto> HandleRight()

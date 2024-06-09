@@ -14,6 +14,7 @@ public class PatternTests() : BaseTestClass(Code.Dropbox)
     [InlineData("while w;Select w pattern w(_, _)",
         "6, 12, 16, 26, 29, 47, 59, 69, 79, 83, 89, 95, 101, 103, 105, 113, 136, 143, 180, 181, 184, 187, 191, 196, 209, 217, 218, 234, 239, 251, 256, 264, 265, 279, 281, 289, 301")]
     [InlineData("assign a; Select a such that Parent(6, a) pattern a(_, \"width + incre + left\")", "7")]
+    [InlineData("assign a; Select a such that Parent(6, a) pattern a(_, _)", "7, 8, 9, 10, 11")]
     public void PatternTest(string query, string expected)
     {
         var result = App.Query(query);
