@@ -511,4 +511,29 @@ public class PqlParserTests
             builderMock.Verify(b => b.AddTuple(x));
         }
     }
+
+    [Theory]
+    [InlineData("assign a;", "a", "_", "\"x*y\"")]
+    [InlineData("assign a;", "a", "_", "\"x * y\"")]
+    [InlineData("assign a;", "a", "_", "\"x+y\"")]
+    [InlineData("assign a;", "a", "_", "\"x + y\"")]
+    [InlineData("assign a;", "a", "_", "_\"x*y\"_")]
+    [InlineData("assign a;", "a", "_", "_\"x * y\"_")]
+    [InlineData("assign a;", "a", "_", "_\"x+y\"_")]
+    [InlineData("assign a;", "a", "_", "_\"x + y\"_")]
+    public void Pattern(string declaration, string a, string left, string right)
+    {
+        var builderMock = new Mock<IQueryBuilder>();
+        var queryMock = new Mock<IQueryResult>();
+        var parser = new PqlParser(builderMock.Object);
+        var queryString = $"{declaration} Select {a} such that Pattern {a}({left}, {right})";
+
+        builderMock.Setup(b => b.Build()).Returns(queryMock.Object);
+
+        var query = parser.Parse(queryString);
+
+        query.Should().NotBeNull();
+        query.Should().Be(queryMock.Object);
+        builderMock.Verify(b => b.AddPattern(a, left, right));
+    }
 }
