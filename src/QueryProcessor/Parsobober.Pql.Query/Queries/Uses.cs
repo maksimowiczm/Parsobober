@@ -26,6 +26,8 @@ internal static class Uses
                     new BooleanProcedureUsesQuery(accessor, procName.Value, varName.Value).Build(),
                 (Line line, Any) => accessor.GetVariables(line.Value),
                 (Name procName, Any) => accessor.GetVariables(procName.Value),
+                (IStatementDeclaration, Any) => accessor.GetStatements(),
+                (IProcedureDeclaration, Any) => accessor.GetProcedures(),
                 _ => DoDeclaration()
             };
 

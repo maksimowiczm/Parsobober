@@ -20,7 +20,7 @@ public interface IUsesAccessor
 
     /// <summary>
     /// Returns statements that uses variable
-    /// => Uses(returned, provided)
+    /// => Uses(returned, _)
     /// </summary>
     IEnumerable<Statement> GetStatements();
 
@@ -37,6 +37,13 @@ public interface IUsesAccessor
     /// </summary>
     /// <param name="variableName">Variable name</param>
     IEnumerable<Procedure> GetProcedures(string variableName);
+
+    /// <summary>
+    /// Returns procedures that use variables
+    /// => Uses(returned, _)
+    /// </summary>
+    /// <returns></returns>
+    IEnumerable<Procedure> GetProcedures();
 
     /// <summary>
     /// Returns variables that are used by procedure with given procedureName

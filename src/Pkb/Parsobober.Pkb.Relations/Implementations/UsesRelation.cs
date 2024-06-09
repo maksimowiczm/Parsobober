@@ -245,6 +245,13 @@ public class UsesRelation(
             .Select(procedure => programContext.ProceduresDictionary[procedure.Key].ToProcedure());
     }
 
+    public IEnumerable<Procedure> GetProcedures()
+    {
+        return _usesProcedureDictionaryFull
+            .Where(entry => entry.Value.Any())
+            .Select(entry => programContext.ProceduresDictionary[entry.Key].ToProcedure());
+    }
+
     public IEnumerable<Variable> GetVariables(string procedureName)
     {
         return _usesProcedureDictionaryFull.TryGetValue(procedureName, out var variableList)
