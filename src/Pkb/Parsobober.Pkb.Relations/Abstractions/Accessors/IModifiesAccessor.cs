@@ -37,7 +37,7 @@ public interface IModifiesAccessor
     /// </summary>
     /// <returns></returns>
     IEnumerable<Procedure> GetProcedures();
-    
+
     /// <summary>
     /// Returns procedures that modify variable with given variableName
     /// => Modifies(returned, provided)

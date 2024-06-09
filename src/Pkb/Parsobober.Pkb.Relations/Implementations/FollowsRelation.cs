@@ -12,8 +12,7 @@ namespace Parsobober.Pkb.Relations.Implementations;
 
 public class FollowsRelation(
     ILogger<FollowsRelation> logger,
-    IProgramContextAccessor programContext,
-    IAst ast
+    IProgramContextAccessor programContext
 ) : IFollowsCreator, IFollowsAccessor
 {
     /// <summary>

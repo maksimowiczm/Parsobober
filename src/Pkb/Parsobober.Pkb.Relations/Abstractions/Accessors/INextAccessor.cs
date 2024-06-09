@@ -20,6 +20,6 @@ public interface INextAccessor
     bool IsNextTransitive(int left, int right);
 
     IEnumerable<ProgramLine> GetAllNextWithPrevious();
-    
+
     IEnumerable<ProgramLine> GetAllPreviousWithNext();
 }
