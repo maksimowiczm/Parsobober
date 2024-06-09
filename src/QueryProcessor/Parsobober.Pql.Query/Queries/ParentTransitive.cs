@@ -36,6 +36,10 @@ internal static class ParentTransitive
             (Line parent, Any) => accessor.GetChildrenTransitive(parent.Value),
             (Any, Line child) => accessor.GetParentsTransitive(child.Value),
             (Any, Any) => accessor.GetParentsTransitive<Statement>(),
+            (IStatementDeclaration parent, Any) =>
+                new GetTransitiveParentsByChildType(accessor).Create().Build(parent),
+            (Any, IStatementDeclaration child) =>
+                new GetTransitiveChildrenByParentType(accessor).Create().Build(child),
             _ => Enumerable.Empty<Statement>()
         };
 
@@ -98,6 +102,8 @@ internal static class ParentTransitive
                 IStatementDeclaration.Call => new GetTransitiveParentsByChildType<Call>(parentAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(childStatementDeclaration))
             };
+
+        public ParentQuery Create() => new GetTransitiveParentsByChildType<Statement>(parentAccessor);
     }
 
     /// <summary>
@@ -132,6 +138,8 @@ internal static class ParentTransitive
                 IStatementDeclaration.Call => new GetTransitiveChildrenByParentType<Call>(parentAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(parentStatementDeclaration))
             };
+
+        public ParentQuery Create() => new GetTransitiveChildrenByParentType<Statement>(parentAccessor);
     }
 
     /// <summary>

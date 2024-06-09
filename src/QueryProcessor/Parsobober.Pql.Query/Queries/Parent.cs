@@ -27,12 +27,14 @@ internal static class Parent
             return query;
         }
 
-        private IEnumerable<Statement> HandleAny() => (Left, Right) switch
+        private IEnumerable<IPkbDto> HandleAny() => (Left, Right) switch
         {
             (Line parent, Any) => accessor.GetChildren(parent.Value),
             (Any, Line child) when accessor.GetParent(child.Value) is not null =>
                 Enumerable.Repeat(accessor.GetParent(child.Value)!, 1),
             (Any, Any) => accessor.GetParents<Statement>(),
+            (IStatementDeclaration parent, Any) => new GetParentsByChildType(accessor).Create().Build(parent),
+            (Any, IStatementDeclaration child) => new GetChildrenByParentType(accessor).Create().Build(child),
             _ => Enumerable.Empty<Statement>()
         };
 
@@ -90,6 +92,8 @@ internal static class Parent
                 IStatementDeclaration.Call => new GetParentsByChildType<Call>(parentAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(childStatementDeclaration))
             };
+
+        public ParentQuery Create() => new GetParentsByChildType<Statement>(parentAccessor);
     }
 
     /// <summary>
@@ -124,6 +128,8 @@ internal static class Parent
                 IStatementDeclaration.Call => new GetChildrenByParentType<Call>(parentAccessor),
                 _ => throw new ArgumentOutOfRangeException(nameof(parentStatementDeclaration))
             };
+
+        public ParentQuery Create() => new GetChildrenByParentType<Statement>(parentAccessor);
     }
 
     /// <summary>
