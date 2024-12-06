@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# ./run.sh ./cez/dropbox
+
 if [ -z "$1" ]; then
     echo "Usage: ./run.sh <test_case>"
     exit 1
